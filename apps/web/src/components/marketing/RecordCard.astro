@@ -1,0 +1,17 @@
+---
+import { sampleRecord as r } from '../../data/marketing';
+---
+<div class="card" aria-label="Sample donation record">
+  <div class="hd"><span>{r.id}</span><span>{r.status}</span></div>
+  {r.rows.map(([k, v, size]) => (
+    <div class:list={['r', { big: size === 'big' }]}><span>{k}</span><span>{v}</span></div>
+  ))}
+</div>
+<style>
+  .card { background: var(--color-paper); color: var(--color-paper-ink); border: 2px solid var(--color-ink); box-shadow: 10px 10px 0 var(--color-ink); padding: 22px 24px; }
+  .hd { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding-bottom: 12px; border-bottom: 2px solid var(--color-paper-ink); }
+  .r { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--color-paper-hair); font-size: 14.5px; }
+  .r span:first-child { color: var(--color-paper-mute); }
+  .r:last-child { border-bottom: 0; }
+  .r.big span:last-child { font-weight: 800; font-size: 18px; }
+</style>

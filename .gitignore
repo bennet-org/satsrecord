@@ -1,0 +1,12 @@
+# throwaway design mocks; brand/README.md and the logos are the record
+brand/*.html
+brand/archive/
+.DS_Store
+
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+*.log

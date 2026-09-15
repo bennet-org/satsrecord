@@ -2,7 +2,9 @@
 
 **Constraint:** the demo ([ROADMAP](../ROADMAP.md) Phases 0–6) is built on the production stack. When the full build starts, the chain backend is added, not swapped in. That rules out serverless-only hosting (the poller and node are long-running), a throwaway schema, and auth that cannot self-host.
 
-Pin versions from the registry at scaffold time, not from memory. Astro is on 7.x at time of writing.
+Pinned at scaffold (15 September 2026): Astro 7.3, @astrojs/node 11.1, Tailwind 4.3 via `@tailwindcss/vite`, Vite 8.3, TypeScript 6.0, pnpm 12.4 (via corepack), Node 24. Re-check the registry before adding anything; do not assume versions from memory.
+
+Homepage is fully static and framework-free. `/request-access` is the only on-demand route (Astro Actions need one). Screenshots for review: `node scripts/shots.mjs <baseUrl> <outDir>` uses Playwright against the system Chrome, no browser download, and reports horizontal overflow at 1440 and 400 px.
 
 ## Layout
 

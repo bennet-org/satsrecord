@@ -1,0 +1,9 @@
+{
+  "name": "@satsrecord/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "check": "tsc --noEmit", "build": "echo core: no build step" },
+  "devDependencies": { "typescript": "^6.0.3" }
+}

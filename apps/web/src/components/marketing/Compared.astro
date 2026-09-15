@@ -1,0 +1,57 @@
+---
+import { compared } from '../../data/marketing';
+---
+<section id="compared" class="band wrap">
+  <div class="head">
+    <h2 class="h2">Compared.</h2>
+    <p>{compared.intro}</p>
+  </div>
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Option</th>
+          {compared.columns.map((col) => <th>{col}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {compared.options.map((o) => (
+          <tr class:list={{ us: o.us }}>
+            <td class="opt">
+              <div class="o">
+                <span class="lg">
+                  {o.logo === 'dots' ? <span class="dots">···</span> : o.logo === 'square' ? <span class="sq"></span> : <img src={o.logo} alt="" />}
+                </span>
+                <span><b>{o.name}</b><small>{o.sub}</small></span>
+              </div>
+            </td>
+            {o.cells.map((cell) => <td class:list={{ no: cell.muted }}>{cell.text}</td>)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+<style>
+  .head { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: end; margin-bottom: 44px; }
+  .head p { font-size: clamp(17px, 1.4vw, 20px); line-height: 1.4; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 16px; line-height: 1.35; }
+  th { text-align: left; font-weight: 800; font-size: 14px; letter-spacing: 0.02em; padding: 0 20px 14px 0; border-bottom: 2px solid var(--color-paper-ink); vertical-align: bottom; }
+  td { padding: 26px 20px 26px 0; border-bottom: 1px solid var(--color-paper-hair); vertical-align: middle; }
+  td.opt { width: 27%; }
+  .o { display: flex; align-items: center; gap: 14px; }
+  .lg { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .lg img { max-width: 24px; max-height: 26px; display: block; }
+  .dots { letter-spacing: 0.2em; font-weight: 800; color: var(--color-paper-mute); }
+  .sq { width: 20px; height: 20px; background: var(--color-ink); }
+  .opt b { display: block; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+  .opt small { display: block; font-size: 13.5px; color: var(--color-paper-mute); margin-top: 2px; }
+  .no { color: var(--color-paper-mute); }
+  tbody tr:nth-last-child(2) td { border-bottom: 2px solid var(--color-paper-ink); }
+  tr.us td { background: var(--color-ground); color: var(--color-ink); border-bottom: 0; font-weight: 700; }
+  tr.us td.opt { padding-left: 20px; }
+  tr.us td:last-child { padding-right: 20px; }
+  tr.us .opt small { color: var(--color-ink); opacity: 0.75; }
+  @media (max-width: 900px) { .head { grid-template-columns: 1fr; gap: 20px; } }
+</style>

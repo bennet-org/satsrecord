@@ -1,0 +1,26 @@
+---
+import { steps } from '../../data/marketing';
+---
+<section id="how" class="how wrap">
+  <h2 class="h2">How it works.</h2>
+  <ol class="steps">
+    {steps.map(([title, body], i) => (
+      <li>
+        <div class="n">{i + 1}</div>
+        <b>{title}</b>
+        <p>{body}</p>
+      </li>
+    ))}
+  </ol>
+</section>
+<style>
+  .how { padding-block: clamp(48px, 5.5vw, 80px) clamp(52px, 5.8vw, 84px); }
+  .h2 { margin-bottom: clamp(32px, 3.9vw, 56px); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 40px; border-top: 2px solid var(--color-ink); margin: 0; padding: 0; }
+  li { padding: 26px 0 30px; border-bottom: 2px solid var(--color-ink); }
+  .n { font-size: 56px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 14px; }
+  b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+  p { font-size: 15.5px; }
+  @media (max-width: 900px) { .steps { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .steps { grid-template-columns: 1fr; } }
+</style>

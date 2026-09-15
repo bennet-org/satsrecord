@@ -9,8 +9,8 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 ## Phase 0: foundations
 
 - [x] Brief, design and stack docs
-- [ ] Brand discussion → `BRAND.md`: name confirmed, strapline, palette, type, tone, comparison table copy
-- [ ] Scaffold: pnpm workspace, `apps/web` (Astro, React, Tailwind, shadcn), `packages/core`, `packages/widget`, Dockerfile, compose Postgres
+- [x] Brand discussion → `brand/README.md`: name confirmed, strapline, palette, type, tone, comparison table copy
+- [x] Scaffold: pnpm workspace, `apps/web` (Astro 7, Tailwind 4), `packages/core`, `packages/widget`, Dockerfile, compose Postgres. React and shadcn arrive with the first interactive page.
 - [ ] Schema v1 and migrations: organisations, members, invites, access_requests, descriptors, addresses, submissions, donors (PII), consents, settlements, valuations, acknowledgements, amendments, email_log
 - [ ] Encryption helper; `Mailer` (Resend, SMTP, console); `ChainSource` and `RateSource` interfaces with fakes; `Deriver` with single-sig implementation and descriptor parser
 
@@ -18,8 +18,8 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Phase 1: marketing site
 
-- [ ] One page: hero, the problem, how it works, comparison, pricing intent, request access
-- [ ] Request access form → `access_requests` row + notification email
+- [x] One page: hero, who it's for, how it works, comparison, pricing, closing
+- [ ] Request access form → `access_requests` row + notification email (form and validation exist at `/request-access`; handler logs only until the schema lands)
 - [ ] Privacy and terms placeholders
 
 **Done when:** reads well at phone width, request access stores a row and sends the email.
