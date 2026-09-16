@@ -13,6 +13,10 @@ const {
   description = site.descriptor,
   surface = "ground",
 } = Astro.props;
+// Static pages only; the on-demand app is not for indexing.
+const canonical = Astro.isPrerendered
+  ? new URL(Astro.url.pathname, Astro.site).href
+  : undefined;
 ---
 
 <!doctype html>
@@ -22,6 +26,7 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
     <meta name="theme-color" content="#F7931A" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <Font cssVariable="--font-schibsted" preload />
