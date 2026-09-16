@@ -1,10 +1,17 @@
 ---
-import '../styles/global.css';
-import { Font } from 'astro:assets';
-import { site } from '../data/marketing';
-interface Props { title?: string; description?: string }
-const { title = `${site.name}: ${site.descriptor.replace(/\.$/, '')}`, description = site.descriptor } = Astro.props;
+import "../styles/global.css";
+import { Font } from "astro:assets";
+import { site } from "../data/marketing";
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = `${site.name}: ${site.descriptor.replace(/\.$/, "")}`,
+  description = site.descriptor,
+} = Astro.props;
 ---
+
 <!doctype html>
 <html lang="en">
   <head>

@@ -30,23 +30,23 @@ docs/
 
 ## Choices
 
-| Layer | Choice | Why | Full-build delta |
-|---|---|---|---|
-| Site and app | Astro, Node adapter, SSR | Preference. Static marketing pages and a server-rendered app in one deploy. Actions for forms. | None |
-| Islands | React | shadcn/ui speeds up the dashboard. Used only where interactive. | None |
-| Styling | Tailwind v4, shadcn/ui, tokens from `brand/README.md` | | None |
-| Database | Postgres. Neon hosted, docker compose locally. | Append-only schema, jsonb, standard for self-host. | None |
-| ORM | Drizzle over node-postgres (`pg`) | TypeScript migrations. Plain TCP driver rather than Neon's serverless driver so self-host runs identical code. | None |
-| Auth | Better Auth: magic link, passkeys, organization plugin, Drizzle adapter | Self-hostable, orgs built in, passwordless. | Roles |
-| Email | Resend behind a `Mailer` interface; SMTP (Nodemailer) and console implementations | Deliverability is the stated top risk. Self-host uses SMTP. | Branded sending |
-| Derivation | `@scure/bip32`, `@scure/btc-signer`, hand-written descriptor parser for `wpkh`, `sh(wpkh)`, `tr`, `wsh(sortedmulti)` | Small, audited, no native dependencies. Parser scope is tiny. | Core RPC `Deriver` for multisig |
-| Detection | `ChainSource` interface with a fake implementation | Demo drives the fake. | mempool.space and Core RPC implementations, worker |
-| Rates | `RateSource` interface with a fixed-rate fake | | Kraken implementation |
-| Widget | Vanilla TS web component, Vite library mode, small QR library | Framework-free, embeds anywhere, under 15 kB. | None |
-| Encryption | AES-GCM via WebCrypto, key from env | Descriptors and PII. | KMS-backed key |
-| Hosting | Docker image on Fly.io; Neon Postgres | Long-running process. Same image later runs on a box next to the node. Local only until demo sign-off. | Worker machine, node, Cloudflare in front of the widget script |
-| Testing | Vitest (core, widget), Playwright (auth, onboarding, widget flows) | | |
-| Jobs | Not needed in demo | | pg-boss or a plain loop. Decide at Phase 7. |
+| Layer        | Choice                                                                                                               | Why                                                                                                            | Full-build delta                                               |
+| ------------ | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Site and app | Astro, Node adapter, SSR                                                                                             | Preference. Static marketing pages and a server-rendered app in one deploy. Actions for forms.                 | None                                                           |
+| Islands      | React                                                                                                                | shadcn/ui speeds up the dashboard. Used only where interactive.                                                | None                                                           |
+| Styling      | Tailwind v4, shadcn/ui, tokens from `brand/README.md`                                                                |                                                                                                                | None                                                           |
+| Database     | Postgres. Neon hosted, docker compose locally.                                                                       | Append-only schema, jsonb, standard for self-host.                                                             | None                                                           |
+| ORM          | Drizzle over node-postgres (`pg`)                                                                                    | TypeScript migrations. Plain TCP driver rather than Neon's serverless driver so self-host runs identical code. | None                                                           |
+| Auth         | Better Auth: magic link, passkeys, organization plugin, Drizzle adapter                                              | Self-hostable, orgs built in, passwordless.                                                                    | Roles                                                          |
+| Email        | Resend behind a `Mailer` interface; SMTP (Nodemailer) and console implementations                                    | Deliverability is the stated top risk. Self-host uses SMTP.                                                    | Branded sending                                                |
+| Derivation   | `@scure/bip32`, `@scure/btc-signer`, hand-written descriptor parser for `wpkh`, `sh(wpkh)`, `tr`, `wsh(sortedmulti)` | Small, audited, no native dependencies. Parser scope is tiny.                                                  | Core RPC `Deriver` for multisig                                |
+| Detection    | `ChainSource` interface with a fake implementation                                                                   | Demo drives the fake.                                                                                          | mempool.space and Core RPC implementations, worker             |
+| Rates        | `RateSource` interface with a fixed-rate fake                                                                        |                                                                                                                | Kraken implementation                                          |
+| Widget       | Vanilla TS web component, Vite library mode, small QR library                                                        | Framework-free, embeds anywhere, under 15 kB.                                                                  | None                                                           |
+| Encryption   | AES-GCM via WebCrypto, key from env                                                                                  | Descriptors and PII.                                                                                           | KMS-backed key                                                 |
+| Hosting      | Docker image on Fly.io; Neon Postgres                                                                                | Long-running process. Same image later runs on a box next to the node. Local only until demo sign-off.         | Worker machine, node, Cloudflare in front of the widget script |
+| Testing      | Vitest (core, widget), Playwright (auth, onboarding, widget flows)                                                   |                                                                                                                |                                                                |
+| Jobs         | Not needed in demo                                                                                                   |                                                                                                                | pg-boss or a plain loop. Decide at Phase 7.                    |
 
 ## Demo-specific
 

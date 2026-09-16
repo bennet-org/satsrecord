@@ -1,4 +1,7 @@
-export interface MailAddress { name?: string; address: string }
+export interface MailAddress {
+  name?: string;
+  address: string;
+}
 
 export interface MailMessage {
   to: string;
@@ -17,11 +20,13 @@ export interface Mailer {
 }
 
 export function formatAddress(a: MailAddress) {
-  return a.name ? `${a.name.replace(/"/g, '')} <${a.address}>` : a.address;
+  return a.name ? `${a.name.replace(/"/g, "")} <${a.address}>` : a.address;
 }
 
 /** Parse "Name <addr>" or a bare address. */
 export function parseAddress(s: string): MailAddress {
   const m = /^\s*(?:"?([^"<]*?)"?\s*)?<([^>]+)>\s*$/.exec(s);
-  return m ? { name: m[1]?.trim() || undefined, address: m[2]!.trim() } : { address: s.trim() };
+  return m
+    ? { name: m[1]?.trim() || undefined, address: m[2]!.trim() }
+    : { address: s.trim() };
 }

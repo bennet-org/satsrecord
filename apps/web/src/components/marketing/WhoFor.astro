@@ -1,25 +1,69 @@
 ---
-import { whoFor } from '../../data/marketing';
+import { whoFor } from "../../data/marketing";
 ---
+
 <section class="band wrap">
   <div class="two">
     <h2 class="h2">{whoFor.heading}</h2>
     <div>
       <p class="lead">{whoFor.body}</p>
       <dl class="roles">
-        {whoFor.roles.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+        {whoFor.roles.map(([k, v]) => (
+          <div>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
       </dl>
     </div>
   </div>
 </section>
 <style>
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
-  .lead { font-size: clamp(17px, 1.4vw, 20px); line-height: 1.4; }
-  .roles { margin: 28px 0 0; border-top: 2px solid var(--color-paper-ink); border-bottom: 2px solid var(--color-paper-ink); font-size: 16px; }
-  .roles > div { display: grid; grid-template-columns: clamp(7.5em, 28%, 10em) 1fr; gap: 16px; align-items: baseline; padding: 18px 0; }
-  .roles > div + div { border-top: 1px solid var(--color-paper-hair); }
-  dt { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
-  dd { margin: 0; }
-  @media (max-width: 900px) { .two { grid-template-columns: 1fr; gap: 36px; } }
-  @media (max-width: 560px) { .roles > div { grid-template-columns: 1fr; gap: 4px; } }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+  .lead {
+    font-size: clamp(17px, 1.4vw, 20px);
+    line-height: 1.4;
+  }
+  .roles {
+    margin: 28px 0 0;
+    border-top: 2px solid var(--color-paper-ink);
+    border-bottom: 2px solid var(--color-paper-ink);
+    font-size: 16px;
+  }
+  .roles > div {
+    display: grid;
+    grid-template-columns: clamp(7.5em, 28%, 10em) 1fr;
+    gap: 16px;
+    align-items: baseline;
+    padding: 18px 0;
+  }
+  .roles > div + div {
+    border-top: 1px solid var(--color-paper-hair);
+  }
+  dt {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  dd {
+    margin: 0;
+  }
+  @media (max-width: 900px) {
+    .two {
+      grid-template-columns: 1fr;
+      gap: 36px;
+    }
+  }
+  @media (max-width: 560px) {
+    .roles > div {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
 </style>

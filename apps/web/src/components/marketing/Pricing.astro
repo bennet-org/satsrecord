@@ -1,6 +1,7 @@
 ---
-import { pricing } from '../../data/marketing';
+import { pricing } from "../../data/marketing";
 ---
+
 <section id="pricing" class="price wrap">
   <div class="head">
     <h2 class="h2">Pricing.</h2>
@@ -10,34 +11,120 @@ import { pricing } from '../../data/marketing';
     {pricing.tiers.map((t) => (
       <div class="tier">
         <div class="k">{t.kind}</div>
-        <div class="amt">{t.amount}{t.per && <small>{t.per}</small>}</div>
+        <div class="amt">
+          {t.amount}
+          {t.per && <small>{t.per}</small>}
+        </div>
         <div class="who">{t.who}</div>
         <p>{t.body}</p>
-        <ul>{t.bullets.map((b) => <li>{b}</li>)}</ul>
+        <ul>
+          {t.bullets.map((b) => (
+            <li>{b}</li>
+          ))}
+        </ul>
       </div>
     ))}
   </div>
   <div class="never">{pricing.never}</div>
 </section>
 <style>
-  .price { padding-block: clamp(48px, 5.5vw, 80px) clamp(52px, 5.8vw, 84px); }
-  .head { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: end; margin-bottom: clamp(32px, 3.9vw, 56px); }
-  .head p { font-size: clamp(17px, 1.4vw, 20px); line-height: 1.4; max-width: 26em; }
-  .tiers { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, auto); border-top: 2px solid var(--color-ink); border-bottom: 2px solid var(--color-ink); }
-  .tier { display: grid; grid-row: span 5; grid-template-rows: subgrid; row-gap: 0; padding: 34px 48px 40px 0; border-right: 2px solid var(--color-ink); margin-right: 48px; }
-  .tier:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
-  .k { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 22px; }
-  .amt { font-size: clamp(52px, 5vw, 72px); font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
-  .amt small { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-left: 6px; }
-  .who { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin: 18px 0 12px; max-width: 22em; }
-  p { font-size: 16px; max-width: 30em; }
-  ul { margin-top: 22px; font-size: 15.5px; line-height: 1.5; max-width: 30em; }
-  li { padding: 7px 0; border-top: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent); }
-  .never { margin-top: 28px; font-size: 16px; font-weight: 700; }
+  .price {
+    padding-block: clamp(48px, 5.5vw, 80px) clamp(52px, 5.8vw, 84px);
+  }
+  .head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: clamp(32px, 3.9vw, 56px);
+  }
+  .head p {
+    font-size: clamp(17px, 1.4vw, 20px);
+    line-height: 1.4;
+    max-width: 26em;
+  }
+  .tiers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(5, auto);
+    border-top: 2px solid var(--color-ink);
+    border-bottom: 2px solid var(--color-ink);
+  }
+  .tier {
+    display: grid;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    padding: 34px 48px 40px 0;
+    border-right: 2px solid var(--color-ink);
+    margin-right: 48px;
+  }
+  .tier:last-child {
+    border-right: 0;
+    margin-right: 0;
+    padding-right: 0;
+  }
+  .k {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  .amt {
+    font-size: clamp(52px, 5vw, 72px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+  .amt small {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-left: 6px;
+  }
+  .who {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 18px 0 12px;
+    max-width: 22em;
+  }
+  p {
+    font-size: 16px;
+    max-width: 30em;
+  }
+  ul {
+    margin-top: 22px;
+    font-size: 15.5px;
+    line-height: 1.5;
+    max-width: 30em;
+  }
+  li {
+    padding: 7px 0;
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+  .never {
+    margin-top: 28px;
+    font-size: 16px;
+    font-weight: 700;
+  }
   @media (max-width: 900px) {
-    .head { grid-template-columns: 1fr; gap: 20px; }
-    .tiers { grid-template-columns: 1fr; }
-    .tier { border-right: 0; margin-right: 0; padding-right: 0; border-bottom: 2px solid var(--color-ink); }
-    .tier:last-child { border-bottom: 0; }
+    .head {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .tiers {
+      grid-template-columns: 1fr;
+    }
+    .tier {
+      border-right: 0;
+      margin-right: 0;
+      padding-right: 0;
+      border-bottom: 2px solid var(--color-ink);
+    }
+    .tier:last-child {
+      border-bottom: 0;
+    }
   }
 </style>

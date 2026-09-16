@@ -14,29 +14,29 @@ Proposed split: the orange ground is for the marketing site. The app (dashboard,
 
 Schibsted Grotesk throughout. Weights 400, 500, 700, 800.
 
-| Role | Size | Weight | Tracking | Leading |
-|---|---|---|---|---|
-| H1 | 116px (96px if over 36 chars) | 800 | -0.045em | 0.98 |
-| H2 | 72px | 800 | -0.045em | 0.92 |
-| Closing line | 96px | 800 | -0.045em | 0.92 |
-| Price / step numerals | 56–72px | 800 | -0.045em | 1 |
-| Lead paragraph | 24px | 500 | 0 | 1.3 |
-| Section paragraph | 20px | 500 | 0 | 1.4 |
-| Body | 15–16px | 500 | 0 | 1.45 |
-| Labels | 12–14px | 700–800 | 0.08em, uppercase | 1 |
+| Role                  | Size                          | Weight  | Tracking          | Leading |
+| --------------------- | ----------------------------- | ------- | ----------------- | ------- |
+| H1                    | 116px (96px if over 36 chars) | 800     | -0.045em          | 0.98    |
+| H2                    | 72px                          | 800     | -0.045em          | 0.92    |
+| Closing line          | 96px                          | 800     | -0.045em          | 0.92    |
+| Price / step numerals | 56–72px                       | 800     | -0.045em          | 1       |
+| Lead paragraph        | 24px                          | 500     | 0                 | 1.3     |
+| Section paragraph     | 20px                          | 500     | 0                 | 1.4     |
+| Body                  | 15–16px                       | 500     | 0                 | 1.45    |
+| Labels                | 12–14px                       | 700–800 | 0.08em, uppercase | 1       |
 
 Body copy is set at weight 500, not 400, so it holds against the ground.
 
 ## Colour
 
-| Token | Value | Use |
-|---|---|---|
-| `--ground` | `#F7931A` | Page ground |
-| `--ink` | `#101010` | Type, rules, buttons, closing ground |
-| `--paper` | `#FFF7EA` | Record card, paper bands |
-| `--paper-ink` | `#101010` | Type on paper |
-| `--paper-mute` | `#6B5A3C` | Secondary text on paper |
-| `--paper-hair` | `#D9C9AE` | Hairlines on paper |
+| Token          | Value     | Use                                  |
+| -------------- | --------- | ------------------------------------ |
+| `--ground`     | `#F7931A` | Page ground                          |
+| `--ink`        | `#101010` | Type, rules, buttons, closing ground |
+| `--paper`      | `#FFF7EA` | Record card, paper bands             |
+| `--paper-ink`  | `#101010` | Type on paper                        |
+| `--paper-mute` | `#6B5A3C` | Secondary text on paper              |
+| `--paper-hair` | `#D9C9AE` | Hairlines on paper                   |
 
 Black on the orange measures about 8.6:1. Cream on orange fails, so type on the ground is always black.
 
@@ -64,4 +64,3 @@ Black on the orange measures about 8.6:1. Cream on orange fails, so type on the 
 ## Fictional record
 
 Gift 0041, block 912,344, 14 September 2026 10:42 UTC, 0.0125 BTC, $815.20, Kraken XBT/USD, template v3. USD throughout the marketing site; the prospect list is American. Use the same numbers anywhere a sample record appears.
-

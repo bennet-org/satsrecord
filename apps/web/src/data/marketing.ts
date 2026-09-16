@@ -80,7 +80,7 @@ export const steps = [
   ],
   [
     "Add one script tag",
-    "The widget sits on your donate page. A donor clicks \"Give\", adds a name and email if they want, and gets a fresh address on screen and by email.",
+    'The widget sits on your donate page. A donor clicks "Give", adds a name and email if they want, and gets a fresh address on screen and by email.',
   ],
   [
     "Watch it arrive",

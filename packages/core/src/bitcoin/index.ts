@@ -1,2 +1,2 @@
-export * from './descriptor';
-export * from './derive';
+export * from "./descriptor";
+export * from "./derive";

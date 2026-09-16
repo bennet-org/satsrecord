@@ -6,13 +6,13 @@ How SatsRecord is built and why. Product scope is in [the brief](../project-brie
 
 **The descriptor is the storage format from day one.** Onboarding accepts:
 
-| Pasted | Stored as | Addresses |
-|---|---|---|
-| zpub | `wpkh(<xpub>/0/*)` | bc1q |
-| ypub | `sh(wpkh(<xpub>/0/*))` | 3... |
-| xpub | script type is ambiguous: prompt, default `wpkh` | per choice |
-| descriptor | as pasted, normalised | per descriptor |
-| tpub/upub/vpub | as above, testnet | tb1q / 2... |
+| Pasted         | Stored as                                        | Addresses      |
+| -------------- | ------------------------------------------------ | -------------- |
+| zpub           | `wpkh(<xpub>/0/*)`                               | bc1q           |
+| ypub           | `sh(wpkh(<xpub>/0/*))`                           | 3...           |
+| xpub           | script type is ambiguous: prompt, default `wpkh` | per choice     |
+| descriptor     | as pasted, normalised                            | per descriptor |
+| tpub/upub/vpub | as above, testnet                                | tb1q / 2...    |
 
 Normalisation converts SLIP-132 prefixes to a plain xpub/tpub, strips any `#checksum`, and collapses `<0;1>/*` multipath to `/0/*`. Private keys (`xprv` and friends) are rejected before anything else with an explicit message. Implementation and BIP84/49/86 vector tests: `packages/core/src/bitcoin/`.
 
