@@ -2,6 +2,7 @@
 // Plain text page on the ground colour: legal placeholders, errors.
 import Base from "./Base.astro";
 import Header from "../components/marketing/Header.astro";
+import Footer from "../components/marketing/Footer.astro";
 interface Props {
   title: string;
   heading: string;
@@ -19,11 +20,17 @@ const { title, heading, intro } = Astro.props;
       <slot />
     </article>
   </main>
+  <div class="wrap foot">
+    <Footer />
+  </div>
 </Base>
 <style>
   main {
     padding-block: clamp(40px, 5vw, 72px) 96px;
     max-width: 46em;
+  }
+  .foot {
+    padding-bottom: 36px;
   }
   h1 {
     font-size: clamp(44px, 6vw, 88px);

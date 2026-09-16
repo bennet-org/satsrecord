@@ -11,9 +11,9 @@ export const site = {
 };
 
 export const nav = [
-  { label: "How it works", href: "#how" },
-  { label: "Compared", href: "#compared" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "How it works", href: "/#how" },
+  { label: "Compared", href: "/#compared" },
+  { label: "Pricing", href: "/#pricing" },
   { label: "Source", href: site.sourceUrl },
 ];
 

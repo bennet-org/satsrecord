@@ -3,6 +3,7 @@ export const prerender = false;
 import { actions, isInputError } from "astro:actions";
 import Base from "../layouts/Base.astro";
 import Header from "../components/marketing/Header.astro";
+import Footer from "../components/marketing/Footer.astro";
 import { site } from "../data/marketing";
 const result = Astro.getActionResult(actions.requestAccess);
 const fieldErrors: Record<string, string[] | undefined> = isInputError(
@@ -78,10 +79,16 @@ const fieldErrors: Record<string, string[] | undefined> = isInputError(
       )}
     </div>
   </main>
+  <div class="wrap foot">
+    <Footer />
+  </div>
 </Base>
 <style>
   main {
     padding-block: clamp(40px, 5vw, 72px) 80px;
+  }
+  .foot {
+    padding-bottom: 36px;
   }
   .grid {
     display: grid;

@@ -1,0 +1,28 @@
+---
+// Takes its colour from the surrounding surface.
+import { site, closing } from "../../data/marketing";
+---
+
+<footer>
+  <span>
+    {site.name} · {site.descriptor.replace(/\.$/, "")}
+  </span>
+  <span>
+    <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> ·{" "}
+    {closing.legal} · {site.domain}
+  </span>
+</footer>
+<style>
+  footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-top: 16px;
+    border-top: 2px solid currentColor;
+    font-size: 13px;
+  }
+  a {
+    text-decoration: underline;
+  }
+</style>
