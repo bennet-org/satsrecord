@@ -23,8 +23,8 @@ import { pricing } from '../../data/marketing';
   .price { padding-block: clamp(48px, 5.5vw, 80px) clamp(52px, 5.8vw, 84px); }
   .head { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: end; margin-bottom: clamp(32px, 3.9vw, 56px); }
   .head p { font-size: clamp(17px, 1.4vw, 20px); line-height: 1.4; max-width: 26em; }
-  .tiers { display: grid; grid-template-columns: 1fr 1fr; border-top: 2px solid var(--color-ink); border-bottom: 2px solid var(--color-ink); }
-  .tier { padding: 34px 48px 40px 0; border-right: 2px solid var(--color-ink); margin-right: 48px; }
+  .tiers { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, auto); border-top: 2px solid var(--color-ink); border-bottom: 2px solid var(--color-ink); }
+  .tier { display: grid; grid-row: span 5; grid-template-rows: subgrid; row-gap: 0; padding: 34px 48px 40px 0; border-right: 2px solid var(--color-ink); margin-right: 48px; }
   .tier:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
   .k { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 22px; }
   .amt { font-size: clamp(52px, 5vw, 72px); font-weight: 800; letter-spacing: -0.045em; line-height: 1; }

@@ -40,6 +40,7 @@ import { compared } from '../../data/marketing';
   th { text-align: left; font-weight: 800; font-size: 14px; letter-spacing: 0.02em; padding: 0 20px 14px 0; border-bottom: 2px solid var(--color-paper-ink); vertical-align: bottom; }
   td { padding: 26px 20px 26px 0; border-bottom: 1px solid var(--color-paper-hair); vertical-align: middle; }
   td.opt { width: 27%; }
+  th:first-child, td.opt { padding-left: 20px; }
   .o { display: flex; align-items: center; gap: 14px; }
   .lg { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .lg img { max-width: 24px; max-height: 26px; display: block; }
@@ -49,9 +50,7 @@ import { compared } from '../../data/marketing';
   .opt small { display: block; font-size: 13.5px; color: var(--color-paper-mute); margin-top: 2px; }
   .no { color: var(--color-paper-mute); }
   tbody tr:nth-last-child(2) td { border-bottom: 2px solid var(--color-paper-ink); }
-  tr.us td { background: var(--color-ground); color: var(--color-ink); border-bottom: 0; font-weight: 700; }
-  tr.us td.opt { padding-left: 20px; }
-  tr.us td:last-child { padding-right: 20px; }
+  tr.us td { background: var(--color-ground); color: var(--color-ink); border-bottom: 2px solid var(--color-ink); font-weight: 700; }
   tr.us .opt small { color: var(--color-ink); opacity: 0.75; }
   @media (max-width: 900px) { .head { grid-template-columns: 1fr; gap: 20px; } }
 </style>
