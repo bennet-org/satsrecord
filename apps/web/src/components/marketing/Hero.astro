@@ -3,7 +3,7 @@ import RecordCard from './RecordCard.astro';
 import { hero, site } from '../../data/marketing';
 ---
 <section class="hero wrap">
-  <h1>{hero.headline}</h1>
+  <h1 class:list={{ long: hero.headline.length > 36 }}>{hero.headline}</h1>
   <div class="row">
     <div>
       <p class="sub">{hero.lead}</p>
@@ -21,6 +21,7 @@ import { hero, site } from '../../data/marketing';
 <style>
   .hero { display: flex; flex-direction: column; min-height: min(calc(100vh - 76px), 900px); padding-bottom: 30px; }
   h1 { font-size: clamp(44px, 8.05vw, 116px); line-height: 0.98; margin-top: clamp(28px, 3.75vw, 54px); max-width: 9.4em; text-wrap: balance; }
+  h1.long { font-size: clamp(44px, 6.67vw, 96px); max-width: 11em; }
   .row { display: grid; grid-template-columns: 1fr 440px; gap: 64px; margin: 44px 0 72px; align-items: end; }
   .sub { font-size: clamp(18px, 1.67vw, 24px); line-height: 1.3; max-width: 22em; }
   .acts { display: flex; gap: 14px; margin-top: 32px; flex-wrap: wrap; }
