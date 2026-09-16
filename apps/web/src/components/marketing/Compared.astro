@@ -20,7 +20,7 @@ import { compared } from '../../data/marketing';
             <td class="opt">
               <div class="o">
                 <span class="lg">
-                  {o.logo === 'dots' ? <span class="dots">···</span> : o.logo === 'square' ? <span class="sq"></span> : <img src={o.logo} alt="" />}
+                  {o.logo === 'dots' ? <span class="dots">···</span> : o.logo === 'square' ? <span class="sq"></span> : typeof o.logo !== 'string' && <o.logo aria-hidden="true" />}
                 </span>
                 <span><b>{o.name}</b><small>{o.sub}</small></span>
               </div>
@@ -43,7 +43,7 @@ import { compared } from '../../data/marketing';
   th:first-child, td.opt { padding-left: 20px; }
   .o { display: flex; align-items: center; gap: 14px; }
   .lg { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .lg img { max-width: 24px; max-height: 26px; display: block; }
+  .lg svg { max-width: 24px; max-height: 26px; display: block; }
   .dots { letter-spacing: 0.2em; font-weight: 800; color: var(--color-paper-mute); }
   .sq { width: 20px; height: 20px; background: var(--color-ink); }
   .opt b { display: block; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }

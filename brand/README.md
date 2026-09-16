@@ -1,6 +1,6 @@
 # SatsRecord brand
 
-The marketing site lives in `apps/web`. This document is the brand reference it is built from. Logos for the comparison table: `btcPayServer.svg`, `theGivingBlock.svg` (copied to `apps/web/public/logos/`).
+The marketing site lives in `apps/web`. This document is the brand reference it is built from. Logos for the comparison table live in `apps/web/src/assets/logos/`.
 
 ## Direction
 

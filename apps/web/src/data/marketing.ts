@@ -1,3 +1,6 @@
+import BtcpayLogo from "../assets/logos/btcpay.svg";
+import GivingBlockLogo from "../assets/logos/the-giving-block.svg";
+
 export const site = {
   name: "SatsRecord",
   descriptor: "Non-custodial bitcoin donations for charities and non-profits.",
@@ -124,7 +127,7 @@ export const compared = {
     {
       name: "BTCPay Server",
       sub: "Self-hosted payment infrastructure",
-      logo: "/logos/btcpay.svg",
+      logo: BtcpayLogo,
       cells: [
         c("You"),
         c("Invoices, not donors", true),
@@ -136,7 +139,7 @@ export const compared = {
     {
       name: "The Giving Block",
       sub: "Custodial processor",
-      logo: "/logos/the-giving-block.svg",
+      logo: GivingBlockLogo,
       cells: [
         c("They do", true),
         c("Yes, in their system"),
