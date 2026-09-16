@@ -22,7 +22,7 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 - [x] Request access form → `access_requests` row + notification email
 - [x] Privacy and terms placeholders, 404 page
 
-**Done when:** reads well at phone width, request access stores a row and sends the email. Done 16 September 2026. Done 16 September 2026.
+**Done when:** reads well at phone width, request access stores a row and sends the email.
 
 ## Phase 2: auth and organisations
 

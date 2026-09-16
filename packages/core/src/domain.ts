@@ -1,4 +1,4 @@
-// Domain interfaces from docs/design.md. Fakes arrive with ROADMAP Phase 0, real implementations with Phase 7.
+// Domain interfaces from docs/design.md. Fakes in ./fakes; real implementations in Phase 7.
 
 /** A settlement is on-chain (txid:vout) now; Lightning (payment hash) is additive. */
 export type SettlementRef =

@@ -23,15 +23,15 @@ export const hero = {
   facts: [
     {
       title: "We can't touch funds.",
-      body: "Watch-only. We derive addresses from a public key and can never move funds.",
+      body: "Watch-only. We derive addresses from your public key and hold nothing that can sign.",
     },
     {
       title: "Donor data stays yours.",
-      body: "Encrypted at rest, exportable, deletable on request. Never sold, never shared.",
+      body: "Encrypted at rest, exportable, deletable on request. Never sold, never used for anything else.",
     },
     {
       title: "Your setup outlives us.",
-      body: "Every issued address is exportable. If we vanish, your wallet works and your history is intact.",
+      body: "If we vanish, your wallet still sees every gift, and your exports are yours.",
     },
     {
       title: "Open source.",
@@ -45,26 +45,26 @@ export const sampleRecord = {
   id: "Gift 0041",
   status: "Confirmed",
   rows: [
-    ["Donor", "A. Donor · verified"],
+    ["Donor", "A. Donor · email confirmed"],
     ["Block time", "14 Sep 2026, 10:42 UTC"],
     ["Amount", "0.0125 BTC"],
     ["Value at block", "$815.20", "big"],
-    ["Basis", "Kraken XBT/USD"],
+    ["Price source", "Kraken XBT/USD"],
     ["Acknowledgement", "Sent · template v3"],
   ] as Array<[string, string, string?]>,
 };
 
 export const whoFor = {
   heading: "Bitcoin donations for charities and non-profits.",
-  body: "Built for organisations that receive bitcoin at an address they control. Whether you hold it as a treasury asset or sell it, the gift goes directly from donor to your wallet.",
+  body: "Built for organisations that receive bitcoin at an address they control. Whether you hold it as a treasury asset or sell it, the gift goes straight from the donor to your wallet.",
   roles: [
     [
       "Finance",
-      "A record per gift with value at block time, the basis, and the acknowledgement that was sent. CSV out.",
+      "A record per gift with value at block time, the price source, and the acknowledgement that was sent. CSV out.",
     ],
     [
       "Fundraising",
-      "A widget on your site. Donors get a fresh address and a letter, and stay on your list, not someone else's.",
+      "A widget on your site. Donors get a fresh address and an acknowledgement, and stay on your list, not someone else's.",
     ],
     [
       "Trustees",
@@ -76,15 +76,15 @@ export const whoFor = {
 export const steps = [
   [
     "Paste a public key",
-    "From a fresh account in your wallet. We check it is unused, show you the first address to confirm, and never ask for anything that can sign.",
+    "From a fresh account in your wallet. We check it's unused, show you the first address to confirm, and never ask for anything that can sign.",
   ],
   [
     "Add one script tag",
-    "The widget sits on your donate page. A donor clicks give, adds a name and email if they want, and gets a fresh address on screen and by email.",
+    "The widget sits on your donate page. A donor clicks \"Give\", adds a name and email if they want, and gets a fresh address on screen and by email.",
   ],
   [
     "Watch it arrive",
-    "Detection from our node or yours. Value pinned at block time in your currency. Letter sent on first confirmation. Record filed, append-only.",
+    "Detection from our node or yours. Value pinned at block time in your currency. Acknowledgement sent on first confirmation, and the gift filed in your records.",
   ],
   [
     "Export anything",
@@ -119,8 +119,8 @@ export const compared = {
       logo: "dots",
       cells: [
         c("You"),
-        c("None - a list of transactions", true),
-        c("Manual task", true),
+        c("None, just a transaction list", true),
+        c("By hand", true),
         c("None"),
         c("No", true),
       ],
@@ -167,13 +167,13 @@ export const compared = {
 
 export const pricing = {
   intro:
-    "A fixed fee by the size of your organisation, never a percentage of what you raise. A larger gift costs nothing more to record.",
+    "Free to run yourself, or a flat monthly fee for us to host it. A larger gift costs nothing more to record.",
   tiers: [
     {
       kind: "Self-hosted",
       amount: "Free",
       who: "Run it yourself.",
-      body: "The same code, on your server. Bring your own node, or point it at mempool.space if you're just getting started.",
+      body: "The same code, on your server. Bring your own node, or point it at mempool.space, which sees every address you check.",
       bullets: [
         "AGPL-3.0, forever",
         "Your node, your data, your uptime",
@@ -185,9 +185,9 @@ export const pricing = {
       amount: "$149",
       per: "/ month",
       who: "Waived for smaller charities, and free for everyone during the pilot.",
-      body: "We run the node, carry the data-protection burden and keep the lights on. Nothing to install, nothing to maintain.",
+      body: "We run the node, carry the data-protection burden and keep the lights on. Nothing to install or maintain, and guided setup for your wallet key and donor emails.",
       bullets: [
-        "Widget, records, letters, exports",
+        "Widget, records, acknowledgements, exports",
         "Our node. No third-party lookups.",
         "Data processing agreement, email support",
       ],
@@ -197,6 +197,6 @@ export const pricing = {
 };
 
 export const closing = {
-  body: "Invite-only while we work with our first design partners in the UK and US. Tell us about your organisation and we will be in touch.",
+  body: "Invite-only while we run a pilot with charities in the UK and US. Tell us about your organisation and we'll be in touch.",
   legal: "Open source, AGPL-3.0 · Not a money transmitter",
 };

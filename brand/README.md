@@ -48,7 +48,7 @@ Black on the orange measures about 8.6:1. Cream on orange fails, so type on the 
 
 - Headline: **Accept bitcoin without the middleman.**
 - Lead: No processors taking a cut. Donors pay a wallet you control, and every gift is automatically recorded, valued and acknowledged.
-- Closing and footer line: **You hold the keys. We do the paperwork.**
+- Closing line: **You hold the keys. We do the paperwork.**
 - Descriptor: Non-custodial bitcoin donations for charities and non-profits.
 - Four hero facts: We can't touch funds. Donor data stays yours. Your setup outlives us. Open source.
 

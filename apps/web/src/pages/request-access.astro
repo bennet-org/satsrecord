@@ -7,13 +7,13 @@ import { site } from '../data/marketing';
 const result = Astro.getActionResult(actions.requestAccess);
 const fieldErrors: Record<string, string[] | undefined> = isInputError(result?.error) ? result.error.fields : {};
 ---
-<Base title={`Request access: ${site.name}`}>
+<Base title={`Request access · ${site.name}`}>
   <Header />
   <main class="wrap">
     <div class="grid">
       <div>
         <h1>Request access.</h1>
-        <p class="lead">Invite-only while we work with our first design partners. Tell us a little about your organisation and we will be in touch.</p>
+        <p class="lead">Invite-only while we run a pilot with our first charities. Tell us a little about your organisation and we'll be in touch.</p>
         <p class="note">We use these details to reply to you and for nothing else.</p>
       </div>
       {result?.data?.ok ? (
@@ -36,7 +36,7 @@ const fieldErrors: Record<string, string[] | undefined> = isInputError(result?.e
               <option value="other">Somewhere else</option>
             </select>
           </label>
-          <label>Anything else <textarea name="message" rows="4" placeholder="How you take bitcoin today, what you would want from this, anything at all."></textarea></label>
+          <label>Anything else <textarea name="message" rows="4" placeholder="How you take bitcoin today, what you'd want from this, anything at all."></textarea></label>
           {result?.error && !isInputError(result.error) && <p class="err">Something went wrong. Please try again.</p>}
           <button class="btn solid" type="submit">Send request</button>
         </form>

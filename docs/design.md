@@ -24,7 +24,7 @@ Only the external chain (`/0/*`) is used; donations never touch change. `tr(...)
 
 **Derivation is server-side only.** The descriptor never reaches the browser. The widget requests an address; the server derives it. Single-sig via `@scure/bip32` and `@scure/btc-signer`. Multisig later via Bitcoin Core `deriveaddresses`, behind the same `Deriver` interface.
 
-**Indices are never reused.** One monotonic counter per descriptor. Any served address may be paid weeks later, and reassigning it puts the wrong name on a tax document. Anonymous issues included: no attribution is not no recipient.
+**Indices are never reused.** One monotonic counter per descriptor. Any served address may be paid weeks later, and reassigning it puts the wrong name on a tax document. This applies to anonymous issues too: an anonymous donor still received that address.
 
 **Multiple descriptors per organisation.** A charity may rotate to a new account. Old descriptors stay watched; exactly one is active for issuance.
 
@@ -68,7 +68,7 @@ v1 method: close of the 1-minute OHLC candle containing `block_time`, fetched at
 
 Every donor record carries `claimed | email_confirmed`, and any rendered document says which.
 
-**Verification never gates the address.** Submit → address shown and emailed → that email carries the verification link. Still unverified at confirmation, and the acknowledgement carries the link instead. Someone entering a stranger's details gets nothing: the stranger does not click, the status stays `claimed`. A "this wasn't me" path is deferred (see brief, Open).
+**Verification never gates the address.** Submit → address shown and emailed → that email carries the verification link. If the donor is still unverified at confirmation, the acknowledgement carries the link instead. Someone entering a stranger's details gets nothing: the stranger does not click, the status stays `claimed`. A "this wasn't me" path is deferred (see brief, Open).
 
 **Marketing consent** is an unticked opt-in. The consent row stores the timestamp and the version of the label text shown.
 

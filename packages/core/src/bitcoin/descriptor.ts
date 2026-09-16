@@ -77,7 +77,7 @@ const KEY_RE = /^(\[[0-9a-fA-F]{8}(?:\/\d+['h]?)*\])?([xyztuv]pub[1-9A-HJ-NP-Za-
 
 function parseKey(s: string): { key: DescriptorKey; network: Network } {
   const m = KEY_RE.exec(s.trim());
-  if (!m) throw new DescriptorError('bad_key', `Key expression must be an extended public key followed by /0/* (got "${s.trim().slice(0, 24)}…").`);
+  if (!m) throw new DescriptorError('bad_key', `Key expression must be an extended public key followed by /0/* or /<0;1>/* (got "${s.trim().slice(0, 24)}…").`);
   const info = normaliseExtendedKey(m[2]!);
   return { key: { ...(m[1] ? { origin: m[1] } : {}), xpub: info.xpub }, network: info.network };
 }

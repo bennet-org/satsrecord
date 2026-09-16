@@ -11,13 +11,6 @@ Conventions established in Phase 1:
 - `packages/core` exports TypeScript source; Vite consumes it directly. Drizzle schema in `packages/core/src/db/schema.ts`, SQL migrations in `packages/core/drizzle`, applied with `pnpm --filter @satsrecord/core db:migrate`. Tests run the same migrations against PGlite in-process, so `pnpm test` needs no database.
 - Repository functions take a driver-agnostic `Db` and a `Mailer`, so the web action, the worker and tests share one code path.
 
-Conventions established in Phase 1:
-
-- Environment through `astro:env` (schema in `astro.config.ts`); secrets never via `process.env` in app code. `.env.example` lists them.
-- Fonts through Astro's Fonts API (Fontsource provider), self-hosted at build. No Google Fonts requests.
-- `packages/core` exports TypeScript source; Vite consumes it directly. Drizzle schema in `packages/core/src/db/schema.ts`, SQL migrations in `packages/core/drizzle`, applied with `pnpm --filter @satsrecord/core db:migrate`. Tests run the same migrations against PGlite in-process, so `pnpm test` needs no database.
-- Repository functions take a driver-agnostic `Db` and a `Mailer`, so the web action, the worker and tests share one code path.
-
 Homepage is fully static and framework-free. `/request-access` is the only on-demand route (Astro Actions need one). Screenshots for review: `node scripts/shots.mjs <baseUrl> <outDir>` uses Playwright against the system Chrome, no browser download, and reports horizontal overflow at 1440 and 400 px.
 
 ## Layout
@@ -41,7 +34,7 @@ docs/
 |---|---|---|---|
 | Site and app | Astro, Node adapter, SSR | Preference. Static marketing pages and a server-rendered app in one deploy. Actions for forms. | None |
 | Islands | React | shadcn/ui speeds up the dashboard. Used only where interactive. | None |
-| Styling | Tailwind v4, shadcn/ui, tokens from BRAND.md | | None |
+| Styling | Tailwind v4, shadcn/ui, tokens from `brand/README.md` | | None |
 | Database | Postgres. Neon hosted, docker compose locally. | Append-only schema, jsonb, standard for self-host. | None |
 | ORM | Drizzle over node-postgres (`pg`) | TypeScript migrations. Plain TCP driver rather than Neon's serverless driver so self-host runs identical code. | None |
 | Auth | Better Auth: magic link, passkeys, organization plugin, Drizzle adapter | Self-hostable, orgs built in, passwordless. | Roles |

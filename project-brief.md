@@ -2,7 +2,7 @@
 
 Self-custodial, bitcoin-only donation tooling for charities and non-profits. Better privacy than a static address, the records and exports a compliance team needs, receipts and acknowledgements for donors, and none of the fees or custody of a payment processor.
 
-This is the product brief: who it is for, what it does, what it will not do. Technical decisions are in [docs/design.md](docs/design.md), the stack in [docs/stack.md](docs/stack.md), the plan in [ROADMAP.md](ROADMAP.md), and brand in [BRAND.md](BRAND.md).
+This is the product brief: who it is for, what it does, what it will not do. Technical decisions are in [docs/design.md](docs/design.md), the stack in [docs/stack.md](docs/stack.md), the plan in [ROADMAP.md](ROADMAP.md), and brand in [brand/README.md](brand/README.md).
 
 ## Premise
 
@@ -14,7 +14,7 @@ Today it has three options:
 - **BTCPay Server** or similar. Considerable infrastructure burden. No charity-specific receipting or donor records.
 - **The Giving Block** or similar. Custody of the coins and exclusive control of donor records are both surrendered. Often expensive.
 
-SatsRecord is built specifically for these "bitcoin-native" and "bitcoin-curious" charities.
+SatsRecord is built for this group.
 
 **Who is in scope.** The segmentation line is custody at receipt: a charity that receives bitcoin at an address it controls. Hold, hold-then-sell, and sell-on-arrival from own custody are all in. Only handing donors a processor's address is out, and that is a board decision rather than a vendor one.
 
@@ -47,7 +47,7 @@ The core loop: **address → attribution → detection → valuation → acknowl
 
 ## Deployment and business model
 
-**Hosted is the v1 product.** Invite-only: the site takes access requests and we issue invites. Billing is deferred, but this is the paid tier: same product, priced later. What it buys is that we carry the data protection burden and run the node. Pricing intent: free below an organisational income threshold, fixed fee above it, never a percentage of donations.
+**Hosted is the v1 product.** Invite-only: the site takes access requests and we issue invites. Billing is deferred, but this is the paid tier. What it buys is that we carry the data protection burden and run the node. Pricing: $149/month, waived below an organisational income threshold and free for everyone during the pilot, never a percentage of donations.
 
 **Self-hosted exists but is unsupported in v1.** Open core means a repo, a licence and basic run instructions from day one; docs, an upgrade path and issue triage do not. All onboarding effort goes to hosted. Shipping self-hosted only would serve exactly the audience BTCPay already serves, with fewer features, and would never test onboarding.
 
@@ -55,17 +55,17 @@ The core loop: **address → attribution → detection → valuation → acknowl
 
 ## Onboarding
 
-The real product risk. It requires someone technical enough to get an xpub or descriptor out of wallet software, and it must be a fresh account. Everything else should be seamless, and far easier than BTCPay.
+The main product risk. It requires someone technical enough to get an xpub or descriptor out of wallet software, and it must be a fresh account. Everything else should take minutes, and be far easier than BTCPay.
 
 ## Compliance
 
 **No financial regulation**, because we never touch funds. FinCEN guidance exempts non-custodial wallet software, including multisig providers who cannot unilaterally execute; MiCA treats non-custodial wallets as non-custodians; the FCA registers neither exchange nor custodian wallet providers. Watch-only cannot sign, so this sits well inside the line.
 
-**Data protection is the real cost.** Donor PII makes us a processor with each charity as controller. The paperwork is cheap and reversible: ICO registration (about £52/yr), a DPA template, a retention and deletion policy, and a decision on whether an Article 27 representative is needed. Data subjects are donors, not charities: "US and UK design partners only" defers EU establishment, but does not by itself keep EU residents out of the database.
+**Data protection is the main cost.** Donor PII makes us a processor with each charity as controller. The paperwork is cheap and reversible: ICO registration (about £52/yr), a DPA template, a retention and deletion policy, and a decision on whether an Article 27 representative is needed. Data subjects are donors, not charities: "US and UK design partners only" defers EU establishment, but does not by itself keep EU residents out of the database.
 
 Descriptors and donor PII are encrypted at rest and never sent to a third-party API. A leaked descriptor is the charity's complete donation history, permanently linked.
 
-Security questionnaires and Cyber Essentials are the genuinely expensive items. They arrive with large-charity procurement, not with the pilot. US state privacy laws carry thresholds we will not meet initially.
+Security questionnaires and Cyber Essentials are the expensive items. They arrive with large-charity procurement, not with the pilot. US state privacy laws carry thresholds we will not meet initially.
 
 ## Jurisdictions
 
@@ -81,19 +81,19 @@ UK: Gift Aid is out, since HMRC does not treat cryptoassets as money. Donating c
 
 ## Funding
 
-Grants are the primary path. OpenSats has allocated about $21.6m to 252 grantees at roughly $1m/month; HRF's Bitcoin Development Fund $9.6m across 319 projects since 2020 (figures at time of writing). That is $30–100k/yr territory for a credible, maintained FOSS project, comparable to a realistic paying base of 20–100 orgs at £50–150/month, without the support, uptime and data protection duties attached.
+Grants are the primary path. OpenSats has allocated about $21.6m to 252 grantees at roughly $1m/month; HRF's Bitcoin Development Fund $9.6m across 319 projects since 2020 (figures at time of writing). That is $30–100k/yr territory for a credible, maintained FOSS project, the equivalent of roughly 17–56 orgs paying $149/month, without the support, uptime and data protection duties attached.
 
 Open source is therefore a qualification criterion, not a nice-to-have.
 
 ## Positioning
 
-Provisional name **SatsRecord**. satsrecord.com and satsrecord.org are held. Name, strapline, visual identity and the public comparison belong in [BRAND.md](BRAND.md).
+Provisional name **SatsRecord**. satsrecord.com and satsrecord.org are held. Name, strapline, visual identity and the public comparison belong in [brand/README.md](brand/README.md).
 
 - **Not BTCPay.** BTCPay has a crowdfund app, accounting exports, watch-only xpub setup, Miniscript and a GiveWP integration. It is also a Docker host, a database and ongoing ops, and it gives you a transaction list, not a donor record.
 - **Not The Giving Block or Engiven.** Custodial processors taking a cut.
 - **Not Koinly or Recap.** Tax tooling with no donor dimension.
 
-We are charity-specific and, hosted, far easier to set up.
+SatsRecord is built for charities, and the hosted version is far easier to set up.
 
 ## Open
 
