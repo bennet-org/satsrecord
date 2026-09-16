@@ -42,7 +42,7 @@ Black on the orange measures about 8.6:1. Cream on orange fails, so type on the 
 
 ## Wordmark
 
-`SatsRecord`, one word, capital S and R, Schibsted Grotesk 800, -0.03em. No symbol yet; a plain black square stands in where a mark is needed.
+`SatsRecord`, one word, capital S and R, Schibsted Grotesk 800, -0.03em. The mark is the record card in miniature: `apps/web/src/assets/brand/mark.svg`, copied to `apps/web/public/favicon.svg`.
 
 ## Copy in use
 

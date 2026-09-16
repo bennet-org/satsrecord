@@ -1,5 +1,6 @@
 import BtcpayLogo from "../assets/logos/btcpay.svg";
 import GivingBlockLogo from "../assets/logos/the-giving-block.svg";
+import SatsRecordMark from "../assets/brand/mark.svg";
 
 export const site = {
   name: "SatsRecord",
@@ -151,7 +152,7 @@ export const compared = {
     {
       name: "SatsRecord",
       sub: "You hold the keys. We do the paperwork.",
-      logo: "square",
+      logo: SatsRecordMark,
       us: true,
       cells: [
         c("You"),

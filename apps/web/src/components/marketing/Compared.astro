@@ -20,7 +20,7 @@ import { compared } from '../../data/marketing';
             <td class="opt">
               <div class="o">
                 <span class="lg">
-                  {o.logo === 'dots' ? <span class="dots">···</span> : o.logo === 'square' ? <span class="sq"></span> : typeof o.logo !== 'string' && <o.logo aria-hidden="true" />}
+                  {o.logo === 'dots' ? <span class="dots">···</span> : typeof o.logo !== 'string' && <o.logo aria-hidden="true" />}
                 </span>
                 <span><b>{o.name}</b><small>{o.sub}</small></span>
               </div>
@@ -45,7 +45,6 @@ import { compared } from '../../data/marketing';
   .lg { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .lg svg { max-width: 24px; max-height: 26px; display: block; }
   .dots { letter-spacing: 0.2em; font-weight: 800; color: var(--color-paper-mute); }
-  .sq { width: 20px; height: 20px; background: var(--color-ink); }
   .opt b { display: block; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
   .opt small { display: block; font-size: 13.5px; color: var(--color-paper-mute); margin-top: 2px; }
   .no { color: var(--color-paper-mute); }
