@@ -1,0 +1,63 @@
+---
+// Every email the console mailer has sent this process, newest first. DEV_OUTBOX=true only.
+import App from "../../layouts/App.astro";
+import { outbox } from "../../lib/services";
+if (!outbox) return Astro.rewrite("/404");
+const messages = [...outbox.sent].reverse();
+const linkify = (text: string) =>
+  text
+    .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!)
+    .replace(/https?:\/\/[^\s]+/g, (u) => `<a href="${u}">${u}</a>`);
+---
+
+<App
+  title="Outbox"
+  heading="Outbox."
+  intro="Mail sent by the console mailer since the server started. Links are live."
+>
+  {messages.length === 0 && <p class="mute">Nothing sent yet.</p>}
+  <ul>
+    {messages.map((m, i) => (
+      <li>
+        <div class="meta">
+          <b>{m.subject}</b>
+          <span class="mute">
+            to {m.to} · {m.templateVersion} · #{messages.length - i}
+          </span>
+        </div>
+        <pre set:html={linkify(m.text)}></pre>
+      </li>
+    ))}
+  </ul>
+</App>
+<style>
+  ul {
+    display: grid;
+    gap: 20px;
+  }
+  li {
+    border: 2px solid var(--color-ink);
+    background: #fff;
+    padding: 16px 18px;
+  }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-paper-hair);
+  }
+  pre {
+    margin: 12px 0 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font: inherit;
+    font-size: 15px;
+  }
+  pre :global(a) {
+    text-decoration: underline;
+    color: #a3341a;
+  }
+</style>

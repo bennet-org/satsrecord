@@ -82,7 +82,9 @@ Every donor record carries `claimed | email_confirmed`, and any rendered documen
 
 **Settlement is polymorphic.** `kind: onchain | lightning`, `ref: txid:vout | payment_hash`. Lightning (v2) adds a kind, not a table.
 
-**Organisations and members** are Better Auth's tables (organization plugin: `organization`, `member`, `invitation`, plus `user`, `session`, `account`, `verification`). Domain tables carry `organisation_id` as text and gain the foreign key when those tables land in Phase 2. Better Auth's `role` column on `member` is the roles hook; v1 has one role in practice.
+**Organisations and members** are Better Auth's tables (organization plugin: `organization`, `member`, `invitation`, plus `user`, `session`, `account`, `verification`, `passkey`). Domain tables reference `organization.id`. Better Auth's `role` column on `member` is the roles hook; v1 has `owner` (creator) and `admin` (everyone invited), which differ only in who can delete the organisation.
+
+**Two kinds of invite.** Better Auth's `invitation` adds a member to an existing organisation. `organisation_invites` is ours: an operator invites an email address to create an organisation, optionally from an access request. Only the token's hash is stored. The invite link proves nothing by itself; acceptance requires a session whose email matches, which the magic link provides.
 
 **Jurisdiction is an output layer.** Every settlement stores the US superset (asset, date, FMV, txid, donor details, charity registration number, goods-or-services flag). Renderers per jurisdiction come later; v1 renders a generic acknowledgement.
 

@@ -7,3 +7,6 @@ export * from "./access-requests";
 export * from "./crypto";
 export * from "./bitcoin";
 export * from "./fakes";
+export * from "./auth";
+export * from "./organisations";
+export * from "./organisation-invites";

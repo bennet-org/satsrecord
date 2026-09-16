@@ -11,7 +11,7 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 - [x] Brief, design and stack docs
 - [x] Brand discussion → `brand/README.md`: name confirmed, strapline, palette, type, tone, comparison table copy
 - [x] Scaffold: pnpm workspace, `apps/web` (Astro 7, Tailwind 4), `packages/core`, `packages/widget`, Dockerfile, compose Postgres. React and shadcn arrive with the first interactive page.
-- [x] Schema v1 and migrations: access_requests, descriptors, addresses, submissions, donors (PII), consents, settlements, valuations, acknowledgements, amendments, email_log. Organisations, members and invites come from Better Auth's organization plugin in Phase 2.
+- [x] Schema v1 and migrations: access_requests, descriptors, addresses, submissions, donors (PII), consents, settlements, valuations, acknowledgements, amendments, email_log. Organisations, members and member invitations come from Better Auth's organization plugin in Phase 2; operator invites are our own table.
 - [x] Encryption helper; `ChainSource` and `RateSource` fakes; `Deriver` with single-sig implementation and descriptor parser. (`Mailer` with Resend and console implementations shipped with Phase 1; SMTP arrives with self-host packaging.)
 
 **Done when:** `pnpm dev` runs, migrations apply, tests derive address 0 from known zpub, ypub and `tr` vectors. Done 16 September 2026: BIP84, BIP49 (testnet upub) and BIP86 spec vectors pass.
@@ -26,11 +26,12 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Phase 2: auth and organisations
 
-- [ ] Better Auth: magic link login, passkey enrolment prompt after first login
-- [ ] Invite flow: admin issues invite (hidden admin page) → signup from link → organisation created
-- [ ] Team page: invite, list, remove members
+- [x] Better Auth: magic link login, passkey enrolment prompt after first login
+- [x] Invite flow: operator issues invite (`/admin`, gated by `OPERATOR_EMAILS`) → magic link from the invite page → organisation created, user is owner
+- [x] Team page: invite, list, remove members, cancel invitations
+- [x] `OPEN_SIGNUP` path (`/signup` → `/app/new`) and a dev outbox at `/dev/outbox`
 
-**Done when:** cold start to logged-in organisation in under two minutes using the console mailer.
+**Done when:** cold start to logged-in organisation in under two minutes using the console mailer. Done 16 September 2026: invite from `/admin`, two links from the outbox, organisation and team page. Uninvited addresses get no email; magic links are limited to 5 a minute per IP.
 
 ## Phase 3: onboarding
 

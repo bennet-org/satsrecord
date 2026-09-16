@@ -1,0 +1,160 @@
+---
+import App from "../../../layouts/App.astro";
+import { actions, isInputError } from "astro:actions";
+import { listMembers, listPendingMemberInvitations } from "@satsrecord/core";
+import { db } from "../../../lib/services";
+const { user, org } = Astro.locals;
+
+const members = await listMembers(db, org!.id);
+const pending = await listPendingMemberInvitations(db, org!.id);
+
+const invited = Astro.getActionResult(actions.inviteMember);
+const removed = Astro.getActionResult(actions.removeMember);
+const cancelled = Astro.getActionResult(actions.cancelInvitation);
+const failure = [invited, removed, cancelled].find(
+  (r) => r?.error && !isInputError(r.error),
+)?.error;
+const emailError = isInputError(invited?.error)
+  ? invited.error.fields.email?.[0]
+  : undefined;
+const date = (d: Date) =>
+  d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+---
+
+<App
+  title="Team"
+  heading="Team."
+  intro="Everyone here can see donations, change settings and invite colleagues. The owner is the only one who can close the organisation."
+>
+  {failure && <p class="error notice">{failure.message}</p>}
+  {invited?.data?.ok && (
+    <p class="notice">Invitation sent to {invited.data.email}.</p>
+  )}
+
+  <section>
+    <h2>Members</h2>
+    <div class="scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Joined</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {members.map((m) => (
+            <tr>
+              <td>{m.user.email}</td>
+              <td>{m.role}</td>
+              <td>{date(m.createdAt)}</td>
+              <td>
+                {m.role !== "owner" && m.userId !== user!.id && (
+                  <form method="POST" action={actions.removeMember}>
+                    <input type="hidden" name="memberId" value={m.id} />
+                    <button class="btn small" type="submit">
+                      Remove
+                    </button>
+                  </form>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {pending.length > 0 && (
+    <section>
+      <h2>Pending invitations</h2>
+      <div class="scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Expires</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {pending.map((i) => (
+              <tr>
+                <td>{i.email}</td>
+                <td>{date(i.expiresAt)}</td>
+                <td>
+                  <form method="POST" action={actions.cancelInvitation}>
+                    <input type="hidden" name="invitationId" value={i.id} />
+                    <button class="btn small" type="submit">
+                      Cancel
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
+
+  <section>
+    <h2>Invite a colleague</h2>
+    <form method="POST" action={actions.inviteMember} class="form invite">
+      <label>
+        Email
+        <input name="email" type="email" required />
+        <span class="error">{emailError}</span>
+      </label>
+      <button class="btn ink" type="submit">
+        Send invitation
+      </button>
+    </form>
+    <p class="mute small">
+      They get an email with a link that signs them in and adds them here. Links
+      expire after 7 days.
+    </p>
+  </section>
+</App>
+<style>
+  section + section {
+    margin-top: 40px;
+  }
+  h2 {
+    font-size: 22px;
+    letter-spacing: -0.03em;
+    margin-bottom: 14px;
+  }
+  .notice {
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    border: 2px solid var(--color-ink);
+    background: #fff;
+    font-weight: 500;
+  }
+  .invite {
+    grid-template-columns: minmax(0, 24em) auto;
+    align-items: start;
+  }
+  .invite button {
+    margin-top: 24px;
+  }
+  .small {
+    font-size: 14px;
+    margin-top: 12px;
+  }
+  @media (max-width: 600px) {
+    .invite {
+      grid-template-columns: 1fr;
+    }
+    .invite button {
+      margin-top: 0;
+      justify-self: start;
+    }
+  }
+</style>

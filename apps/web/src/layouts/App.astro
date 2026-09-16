@@ -1,0 +1,152 @@
+---
+// Signed-in area: paper ground, black type, orange as a small accent. Header carries the organisation
+// and the signed-in user; pages set their own heading.
+import Base from "./Base.astro";
+import Mark from "../assets/brand/mark.svg";
+import { site } from "../data/marketing";
+interface Props {
+  title: string;
+  heading?: string;
+  intro?: string;
+  /** Narrow, centred column for auth and invite pages. */
+  narrow?: boolean;
+}
+const { title, heading, intro, narrow = false } = Astro.props;
+const { user, org, isOperator } = Astro.locals;
+const path = Astro.url.pathname;
+const nav = org
+  ? [
+      { label: "Dashboard", href: "/app" },
+      { label: "Team", href: "/app/settings/team" },
+    ]
+  : [];
+if (isOperator) nav.push({ label: "Admin", href: "/admin" });
+const active = (href: string) =>
+  href === "/app" ? path === "/app" : path.startsWith(href);
+---
+
+<Base title={`${title} · ${site.name}`} surface="paper">
+  <header class="wrap">
+    <div class="bar">
+      <a class="wm" href={org ? "/app" : "/"}>
+        <Mark width={24} height={24} aria-hidden="true" />
+        {site.name}
+        {org && <span class="org">{org.name}</span>}
+      </a>
+      <nav>
+        {nav.map((n) => (
+          <a href={n.href} aria-current={active(n.href) ? "page" : undefined}>
+            {n.label}
+          </a>
+        ))}
+        {user ? (
+          <form method="POST" action="/logout">
+            <span class="who">{user.email}</span>
+            <button class="signout" type="submit">
+              Sign out
+            </button>
+          </form>
+        ) : (
+          <a href="/login">Sign in</a>
+        )}
+      </nav>
+    </div>
+  </header>
+  <main class:list={["wrap", { narrow }]}>
+    {heading && <h1>{heading}</h1>}
+    {intro && <p class="intro">{intro}</p>}
+    <slot />
+  </main>
+</Base>
+<style>
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 0 16px;
+    border-bottom: 2px solid var(--color-ink);
+  }
+  .wm {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.03em;
+    min-width: 0;
+  }
+  .org {
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0;
+    color: var(--color-paper-mute);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .org::before {
+    content: "/ ";
+  }
+  nav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  nav a[aria-current="page"] {
+    font-weight: 700;
+    box-shadow: 0 2px 0 var(--color-ground);
+  }
+  nav form {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .who {
+    color: var(--color-paper-mute);
+    font-size: 14px;
+  }
+  .signout {
+    white-space: nowrap;
+    font: inherit;
+    font-weight: 700;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  main {
+    padding-block: clamp(32px, 4vw, 56px) 96px;
+    max-width: 62em;
+  }
+  main.narrow {
+    max-width: 30em;
+    margin-inline: auto;
+  }
+  h1 {
+    font-size: clamp(34px, 4.5vw, 56px);
+    line-height: 0.98;
+  }
+  .intro {
+    font-size: 17px;
+    line-height: 1.4;
+    margin-top: 16px;
+    max-width: 34em;
+  }
+  h1 + :global(*:not(.intro)),
+  .intro + :global(*) {
+    margin-top: 32px;
+  }
+  @media (max-width: 760px) {
+    .who,
+    .org {
+      display: none;
+    }
+    nav {
+      gap: 16px;
+    }
+  }
+</style>

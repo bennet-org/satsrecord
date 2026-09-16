@@ -1,0 +1,48 @@
+---
+// A signed-in user with no organisation: open signup names one; otherwise they need an invitation.
+import App from "../../layouts/App.astro";
+import { actions, isInputError } from "astro:actions";
+import { openSignup } from "../../lib/services";
+if (Astro.locals.org) return Astro.redirect("/app");
+const result = Astro.getActionResult(actions.createOrganisation);
+if (result?.data?.ok) return Astro.redirect("/app");
+const fieldError = isInputError(result?.error)
+  ? result.error.fields.name?.[0]
+  : undefined;
+---
+
+{openSignup ? (
+  <App
+    title="New organisation"
+    heading="Name your organisation."
+    intro="The charity or non-profit this account is for. You can change it later."
+    narrow
+  >
+    <form method="POST" action={actions.createOrganisation} class="form">
+      <label>
+        Organisation
+        <input name="name" required minlength="2" maxlength="200" autofocus />
+        <span class="error">{fieldError}</span>
+      </label>
+      {result?.error && !isInputError(result.error) && (
+        <p class="error">{result.error.message}</p>
+      )}
+      <button class="btn ink" type="submit">
+        Create organisation
+      </button>
+    </form>
+  </App>
+) : (
+  <App title="No organisation" heading="No organisation yet." narrow>
+    <p>
+      Your account is not a member of any organisation. Ask a colleague to
+      invite you from their team page, or{" "}
+      <a href="/request-access">request access</a> for a new one.
+    </p>
+  </App>
+)}
+<style>
+  a {
+    text-decoration: underline;
+  }
+</style>

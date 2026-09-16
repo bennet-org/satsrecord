@@ -13,6 +13,11 @@
 html {
   background: var(--color-ground);
   color: var(--color-ink);
+}
+/* the app runs on paper, orange kept for small accents */
+html[data-surface="paper"] {
+  background: var(--color-paper);
+  color: var(--color-paper-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
@@ -94,4 +99,109 @@ ul {
 .cta::selection {
   background: var(--color-ground);
   color: var(--color-ink);
+}
+
+/* app forms and tables: shared by auth, admin and settings pages */
+.form {
+  display: grid;
+  gap: 18px;
+}
+.form label,
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.form input,
+.form select,
+.form textarea {
+  font: inherit;
+  font-weight: 500;
+  padding: 11px 12px;
+  border: 2px solid var(--color-ink);
+  background: #fff;
+  color: var(--color-ink);
+  border-radius: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.form input:focus-visible {
+  outline: 3px solid var(--color-ground);
+  outline-offset: 1px;
+}
+.form button,
+.btn {
+  cursor: pointer;
+}
+.btn.ink {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border-color: var(--color-ink);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--color-ink);
+}
+.btn.small {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.error {
+  color: #a3341a;
+  font-weight: 500;
+  font-size: 14px;
+}
+.error:empty {
+  display: none;
+}
+.mute {
+  color: var(--color-paper-mute);
+}
+.card {
+  background: #fff;
+  border: 2px solid var(--color-ink);
+  box-shadow: 10px 10px 0 var(--color-ink);
+  padding: 28px;
+}
+/* tables can be wider than a phone; the wrapper scrolls, the page never does */
+.scroll {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 12px 10px 0;
+  border-bottom: 2px solid var(--color-ink);
+}
+.table td {
+  padding: 12px 12px 12px 0;
+  border-bottom: 1px solid var(--color-paper-hair);
+  vertical-align: middle;
+}
+.table td:last-child,
+.table th:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+.table form {
+  display: inline;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

@@ -4,6 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   site: "https://satsrecord.org",
+  // The app is on-demand; marketing pages opt in to prerendering.
+  output: "server",
   adapter: node({ mode: "standalone" }),
   vite: { plugins: [tailwindcss()] },
   fonts: [
@@ -35,6 +37,29 @@ export default defineConfig({
         context: "server",
         access: "secret",
         optional: true,
+      }),
+      // Origin the app is served from. Email links, auth callbacks and the passkey relying party derive from it.
+      APP_URL: envField.string({
+        context: "server",
+        access: "secret",
+        default: "http://localhost:4321",
+      }),
+      BETTER_AUTH_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+      }),
+      // Comma-separated. These accounts see /admin: access requests and organisation invites.
+      OPERATOR_EMAILS: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      // Serve sent mail at /dev/outbox. Only with the console mailer, and never where strangers can reach it:
+      // it shows sign-in links.
+      DEV_OUTBOX: envField.boolean({
+        context: "server",
+        access: "secret",
+        default: false,
       }),
       OPEN_SIGNUP: envField.boolean({
         context: "server",

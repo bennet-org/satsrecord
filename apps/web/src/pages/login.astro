@@ -1,0 +1,104 @@
+---
+import App from "../layouts/App.astro";
+import { safeNext } from "../lib/services";
+if (Astro.locals.user) return Astro.redirect("/app");
+const next = safeNext(Astro.url.searchParams.get("next"));
+const error = Astro.url.searchParams.get("error");
+---
+
+<App title="Sign in" heading="Sign in." narrow>
+  {error && (
+    <p class="error banner">
+      That sign-in link has expired or was already used. Request a new one.
+    </p>
+  )}
+  <form
+    class="form"
+    method="POST"
+    data-magic-link
+    data-callback={next}
+    data-sent="sent"
+  >
+    <label>
+      Email
+      <input
+        name="email"
+        type="email"
+        required
+        autocomplete="username webauthn"
+        autofocus
+      />
+    </label>
+    <p class="error" data-error></p>
+    <button class="btn ink" type="submit">
+      Email me a sign-in link
+    </button>
+    <p class="mute small">
+      No password. If the address has an account or an invitation, a link
+      arrives within a minute.
+    </p>
+  </form>
+  <div id="sent" hidden>
+    <p class="big">Check your email.</p>
+    <p class="mute">
+      If that address has an account or an invitation, a sign-in link is on its
+      way. It works once and expires in 10 minutes.
+    </p>
+  </div>
+  <div class="passkey">
+    <button class="btn ghost" type="button" data-passkey>
+      Use a passkey
+    </button>
+    <p class="error" data-passkey-error></p>
+  </div>
+</App>
+<script>
+  import {
+    authClient,
+    errorMessage,
+    wireMagicLinkForms,
+  } from "../scripts/auth-client";
+  wireMagicLinkForms();
+  const next =
+    document.querySelector<HTMLFormElement>("form[data-magic-link]")?.dataset
+      .callback || "/app";
+  const err = document.querySelector<HTMLElement>("[data-passkey-error]");
+  async function passkey(autoFill: boolean) {
+    const { error } = await authClient.signIn.passkey({ autoFill });
+    if (error) {
+      if (!autoFill && err) err.textContent = errorMessage(error);
+      return;
+    }
+    window.location.href = next;
+  }
+  document
+    .querySelector("[data-passkey]")
+    ?.addEventListener("click", () => passkey(false));
+  if (
+    window.PublicKeyCredential?.isConditionalMediationAvailable &&
+    (await PublicKeyCredential.isConditionalMediationAvailable())
+  )
+    passkey(true);
+</script>
+<style>
+  .banner {
+    margin-bottom: 20px;
+  }
+  .small {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .big {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  #sent p + p {
+    margin-top: 10px;
+  }
+  .passkey {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-paper-hair);
+  }
+</style>

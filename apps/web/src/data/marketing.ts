@@ -15,6 +15,7 @@ export const nav = [
   { label: "Compared", href: "/#compared" },
   { label: "Pricing", href: "/#pricing" },
   { label: "Source", href: site.sourceUrl },
+  { label: "Sign in", href: "/login" },
 ];
 
 export const hero = {

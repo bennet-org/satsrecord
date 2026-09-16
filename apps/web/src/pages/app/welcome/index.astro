@@ -1,0 +1,82 @@
+---
+// Passkey enrolment prompt, shown after first login until a passkey exists or the user skips.
+import App from "../../../layouts/App.astro";
+import { passkeysFor } from "@satsrecord/core";
+import { db } from "../../../lib/services";
+const keys = await passkeysFor(db, Astro.locals.user!.id);
+---
+
+<App
+  title="Add a passkey"
+  heading="Add a passkey."
+  intro="Sign in next time with your fingerprint, face or security key instead of waiting for an email. Optional."
+  narrow
+>
+  {keys.length > 0 && (
+    <ul class="keys">
+      {keys.map((k) => (
+        <li>
+          <b>{k.name || "Passkey"}</b>
+          <span class="mute">
+            added {k.createdAt?.toLocaleDateString("en-GB")}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )}
+  <div class="form">
+    <button class="btn ink" type="button" data-add-passkey>
+      {keys.length ? "Add another passkey" : "Add a passkey"}
+    </button>
+    <p class="error" data-error></p>
+    <p class="mute unsupported" hidden data-unsupported>
+      This browser does not support passkeys.
+    </p>
+    <form method="POST" action="/app/welcome/skip">
+      <button class="btn ghost" type="submit">
+        {keys.length ? "Done" : "Not now"}
+      </button>
+    </form>
+  </div>
+</App>
+<script>
+  import { authClient, errorMessage } from "../../../scripts/auth-client";
+  const button =
+    document.querySelector<HTMLButtonElement>("[data-add-passkey]");
+  const err = document.querySelector<HTMLElement>("[data-error]");
+  if (!window.PublicKeyCredential) {
+    button?.setAttribute("disabled", "");
+    document.querySelector<HTMLElement>("[data-unsupported]")!.hidden = false;
+  }
+  button?.addEventListener("click", async () => {
+    button.disabled = true;
+    if (err) err.textContent = "";
+    const { error } = await authClient.passkey.addPasskey({
+      name: navigator.platform || "Passkey",
+    });
+    if (error) {
+      if (err) err.textContent = errorMessage(error);
+      button.disabled = false;
+      return;
+    }
+    window.location.href = "/app";
+  });
+</script>
+<style>
+  .keys {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .keys li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-paper-hair);
+    font-size: 15px;
+  }
+  .form {
+    justify-items: start;
+  }
+</style>

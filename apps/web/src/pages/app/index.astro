@@ -1,0 +1,51 @@
+---
+// Dashboard. Phase 4 fills this; until then it points at what exists.
+import App from "../../layouts/App.astro";
+import { passkeysFor } from "@satsrecord/core";
+import { db } from "../../lib/services";
+const { user, org } = Astro.locals;
+if (
+  Astro.cookies.get("passkey-prompt")?.value !== "skip" &&
+  (await passkeysFor(db, user!.id)).length === 0
+)
+  return Astro.redirect("/app/welcome");
+---
+
+<App title="Dashboard" heading={org!.name}>
+  <div class="grid">
+    <section>
+      <p class="eyebrow">Wallet</p>
+      <p>Not connected yet. Onboarding arrives in the next phase.</p>
+    </section>
+    <section>
+      <p class="eyebrow">Team</p>
+      <p>
+        Invite colleagues from the <a href="/app/settings/team">team page</a>.
+      </p>
+    </section>
+    <section>
+      <p class="eyebrow">Sign-in</p>
+      <p>
+        Passwordless. <a href="/app/welcome">Add a passkey</a> to sign in
+        without waiting for an email.
+      </p>
+    </section>
+  </div>
+</App>
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+  }
+  section {
+    border-top: 2px solid var(--color-ink);
+    padding-top: 14px;
+  }
+  .eyebrow {
+    margin-bottom: 8px;
+  }
+  a {
+    text-decoration: underline;
+  }
+</style>

@@ -13,6 +13,16 @@ Conventions established in Phase 1:
 
 Homepage is fully static and framework-free. `/request-access` is the only on-demand route (Astro Actions need one). Screenshots for review: `node scripts/shots.mjs <baseUrl> <outDir>` uses Playwright against the system Chrome, no browser download, and reports horizontal overflow at 1440 and 400 px.
 
+Conventions established in Phase 2:
+
+- `output: "server"`; marketing pages opt in with `prerender = true`. The 404 page stays on demand so server pages can rewrite to it.
+- Better Auth is configured once in `packages/core/src/auth` (`createAuth`) and instantiated in `apps/web/src/lib/services.ts`. Its Drizzle schema (`packages/core/src/db/auth-schema.ts`) was generated with `auth generate` and is hand-maintained since. Ids are uuids; timestamps are timestamptz; column names keep Better Auth's American spelling.
+- Middleware resolves the session and active organisation into `Astro.locals` for app, admin, invite and action routes only, and guards `/app/*` and `/admin/*`.
+- Login, signup and invite pages post to Better Auth's endpoints from a small vanilla script (`src/scripts/auth-client.ts`) so its rate limits apply; everything else is server-rendered forms and Astro Actions. Sign-out and the passkey skip are plain POST routes. No React yet.
+- Organisations are created by our own code (`createOrganisation`), never through Better Auth's public endpoint, which is disabled. Creator is `owner`, invited colleagues are `admin`.
+- Magic links go only to existing users, invited addresses and operators, unless `OPEN_SIGNUP=true`. The page copy is the same either way.
+- Integration tests in core drive `auth.handler` and `auth.api` against PGlite, including the magic-link redirect and cookies, so no browser is needed for the auth flows.
+
 ## Layout
 
 pnpm workspaces, TypeScript throughout.

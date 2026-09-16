@@ -1,0 +1,97 @@
+---
+// Member invitation (Better Auth). Signed in with the invited address: accept and go. Otherwise: sign in first.
+import App from "../../layouts/App.astro";
+import { findMemberInvitation, normaliseEmail } from "@satsrecord/core";
+import { auth, db } from "../../lib/services";
+const id = Astro.params.id!;
+const user = Astro.locals.user;
+const found = await findMemberInvitation(db, id);
+const state = found.state;
+const inv = found.state === "valid" ? found.invitation : undefined;
+let error: string | undefined;
+if (inv && user && normaliseEmail(user.email) === inv.email) {
+  try {
+    await auth.api.acceptInvitation({
+      body: { invitationId: id },
+      headers: Astro.request.headers,
+    });
+    return Astro.redirect("/app");
+  } catch (e) {
+    error = e instanceof Error ? e.message : "Could not accept the invitation.";
+  }
+}
+const messages: Record<string, string> = {
+  unknown: "This invitation link is not recognised.",
+  used: "This invitation has already been used or was cancelled.",
+  expired: "This invitation has expired. Ask your colleague to send a new one.",
+};
+---
+
+{state !== "valid" ? (
+  <App title="Invitation" heading="Invitation." narrow>
+    <p>{messages[state]}</p>
+  </App>
+) : (
+  <App
+    title="Invitation"
+    heading={`Join ${inv!.organization.name}.`}
+    intro="You have been invited to this organisation on SatsRecord. Sign in with the invited address to accept."
+    narrow
+  >
+    {error ? (
+      <p class="error">{error}</p>
+    ) : user ? (
+      <>
+        <p>
+          You are signed in as <b>{user.email}</b>, but this invitation is for{" "}
+          <b>{inv!.email}</b>.
+        </p>
+        <form method="POST" action="/logout" class="form">
+          <button class="btn ink" type="submit">
+            Sign out and start again
+          </button>
+        </form>
+      </>
+    ) : (
+      <>
+        <form
+          class="form"
+          method="POST"
+          data-magic-link
+          data-callback={`/invitation/${id}`}
+          data-sent="sent"
+        >
+          <label>
+            Email
+            <input name="email" type="email" value={inv!.email} readonly />
+          </label>
+          <p class="error" data-error />
+          <button class="btn ink" type="submit">
+            Email me a sign-in link
+          </button>
+        </form>
+        <div id="sent" hidden>
+          <p class="big">Check your email.</p>
+          <p class="mute">
+            The sign-in link works once and expires in 10 minutes. It brings you
+            back here and accepts the invitation.
+          </p>
+        </div>
+      </>
+    )}
+  </App>
+)}
+<script>
+  import { wireMagicLinkForms } from "../../scripts/auth-client";
+  wireMagicLinkForms();
+</script>
+<style>
+  .big {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  p + form {
+    margin-top: 20px;
+  }
+</style>

@@ -23,10 +23,13 @@
     "vitest": "^5.0.0"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "1.7.5",
+    "@better-auth/passkey": "1.7.5",
     "@noble/hashes": "^2.4.0",
     "@scure/base": "^2.4.0",
     "@scure/bip32": "^2.4.0",
     "@scure/btc-signer": "^2.4.1",
+    "better-auth": "1.7.5",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.23.0"
   }

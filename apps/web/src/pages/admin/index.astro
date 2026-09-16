@@ -1,0 +1,184 @@
+---
+// Operator page: access requests and organisation invites. Reachable only by OPERATOR_EMAILS (middleware).
+import App from "../../layouts/App.astro";
+import { actions, isInputError } from "astro:actions";
+import {
+  listAccessRequests,
+  listPendingOrganisationInvites,
+} from "@satsrecord/core";
+import { db } from "../../lib/services";
+
+const requests = await listAccessRequests(db);
+const invites = await listPendingOrganisationInvites(db);
+const result = Astro.getActionResult(actions.inviteOrganisation);
+const fields = isInputError(result?.error) ? result.error.fields : {};
+const date = (d: Date) =>
+  d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+---
+
+<App title="Admin" heading="Operator.">
+  {result?.data?.ok && (
+    <p class="notice">Invitation sent to {result.data.email}.</p>
+  )}
+  {result?.error && !isInputError(result.error) && (
+    <p class="notice error">{result.error.message}</p>
+  )}
+
+  <section>
+    <h2>Access requests</h2>
+    {requests.length === 0 && <p class="mute">None yet.</p>}
+    {requests.length > 0 && (
+      <div class="scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Organisation</th>
+              <th>Contact</th>
+              <th>Country</th>
+              <th>Received</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {requests.map((r) => (
+              <tr>
+                <td>
+                  <b>{r.organisation}</b>
+                  {r.website && (
+                    <>
+                      <br />
+                      <a class="mute" href={r.website} rel="noopener">
+                        {r.website}
+                      </a>
+                    </>
+                  )}
+                  {r.message && <p class="msg mute">{r.message}</p>}
+                </td>
+                <td>
+                  {r.name}
+                  <br />
+                  <span class="mute">{r.email}</span>
+                </td>
+                <td>{r.country}</td>
+                <td>{date(r.createdAt)}</td>
+                <td>{r.status}</td>
+                <td>
+                  {r.status === "new" && (
+                    <form method="POST" action={actions.inviteOrganisation}>
+                      <input
+                        type="hidden"
+                        name="accessRequestId"
+                        value={r.id}
+                      />
+                      <input type="hidden" name="email" value={r.email} />
+                      <input
+                        type="hidden"
+                        name="organisationName"
+                        value={r.organisation}
+                      />
+                      <button class="btn small ink" type="submit">
+                        Invite
+                      </button>
+                    </form>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+
+  <section>
+    <h2>Pending invitations</h2>
+    {invites.length === 0 && <p class="mute">None outstanding.</p>}
+    {invites.length > 0 && (
+      <div class="scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Organisation</th>
+              <th>Email</th>
+              <th>Invited by</th>
+              <th>Expires</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invites.map((i) => (
+              <tr>
+                <td>{i.organisationName}</td>
+                <td>{i.email}</td>
+                <td>{i.invitedBy}</td>
+                <td>{date(i.expiresAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+
+  <section>
+    <h2>Invite an organisation</h2>
+    <form method="POST" action={actions.inviteOrganisation} class="form manual">
+      <label>
+        Organisation
+        <input name="organisationName" required minlength="2" />
+        <span class="error">{fields.organisationName?.[0]}</span>
+      </label>
+      <label>
+        Email
+        <input name="email" type="email" required />
+        <span class="error">{fields.email?.[0]}</span>
+      </label>
+      <button class="btn ink" type="submit">
+        Send invitation
+      </button>
+    </form>
+  </section>
+</App>
+<style>
+  section + section {
+    margin-top: 40px;
+  }
+  h2 {
+    font-size: 22px;
+    letter-spacing: -0.03em;
+    margin-bottom: 14px;
+  }
+  .notice {
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    border: 2px solid var(--color-ink);
+    background: #fff;
+    font-weight: 500;
+  }
+  .msg {
+    margin-top: 6px;
+    font-size: 13px;
+    white-space: pre-wrap;
+    max-width: 32em;
+  }
+  .manual {
+    grid-template-columns: minmax(0, 20em) minmax(0, 20em) auto;
+    align-items: start;
+  }
+  .manual button {
+    margin-top: 24px;
+  }
+  @media (max-width: 760px) {
+    .manual {
+      grid-template-columns: 1fr;
+    }
+    .manual button {
+      margin-top: 0;
+      justify-self: start;
+    }
+  }
+</style>

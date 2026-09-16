@@ -5,15 +5,18 @@ import { site } from "../data/marketing";
 interface Props {
   title?: string;
   description?: string;
+  /** Orange ground for the marketing site; paper for the app. */
+  surface?: "ground" | "paper";
 }
 const {
   title = `${site.name}: ${site.descriptor.replace(/\.$/, "")}`,
   description = site.descriptor,
+  surface = "ground",
 } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-surface={surface}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

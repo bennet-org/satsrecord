@@ -1,0 +1,91 @@
+---
+// Operator invite landing. The link proves nothing on its own; the magic link to the invited address does.
+import App from "../../../layouts/App.astro";
+import { findOrganisationInvite } from "@satsrecord/core";
+import { db } from "../../../lib/services";
+const token = Astro.params.token!;
+const found = await findOrganisationInvite(db, token);
+const user = Astro.locals.user;
+if (found.state === "valid" && user?.email === found.invite.email)
+  return Astro.redirect(`/invite/${token}/accept`);
+const messages = {
+  unknown: "This invitation link is not recognised.",
+  expired: "This invitation has expired. Ask us for a new one.",
+  accepted: "This invitation has already been used.",
+};
+---
+
+{found.state !== "valid" ? (
+  <App title="Invitation" heading="Invitation." narrow>
+    <p>{messages[found.state]}</p>
+    <p class="mute">
+      <a href="/login">Sign in</a> if you already have an account.
+    </p>
+  </App>
+) : (
+  <App
+    title="Invitation"
+    heading={`Set up ${found.invite.organisationName}.`}
+    intro="You are invited to create this organisation on SatsRecord. Sign in with the invited address to continue."
+    narrow
+  >
+    {user ? (
+      <div>
+        <p>
+          You are signed in as <b>{user.email}</b>, but this invitation is for{" "}
+          <b>{found.invite.email}</b>.
+        </p>
+        <form method="POST" action="/logout" class="form">
+          <button class="btn ink" type="submit">
+            Sign out and start again
+          </button>
+        </form>
+      </div>
+    ) : (
+      <>
+        <form
+          class="form"
+          method="POST"
+          data-magic-link
+          data-callback={`/invite/${token}/accept`}
+          data-sent="sent"
+        >
+          <label>
+            Email
+            <input
+              name="email"
+              type="email"
+              value={found.invite.email}
+              readonly
+            />
+          </label>
+          <p class="error" data-error />
+          <button class="btn ink" type="submit">
+            Email me a sign-in link
+          </button>
+        </form>
+        <div id="sent" hidden>
+          <p class="big">Check your email.</p>
+          <p class="mute">
+            The sign-in link works once and expires in 10 minutes. It brings you
+            back here to finish setting up.
+          </p>
+        </div>
+      </>
+    )}
+  </App>
+)}
+<script>
+  import { wireMagicLinkForms } from "../../../scripts/auth-client";
+  wireMagicLinkForms();
+</script>
+<style>
+  .big {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  p + form {
+    margin-top: 20px;
+  }
+</style>

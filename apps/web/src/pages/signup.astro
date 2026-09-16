@@ -1,0 +1,52 @@
+---
+// Open signup: local development and self-host. Hosted is invite-only, so this is a 404 there.
+import App from "../layouts/App.astro";
+import { openSignup } from "../lib/services";
+if (!openSignup) return Astro.rewrite("/404");
+if (Astro.locals.user) return Astro.redirect("/app/new");
+---
+
+<App
+  title="Sign up"
+  heading="Create an account."
+  intro="Sign in with your email, then name your organisation."
+  narrow
+>
+  <form
+    class="form"
+    method="POST"
+    data-magic-link
+    data-callback="/app/new"
+    data-sent="sent"
+  >
+    <label>
+      Email
+      <input
+        name="email"
+        type="email"
+        required
+        autocomplete="email"
+        autofocus
+      />
+    </label>
+    <p class="error" data-error></p>
+    <button class="btn ink" type="submit">
+      Email me a sign-in link
+    </button>
+  </form>
+  <div id="sent" hidden>
+    <p class="big">Check your email.</p>
+    <p class="mute">The link works once and expires in 10 minutes.</p>
+  </div>
+</App>
+<script>
+  import { wireMagicLinkForms } from "../scripts/auth-client";
+  wireMagicLinkForms();
+</script>
+<style>
+  .big {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+</style>

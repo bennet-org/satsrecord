@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import type { Db } from "./db/client";
 import { accessRequests, type AccessRequestCountry } from "./db/schema";
 import type { MailAddress, Mailer } from "./mail/types";
@@ -89,4 +89,15 @@ export async function submitAccessRequest(
       .where(eq(accessRequests.id, id));
   }
   return { id };
+}
+
+const statusOrder = { new: 0, invited: 1, declined: 2 } as const;
+
+/** Operator view: open requests first, newest first within a status. */
+export async function listAccessRequests(db: Db) {
+  const rows = await db
+    .select()
+    .from(accessRequests)
+    .orderBy(desc(accessRequests.createdAt));
+  return rows.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
 }

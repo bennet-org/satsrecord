@@ -24,9 +24,37 @@ export const accessRequests = pgTable("access_requests", {
 });
 
 // ---------------------------------------------------------------------------
-// Domain tables (docs/design.md, "Data model"). Organisations, members, users and
-// invitations are owned by Better Auth's organization plugin (Phase 2); domain rows
-// carry `organisationId` as text and gain the foreign key in that migration.
+// Organisations, members, users and member invitations are Better Auth's tables
+// (./auth-schema.ts). Domain rows reference `organization.id`.
+// ---------------------------------------------------------------------------
+
+export * from "./auth-schema";
+import { organization } from "./auth-schema";
+
+/**
+ * Operator-issued invite to create an organisation. Distinct from Better Auth's `invitation`, which adds a
+ * member to an existing organisation. Only the token's hash is stored; the link carries the token.
+ */
+export const organisationInvites = pgTable("organisation_invites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  organisationName: text("organisation_name").notNull(),
+  accessRequestId: uuid("access_request_id").references(
+    () => accessRequests.id,
+  ),
+  tokenHash: text("token_hash").notNull().unique(),
+  /** Operator email, or "open-signup". */
+  invitedBy: text("invited_by").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+  organisationId: uuid("organisation_id").references(() => organization.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// Domain tables (docs/design.md, "Data model").
 // ---------------------------------------------------------------------------
 
 import {
@@ -52,7 +80,9 @@ export const descriptors = pgTable(
   "descriptors",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    organisationId: text("organisation_id").notNull(),
+    organisationId: uuid("organisation_id")
+      .notNull()
+      .references(() => organization.id),
     descriptorEnc: text("descriptor_enc").notNull(),
     scriptType: text("script_type", { enum: scriptTypes }).notNull(),
     network: text("network", { enum: networks }).notNull(),
@@ -111,7 +141,9 @@ export const donors = pgTable(
   "donors",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    organisationId: text("organisation_id").notNull(),
+    organisationId: uuid("organisation_id")
+      .notNull()
+      .references(() => organization.id),
     nameEnc: text("name_enc"),
     emailEnc: text("email_enc"),
     /** HMAC of the normalised email. Lookup without plaintext. */
@@ -129,7 +161,9 @@ export const donors = pgTable(
 /** One widget submission: an address handed to (at most) one donor. */
 export const submissions = pgTable("submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organisationId: text("organisation_id").notNull(),
+  organisationId: uuid("organisation_id")
+    .notNull()
+    .references(() => organization.id),
   addressId: uuid("address_id")
     .notNull()
     .references(() => addresses.id),
@@ -167,7 +201,9 @@ export const settlements = pgTable(
   "settlements",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    organisationId: text("organisation_id").notNull(),
+    organisationId: uuid("organisation_id")
+      .notNull()
+      .references(() => organization.id),
     addressId: uuid("address_id")
       .notNull()
       .references(() => addresses.id),
@@ -240,7 +276,9 @@ export const amendableTables = [
 /** The one way to change history: a new row supersedes an old one, and this says who, why, and which. */
 export const amendments = pgTable("amendments", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organisationId: text("organisation_id").notNull(),
+  organisationId: uuid("organisation_id")
+    .notNull()
+    .references(() => organization.id),
   table: text("table_name", { enum: amendableTables }).notNull(),
   supersedesId: uuid("supersedes_id").notNull(),
   replacementId: uuid("replacement_id"),
@@ -254,7 +292,7 @@ export const amendments = pgTable("amendments", {
 /** Every send, without the address. Provider id is enough to trace a message; the donor row holds the PII. */
 export const emailLog = pgTable("email_log", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organisationId: text("organisation_id"),
+  organisationId: uuid("organisation_id").references(() => organization.id),
   donorId: uuid("donor_id").references(() => donors.id, {
     onDelete: "set null",
   }),

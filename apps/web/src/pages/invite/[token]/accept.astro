@@ -1,0 +1,44 @@
+---
+// Magic-link callback for an operator invite: creates the organisation for the signed-in user.
+import App from "../../../layouts/App.astro";
+import { acceptOrganisationInvite } from "@satsrecord/core";
+import { auth, db } from "../../../lib/services";
+const token = Astro.params.token!;
+const user = Astro.locals.user;
+if (!user) return Astro.redirect(`/invite/${token}`);
+const result = await acceptOrganisationInvite(db, token, user);
+if (result.state === "created") {
+  await auth.api.setActiveOrganization({
+    body: { organizationId: result.organisation.id },
+    headers: Astro.request.headers,
+  });
+  return Astro.redirect("/app");
+}
+if (result.state === "accepted" && Astro.locals.org)
+  return Astro.redirect("/app");
+if (result.state === "unknown" || result.state === "expired")
+  return Astro.redirect(`/invite/${token}`);
+---
+
+<App title="Invitation" heading="Invitation." narrow>
+  {result.state === "wrong_email" ? (
+    <>
+      <p>
+        You are signed in as <b>{user.email}</b>, but this invitation is for{" "}
+        <b>{result.invite.email}</b>.
+      </p>
+      <form method="POST" action="/logout" class="form">
+        <button class="btn ink" type="submit">
+          Sign out and start again
+        </button>
+      </form>
+    </>
+  ) : (
+    <p>This invitation has already been used.</p>
+  )}
+</App>
+<style>
+  p + form {
+    margin-top: 20px;
+  }
+</style>
