@@ -100,10 +100,9 @@ export type Cell = { text: string; muted?: boolean };
 const c = (text: string, muted = false): Cell => ({ text, muted });
 
 export const compared = {
-  intro:
-    "Three ways a charity takes bitcoin today, and what each one leaves you doing yourself.",
+  intro: "Ways a charity can accept bitcoin today, and the trade-offs of each.",
   columns: [
-    "Who holds the coins",
+    "Who receives the coins",
     "Donor record",
     "Tax acknowledgement",
     "Setup and upkeep",
@@ -116,8 +115,8 @@ export const compared = {
       logo: "dots",
       cells: [
         c("You"),
-        c("None. A list of transactions.", true),
-        c("You write each by hand", true),
+        c("None - a list of transactions", true),
+        c("Manual task", true),
         c("None"),
         c("No", true),
       ],
@@ -130,7 +129,7 @@ export const compared = {
         c("You"),
         c("Invoices, not donors", true),
         c("No", true),
-        c("A server, a database, and someone to run them", true),
+        c("Server, database, someone to run them", true),
         c("No", true),
       ],
     },
@@ -139,7 +138,7 @@ export const compared = {
       sub: "Custodial processor",
       logo: "/logos/the-giving-block.svg",
       cells: [
-        c("They do, until they pay out", true),
+        c("They do", true),
         c("Yes, in their system"),
         c("Automatic, sent as them"),
         c("A contract and their fee"),
@@ -153,7 +152,7 @@ export const compared = {
       us: true,
       cells: [
         c("You"),
-        c("Yes, in yours. Append-only, exportable."),
+        c("Yes, in yours. Fully exportable."),
         c("Automatic, sent as you"),
         c("A public key and a script tag"),
         c("No, by design"),
@@ -170,7 +169,7 @@ export const pricing = {
       kind: "Self-hosted",
       amount: "Free",
       who: "Run it yourself.",
-      body: "The same code, on your server. Bring your own node, or point it at mempool.space with the privacy warning that deserves.",
+      body: "The same code, on your server. Bring your own node, or point it at mempool.space if you're just getting started.",
       bullets: [
         "AGPL-3.0, forever",
         "Your node, your data, your uptime",
