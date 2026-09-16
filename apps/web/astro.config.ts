@@ -1,12 +1,14 @@
 import { defineConfig, envField, fontProviders } from "astro/config";
 import node from "@astrojs/node";
+import netlify from "@astrojs/netlify";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   site: "https://satsrecord.org",
   // The app is on-demand; marketing pages opt in to prerendering.
   output: "server",
-  adapter: node({ mode: "standalone" }),
+  // Netlify sets NETLIFY=true in its build environment; everywhere else (Docker, self-host) is the node adapter.
+  adapter: process.env.NETLIFY ? netlify() : node({ mode: "standalone" }),
   vite: { plugins: [tailwindcss()] },
   fonts: [
     {

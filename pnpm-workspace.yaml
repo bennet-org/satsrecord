@@ -4,6 +4,8 @@ packages:
 
 allowBuilds:
   esbuild: true
+  sharp: set this to true or false
 
 minimumReleaseAgeExclude:
   - prettier@3.9.7
+  - "@astrojs/netlify@8.2.6"

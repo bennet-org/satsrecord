@@ -38,13 +38,11 @@ export async function createOrganisation(
       .insert(organization)
       .values({ name: input.name.trim(), slug })
       .returning();
-    await db
-      .insert(member)
-      .values({
-        organizationId: org!.id,
-        userId: input.userId,
-        role: CREATOR_ROLE,
-      });
+    await db.insert(member).values({
+      organizationId: org!.id,
+      userId: input.userId,
+      role: CREATOR_ROLE,
+    });
     return org!;
   }
 }

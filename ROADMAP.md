@@ -37,7 +37,7 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 - [ ] Organisation: name, registration number, country, reporting currency
 - [ ] Wallet: paste xpub/ypub/zpub/descriptor → normalise → script-type prompt for bare xpub → confirm address 0 → fresh-account check (fake source in demo; mempool.space if configured)
-- [ ] Wallet guides: Sparrow, Coldcard, Ledger, Trezor, BlueWallet
+- [ ] Wallet guides: Sparrow, Coldcard, Ledger, Trezor, BlueWallet (links to begin with)
 - [ ] Email sender: display name, reply-to
 - [ ] Allowed origins
 - [ ] Finish: install snippet
@@ -86,7 +86,7 @@ Show the demo to prospects. Proceed → Phase 7.
 
 ## Phase 8: hosted launch
 
-- [ ] Fly deploy, Neon, backups, Cloudflare for widget script and DNS
+- [ ] Hosting: web on Netlify from Phase 2; worker and node on a box (Fly or similar) with Cloudflare in front, web moves there if it simplifies things. Neon, backups, DNS.
 - [ ] ICO registration, DPA template, retention and deletion policy
 - [ ] First design partners invited
 

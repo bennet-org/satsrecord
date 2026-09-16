@@ -26,7 +26,7 @@ export interface AuthOptions {
   openSignup?: boolean | undefined;
   /** Operators can always sign in, invited or not; they have no organisation and issue the invites. */
   operatorEmails?: Iterable<string> | undefined;
-  /** Better Auth's built-in limiter, in memory. Off only in tests. */
+  /** Better Auth's built-in limiter, backed by the `rate_limit` table so it works on serverless too. Off only in tests. */
   rateLimit?: boolean | undefined;
 }
 
@@ -73,7 +73,7 @@ export function createAuth(o: AuthOptions) {
     secret: o.secret,
     database: drizzleAdapter(db, { provider: "pg", schema }),
     advanced: { database: { generateId: "uuid" } },
-    rateLimit: { enabled: o.rateLimit ?? true },
+    rateLimit: { enabled: o.rateLimit ?? true, storage: "database" },
     plugins: [
       magicLink({
         expiresIn: MAGIC_LINK_TTL_SECONDS,

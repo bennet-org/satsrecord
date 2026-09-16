@@ -7,6 +7,7 @@ import {
   timestamp,
   boolean,
   integer,
+  bigint,
   uuid,
   index,
 } from "drizzle-orm/pg-core";
@@ -193,6 +194,16 @@ export const passkey = pgTable(
     index("passkey_credentialID_idx").on(table.credentialID),
   ],
 );
+
+/** Better Auth's rate limiter, in the database so it holds across serverless instances. */
+export const rateLimit = pgTable("rate_limit", {
+  id: uuid("id")
+    .default(sql`pg_catalog.gen_random_uuid()`)
+    .primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull(),
+  lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+});
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

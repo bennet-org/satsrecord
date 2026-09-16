@@ -25,6 +25,10 @@ pnpm build && pnpm start   # production server
 
 Hosted is invite-only. Put your address in `OPERATOR_EMAILS`, sign in at `/login`, and issue invites from `/admin`. `OPEN_SIGNUP=true` enables `/signup` instead.
 
+## Deploy
+
+Netlify builds `apps/web` with the Netlify adapter (`netlify.toml`; the adapter is chosen by `NETLIFY=true`). Site settings: base directory `/`, package directory `apps/web`. Environment: `DATABASE_URL` (Neon, pooled), `BETTER_AUTH_SECRET`, `APP_URL` (the site's origin), `OPERATOR_EMAILS`, `RESEND_API_KEY`, `MAIL_FROM` (a domain verified in Resend), and from Phase 3 `ENCRYPTION_KEY` and `INDEX_KEY`. The build command runs migrations first. The Dockerfile builds the same app with the node adapter for self-hosting.
+
 ## Licence
 
 Application: AGPL-3.0. Widget (`packages/widget`): MIT. Licence files land with the first release.

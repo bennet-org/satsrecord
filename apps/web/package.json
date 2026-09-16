@@ -10,6 +10,7 @@
     "check": "astro check"
   },
   "dependencies": {
+    "@astrojs/netlify": "8.2.6",
     "@astrojs/node": "^11.1.5",
     "@better-auth/passkey": "1.7.5",
     "@satsrecord/core": "workspace:*",

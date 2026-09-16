@@ -1,0 +1,10 @@
+# Netlify hosts apps/web (the adapter switches on NETLIFY=true in astro.config.ts). Base directory stays the
+# repo root so pnpm installs the workspace; set "Package directory" to apps/web in the site settings so Netlify
+# picks up the functions the adapter writes to apps/web/.netlify/v1/. The worker (Phase 7) is not serverless
+# and will live next to the node; this file is the web app only.
+[build]
+  command = "pnpm --filter @satsrecord/core db:migrate && pnpm --filter @satsrecord/web build"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "24"
