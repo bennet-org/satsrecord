@@ -11,10 +11,10 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 - [x] Brief, design and stack docs
 - [x] Brand discussion → `brand/README.md`: name confirmed, strapline, palette, type, tone, comparison table copy
 - [x] Scaffold: pnpm workspace, `apps/web` (Astro 7, Tailwind 4), `packages/core`, `packages/widget`, Dockerfile, compose Postgres. React and shadcn arrive with the first interactive page.
-- [ ] Schema v1 and migrations: organisations, members, invites, access_requests, descriptors, addresses, submissions, donors (PII), consents, settlements, valuations, acknowledgements, amendments, email_log
-- [ ] Encryption helper; `ChainSource` and `RateSource` fakes; `Deriver` with single-sig implementation and descriptor parser. (`Mailer` with Resend and console implementations shipped with Phase 1; SMTP arrives with self-host packaging.)
+- [x] Schema v1 and migrations: access_requests, descriptors, addresses, submissions, donors (PII), consents, settlements, valuations, acknowledgements, amendments, email_log. Organisations, members and invites come from Better Auth's organization plugin in Phase 2.
+- [x] Encryption helper; `ChainSource` and `RateSource` fakes; `Deriver` with single-sig implementation and descriptor parser. (`Mailer` with Resend and console implementations shipped with Phase 1; SMTP arrives with self-host packaging.)
 
-**Done when:** `pnpm dev` runs, migrations apply, tests derive address 0 from known zpub, ypub and `tr` vectors.
+**Done when:** `pnpm dev` runs, migrations apply, tests derive address 0 from known zpub, ypub and `tr` vectors. Done 16 September 2026: BIP84, BIP49 (testnet upub) and BIP86 spec vectors pass.
 
 ## Phase 1: marketing site
 

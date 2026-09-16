@@ -12,6 +12,9 @@ How SatsRecord is built and why. Product scope is in [the brief](../project-brie
 | ypub | `sh(wpkh(<xpub>/0/*))` | 3... |
 | xpub | script type is ambiguous: prompt, default `wpkh` | per choice |
 | descriptor | as pasted, normalised | per descriptor |
+| tpub/upub/vpub | as above, testnet | tb1q / 2... |
+
+Normalisation converts SLIP-132 prefixes to a plain xpub/tpub, strips any `#checksum`, and collapses `<0;1>/*` multipath to `/0/*`. Private keys (`xprv` and friends) are rejected before anything else with an explicit message. Implementation and BIP84/49/86 vector tests: `packages/core/src/bitcoin/`.
 
 Only the external chain (`/0/*`) is used; donations never touch change. `tr(...)` descriptors are accepted (bc1p). Legacy `pkh` is rejected with a message. `wsh(sortedmulti(...))` parses and validates so multisig charities can onboard, but issuance from it is gated until Core-backed derivation ships. Nothing migrates when it does.
 
@@ -75,11 +78,11 @@ Every donor record carries `claimed | email_confirmed`, and any rendered documen
 
 **Erasure is the exception, and it is why donor PII gets its own table.** An amendment supersedes without erasing, which is the opposite of what an erasure request demands. The append-only chain holds a `donor_id`; deleting the donor row leaves every settlement, valuation and acknowledgement intact, queryable and unattributed. Email send logs store `donor_id` and the provider message id, never the address. Retrofitting this means migrating exactly the tables that are hardest to migrate, so it is a v1 schema decision.
 
-**Email lookup without plaintext.** PII is encrypted at the application layer, so donor lookup by email (erasure requests, support) goes through a blind index: HMAC of the normalised address.
+**Email lookup without plaintext.** PII is encrypted at the application layer (AES-256-GCM, `v1.iv.ct.tag`, key from `ENCRYPTION_KEY`), so donor lookup by email (erasure requests, support) goes through a blind index: HMAC-SHA256 of the trimmed, lower-cased address under a separate `INDEX_KEY`. The two keys must differ.
 
 **Settlement is polymorphic.** `kind: onchain | lightning`, `ref: txid:vout | payment_hash`. Lightning (v2) adds a kind, not a table.
 
-**Organisations and members.** An organisation has members with a `role` column. v1 has one role in practice; the column exists so approval flows can be added without migration.
+**Organisations and members** are Better Auth's tables (organization plugin: `organization`, `member`, `invitation`, plus `user`, `session`, `account`, `verification`). Domain tables carry `organisation_id` as text and gain the foreign key when those tables land in Phase 2. Better Auth's `role` column on `member` is the roles hook; v1 has one role in practice.
 
 **Jurisdiction is an output layer.** Every settlement stores the US superset (asset, date, FMV, txid, donor details, charity registration number, goods-or-services flag). Renderers per jurisdiction come later; v1 renders a generic acknowledgement.
 

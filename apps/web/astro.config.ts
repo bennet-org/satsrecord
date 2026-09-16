@@ -26,6 +26,9 @@ export default defineConfig({
       NOTIFY_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
       OPEN_SIGNUP: envField.boolean({ context: 'server', access: 'secret', default: false }),
       SIMULATE_DONATIONS: envField.boolean({ context: 'server', access: 'secret', default: false }),
+      // 32 random bytes each, base64. Required once onboarding stores descriptors (Phase 3).
+      ENCRYPTION_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      INDEX_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
 });
