@@ -1,0 +1,25 @@
+---
+// Plain text page on the ground colour: legal placeholders, errors.
+import Base from './Base.astro';
+import Header from '../components/marketing/Header.astro';
+interface Props { title: string; heading: string; intro?: string }
+const { title, heading, intro } = Astro.props;
+---
+<Base title={title}>
+  <Header />
+  <main class="wrap">
+    <h1>{heading}</h1>
+    {intro && <p class="intro">{intro}</p>}
+    <article class="prose"><slot /></article>
+  </main>
+</Base>
+<style>
+  main { padding-block: clamp(40px, 5vw, 72px) 96px; max-width: 46em; }
+  h1 { font-size: clamp(44px, 6vw, 88px); line-height: 0.95; }
+  .intro { font-size: clamp(18px, 1.5vw, 22px); line-height: 1.35; margin-top: 28px; }
+  .prose { margin-top: 40px; padding-top: 28px; border-top: 2px solid var(--color-ink); font-size: 17px; line-height: 1.5; }
+  .prose :global(h2) { font-size: 26px; letter-spacing: -0.03em; margin: 32px 0 10px; }
+  .prose :global(p + p) { margin-top: 14px; }
+  .prose :global(ul) { margin: 12px 0 0 1.2em; list-style: disc; }
+  .prose :global(a) { text-decoration: underline; }
+</style>

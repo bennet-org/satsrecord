@@ -7,7 +7,7 @@
   --color-paper-ink: #101010;
   --color-paper-mute: #6B5A3C;
   --color-paper-hair: #D9C9AE;
-  --font-sans: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-schibsted);
 }
 
 html { background: var(--color-ground); color: var(--color-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }

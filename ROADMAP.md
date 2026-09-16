@@ -12,17 +12,17 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 - [x] Brand discussion → `brand/README.md`: name confirmed, strapline, palette, type, tone, comparison table copy
 - [x] Scaffold: pnpm workspace, `apps/web` (Astro 7, Tailwind 4), `packages/core`, `packages/widget`, Dockerfile, compose Postgres. React and shadcn arrive with the first interactive page.
 - [ ] Schema v1 and migrations: organisations, members, invites, access_requests, descriptors, addresses, submissions, donors (PII), consents, settlements, valuations, acknowledgements, amendments, email_log
-- [ ] Encryption helper; `Mailer` (Resend, SMTP, console); `ChainSource` and `RateSource` interfaces with fakes; `Deriver` with single-sig implementation and descriptor parser
+- [ ] Encryption helper; `ChainSource` and `RateSource` fakes; `Deriver` with single-sig implementation and descriptor parser. (`Mailer` with Resend and console implementations shipped with Phase 1; SMTP arrives with self-host packaging.)
 
 **Done when:** `pnpm dev` runs, migrations apply, tests derive address 0 from known zpub, ypub and `tr` vectors.
 
 ## Phase 1: marketing site
 
 - [x] One page: hero, who it's for, how it works, comparison, pricing, closing
-- [ ] Request access form → `access_requests` row + notification email (form and validation exist at `/request-access`; handler logs only until the schema lands)
-- [ ] Privacy and terms placeholders
+- [x] Request access form → `access_requests` row + notification email
+- [x] Privacy and terms placeholders, 404 page
 
-**Done when:** reads well at phone width, request access stores a row and sends the email.
+**Done when:** reads well at phone width, request access stores a row and sends the email. Done 16 September 2026. Done 16 September 2026.
 
 ## Phase 2: auth and organisations
 

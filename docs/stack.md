@@ -4,6 +4,20 @@
 
 Pinned at scaffold (15 September 2026): Astro 7.3, @astrojs/node 11.1, Tailwind 4.3 via `@tailwindcss/vite`, Vite 8.3, TypeScript 6.0, pnpm 12.4 (via corepack), Node 24. Re-check the registry before adding anything; do not assume versions from memory.
 
+Conventions established in Phase 1:
+
+- Environment through `astro:env` (schema in `astro.config.ts`); secrets never via `process.env` in app code. `.env.example` lists them.
+- Fonts through Astro's Fonts API (Fontsource provider), self-hosted at build. No Google Fonts requests.
+- `packages/core` exports TypeScript source; Vite consumes it directly. Drizzle schema in `packages/core/src/db/schema.ts`, SQL migrations in `packages/core/drizzle`, applied with `pnpm --filter @satsrecord/core db:migrate`. Tests run the same migrations against PGlite in-process, so `pnpm test` needs no database.
+- Repository functions take a driver-agnostic `Db` and a `Mailer`, so the web action, the worker and tests share one code path.
+
+Conventions established in Phase 1:
+
+- Environment through `astro:env` (schema in `astro.config.ts`); secrets never via `process.env` in app code. `.env.example` lists them.
+- Fonts through Astro's Fonts API (Fontsource provider), self-hosted at build. No Google Fonts requests.
+- `packages/core` exports TypeScript source; Vite consumes it directly. Drizzle schema in `packages/core/src/db/schema.ts`, SQL migrations in `packages/core/drizzle`, applied with `pnpm --filter @satsrecord/core db:migrate`. Tests run the same migrations against PGlite in-process, so `pnpm test` needs no database.
+- Repository functions take a driver-agnostic `Db` and a `Mailer`, so the web action, the worker and tests share one code path.
+
 Homepage is fully static and framework-free. `/request-access` is the only on-demand route (Astro Actions need one). Screenshots for review: `node scripts/shots.mjs <baseUrl> <outDir>` uses Playwright against the system Chrome, no browser download, and reports horizontal overflow at 1440 and 400 px.
 
 ## Layout

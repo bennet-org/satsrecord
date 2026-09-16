@@ -15,9 +15,12 @@ packages/widget  Embeddable web component
 ```
 corepack enable            # pnpm
 pnpm install
+cp .env.example .env       # then edit
+docker compose up -d db    # Postgres on :5432
+pnpm --filter @satsrecord/core db:migrate
 pnpm dev                   # http://localhost:4321
+pnpm test                  # core tests, in-process Postgres, no Docker needed
 pnpm build && pnpm start   # production server
-docker compose up          # Postgres + web
 ```
 
 ## Licence

@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { Font } from 'astro:assets';
 import { site } from '../data/marketing';
 interface Props { title?: string; description?: string }
 const { title = `${site.name}: ${site.descriptor.replace(/\.$/, '')}`, description = site.descriptor } = Astro.props;
@@ -12,9 +13,7 @@ const { title = `${site.name}: ${site.descriptor.replace(/\.$/, '')}`, descripti
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#F7931A" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" />
+    <Font cssVariable="--font-schibsted" preload />
   </head>
   <body>
     <slot />
