@@ -9,3 +9,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - prettier@3.9.7
   - "@astrojs/netlify@8.2.6"
+  - prettier-plugin-astro@1.0.1
