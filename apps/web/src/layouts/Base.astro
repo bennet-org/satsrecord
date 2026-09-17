@@ -9,7 +9,7 @@ interface Props {
   surface?: "ground" | "paper";
 }
 const {
-  title = `${site.name}: ${site.descriptor.replace(/\.$/, "")}`,
+  title = site.title,
   description = site.descriptor,
   surface = "ground",
 } = Astro.props;

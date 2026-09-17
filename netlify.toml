@@ -8,3 +8,22 @@
 
 [build.environment]
   NODE_VERSION = "24"
+
+# satsrecord.com is held but not canonical.
+[[redirects]]
+  from = "https://satsrecord.com/*"
+  to = "https://satsrecord.org/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.satsrecord.com/*"
+  to = "https://satsrecord.org/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.satsrecord.org/*"
+  to = "https://satsrecord.org/:splat"
+  status = 301
+  force = true

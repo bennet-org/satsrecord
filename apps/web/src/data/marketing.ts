@@ -4,6 +4,7 @@ import SatsRecordMark from "../assets/brand/mark.svg";
 
 export const site = {
   name: "SatsRecord",
+  title: "SatsRecord: Bitcoin donations for charities and non-profits",
   descriptor: "Non-custodial bitcoin donations for charities and non-profits.",
   spine: "You hold the keys. We do the paperwork.",
   sourceUrl: "https://github.com/satsrecord",
