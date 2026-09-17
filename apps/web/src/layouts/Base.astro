@@ -1,17 +1,21 @@
 ---
 import "../styles/global.css";
 import { Font } from "astro:assets";
+import Analytics from "../components/Analytics.astro";
 import { site } from "../data/marketing";
 interface Props {
   title?: string;
   description?: string;
   /** Orange ground for the marketing site; paper for the app. */
   surface?: "ground" | "paper";
+  /** Plausible: marketing pages only. */
+  analytics?: boolean;
 }
 const {
   title = site.title,
   description = site.descriptor,
   surface = "ground",
+  analytics = false,
 } = Astro.props;
 // Static pages only; the on-demand app is not for indexing.
 const canonical = Astro.isPrerendered
@@ -30,6 +34,7 @@ const canonical = Astro.isPrerendered
     <meta name="theme-color" content="#F7931A" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <Font cssVariable="--font-schibsted" preload />
+    {analytics && <Analytics />}
   </head>
   <body>
     <slot />

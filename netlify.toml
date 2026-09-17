@@ -9,6 +9,19 @@
 [build.environment]
   NODE_VERSION = "24"
 
+# Plausible, proxied first-party. Script path comes from the Plausible dashboard.
+[[redirects]]
+  from = "/js/script.js"
+  to = "https://plausible.io/js/pa-4B9wyKx3IAFJ0q4KpBUIr.js"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/event"
+  to = "https://plausible.io/api/event"
+  status = 200
+  force = true
+
 # satsrecord.com is held but not canonical.
 [[redirects]]
   from = "https://satsrecord.com/*"

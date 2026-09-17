@@ -11,7 +11,7 @@ interface Props {
 const { title, heading, intro } = Astro.props;
 ---
 
-<Base title={title}>
+<Base title={title} analytics>
   <Header />
   <main class="wrap">
     <h1>{heading}</h1>
