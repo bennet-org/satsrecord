@@ -8,7 +8,7 @@ export const site = {
   title: "SatsRecord: Bitcoin donations for charities and non-profits",
   descriptor: "Non-custodial bitcoin donations for charities and non-profits.",
   spine: "You hold the keys. We do the paperwork.",
-  sourceUrl: "https://github.com/satsrecord",
+  sourceUrl: "https://github.com/bennet-org/satsrecord",
   domain: "satsrecord.org",
 };
 
@@ -16,7 +16,6 @@ export const nav = [
   { label: "How it works", href: "/#how" },
   { label: "Compared", href: "/#compared" },
   { label: "Pricing", href: "/#pricing" },
-  { label: "Source", href: site.sourceUrl },
   { label: "Sign in", href: "/login" },
 ];
 
