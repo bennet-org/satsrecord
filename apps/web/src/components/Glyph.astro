@@ -1,0 +1,60 @@
+---
+// House glyphs, drawn as stamps: solid ink, details cut out in the surface colour, one orange accent.
+// Rules and placement: brand/README.md, "Glyphs". Source sheet: brand/Illustration.html, option B.
+const paths = {
+  record:
+    '<rect class="i" x="2" y="2" width="20" height="20"/><rect class="c" x="6" y="7" width="12" height="2"/><rect class="c" x="6" y="11" width="12" height="2"/><rect class="c" x="6" y="15" width="7" height="2"/>',
+  wallet:
+    '<rect class="i" x="2" y="5" width="20" height="14"/><rect class="o" x="14" y="10" width="4" height="4"/>',
+  block:
+    '<rect class="i" x="2" y="8" width="8" height="8"/><rect class="i" x="14" y="8" width="8" height="8"/><rect class="i" x="10" y="11" width="4" height="2"/>',
+  ack: '<rect class="i" x="2" y="5" width="20" height="14"/><path class="c" d="M2 5l10 9 10-9v3l-10 9L2 8z"/>',
+  csv: '<path class="i" d="M9 2h6v9h5l-8 8-8-8h5z"/><rect class="i" x="2" y="20" width="20" height="2"/>',
+  widget:
+    '<rect class="i" x="2" y="3" width="20" height="18"/><rect class="c" x="4" y="8" width="16" height="11"/><rect class="o" x="6" y="10" width="7" height="5"/>',
+  keys: '<rect class="i" x="2" y="7" width="10" height="10"/><rect class="c" x="5" y="10" width="4" height="4"/><rect class="i" x="12" y="11" width="10" height="2"/><rect class="i" x="16" y="13" width="2" height="4"/><rect class="i" x="20" y="13" width="2" height="3"/>',
+  source:
+    '<path class="i" d="M9 4l2 2-6 6 6 6-2 2-8-8z"/><path class="i" d="M15 4l-2 2 6 6-6 6 2 2 8-8z"/>',
+  price:
+    '<rect class="i" x="2" y="13" width="5" height="9"/><rect class="i" x="9" y="8" width="5" height="14"/><rect class="o" x="16" y="2" width="6" height="20"/>',
+};
+export type GlyphName = keyof typeof paths;
+interface Props {
+  name: GlyphName;
+  size?: number;
+  /** Surface the glyph sits on: cutouts take its colour, and the accent swaps to paper on orange. */
+  on?: "paper" | "ground";
+}
+const { name, size = 28, on = "paper" } = Astro.props;
+---
+
+<svg
+  class:list={["glyph", on]}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  shape-rendering="crispEdges"
+  aria-hidden="true"
+  set:html={paths[name]}
+/>
+<style>
+  .glyph {
+    display: block;
+    flex: none;
+  }
+  .glyph :global(.i) {
+    fill: var(--color-ink);
+  }
+  .paper :global(.c) {
+    fill: var(--color-paper);
+  }
+  .paper :global(.o) {
+    fill: var(--color-ground);
+  }
+  .ground :global(.c) {
+    fill: var(--color-ground);
+  }
+  .ground :global(.o) {
+    fill: var(--color-paper);
+  }
+</style>

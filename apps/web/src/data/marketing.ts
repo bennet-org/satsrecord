@@ -1,6 +1,7 @@
 import BtcpayLogo from "../assets/logos/btcpay.svg";
 import GivingBlockLogo from "../assets/logos/the-giving-block.svg";
 import SatsRecordMark from "../assets/brand/mark.svg";
+import type { GlyphName } from "../components/Glyph.astro";
 
 export const site = {
   name: "SatsRecord",
@@ -24,22 +25,26 @@ export const hero = {
   lead: "No processors taking a cut. Donors pay a wallet you control, and every gift is automatically recorded, valued and acknowledged.",
   facts: [
     {
+      glyph: "keys",
       title: "We can't touch funds.",
       body: "Watch-only. We derive addresses from your public key and hold nothing that can sign.",
     },
     {
+      glyph: "ack",
       title: "Donor data stays yours.",
       body: "Encrypted at rest, exportable, deletable on request. Never sold, never used for anything else.",
     },
     {
+      glyph: "csv",
       title: "Your setup outlives us.",
       body: "If we vanish, your wallet still sees every gift, and your exports are yours.",
     },
     {
+      glyph: "source",
       title: "Open source.",
       body: "AGPL-3.0. Self-host it, audit it, or let us run it for you.",
     },
-  ],
+  ] as Array<{ glyph: GlyphName; title: string; body: string }>,
 };
 
 /** The one fictional record used everywhere a sample appears. */
@@ -61,18 +66,21 @@ export const whoFor = {
   body: "Built for organisations that receive bitcoin at an address they control. Whether you hold it as a treasury asset or sell it, the gift goes straight from the donor to your wallet.",
   roles: [
     [
+      "record",
       "Finance",
       "A record per gift with value at block time, the price source, and the acknowledgement that was sent. CSV out.",
     ],
     [
+      "widget",
       "Fundraising",
       "A widget on your site. Donors get a fresh address and an acknowledgement, and stay on your list, not someone else's.",
     ],
     [
+      "keys",
       "Trustees",
       "No custody, no conversion, no money transmission. Open source, so the claims can be checked.",
     ],
-  ],
+  ] as Array<[GlyphName, string, string]>,
 };
 
 export const steps = [

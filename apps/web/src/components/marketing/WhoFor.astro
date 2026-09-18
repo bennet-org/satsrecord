@@ -1,4 +1,5 @@
 ---
+import Glyph from "../Glyph.astro";
 import { whoFor } from "../../data/marketing";
 ---
 
@@ -8,9 +9,12 @@ import { whoFor } from "../../data/marketing";
     <div>
       <p class="lead">{whoFor.body}</p>
       <dl class="roles">
-        {whoFor.roles.map(([k, v]) => (
+        {whoFor.roles.map(([g, k, v]) => (
           <div>
-            <dt>{k}</dt>
+            <dt>
+              <Glyph name={g} />
+              {k}
+            </dt>
             <dd>{v}</dd>
           </div>
         ))}
@@ -37,9 +41,9 @@ import { whoFor } from "../../data/marketing";
   }
   .roles > div {
     display: grid;
-    grid-template-columns: clamp(7.5em, 28%, 10em) 1fr;
+    grid-template-columns: 28px clamp(7.5em, 28%, 10em) 1fr;
     gap: 16px;
-    align-items: baseline;
+    align-items: start;
     padding: 18px 0;
   }
   .roles > div + div {
@@ -50,6 +54,10 @@ import { whoFor } from "../../data/marketing";
     font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 1.2;
+    display: grid;
+    grid-column: span 2;
+    grid-template-columns: subgrid;
+    align-items: start;
   }
   dd {
     margin: 0;
@@ -62,8 +70,11 @@ import { whoFor } from "../../data/marketing";
   }
   @media (max-width: 560px) {
     .roles > div {
-      grid-template-columns: 1fr;
-      gap: 4px;
+      grid-template-columns: 28px 1fr;
+      gap: 4px 16px;
+    }
+    dd {
+      grid-column: 2;
     }
   }
 </style>

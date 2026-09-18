@@ -6,7 +6,7 @@ The marketing site lives in `apps/web`. This document is the brand reference it 
 
 A poster. Full bitcoin-orange ground, black type, paper-coloured record card with a hard black shadow, two-pixel rules. Sections alternate orange, paper, orange, paper, orange, and close on black with orange type.
 
-The orange works only because everything else is austere. No gradients, no rounded corners, no icons, no ₿ glyph, no coin imagery, one typeface. Keep that discipline or the page becomes a bitcoin site.
+The orange works only because everything else is austere. No gradients, no rounded corners, no icons except the house glyphs, no ₿ glyph, no coin imagery, one typeface. Keep that discipline or the page becomes a bitcoin site.
 
 Proposed split: the orange ground is for the marketing site. The app (dashboard, onboarding, emails) runs on paper and black with orange as a small accent, so finance staff work in a calm UI.
 
@@ -43,6 +43,10 @@ Black on the orange measures about 8.6:1. Cream on orange fails, so type on the 
 ## Wordmark
 
 `SatsRecord`, one word, capital S and R, Schibsted Grotesk 800, -0.03em. The mark is the record card in miniature: `apps/web/src/assets/brand/mark.svg`, copied to `apps/web/public/favicon.svg`.
+
+## Glyphs
+
+Stamps: solid ink, details cut out in the surface colour, one orange accent (paper on the orange ground). Rectangles and 45° only. Source: `Illustration.html`, option B; component: `apps/web/src/components/Glyph.astro`. Used in Who it's for (28px) and the hero facts (32px); later, pricing lists (20px) if they grow, and app empty states and onboarding steps. Never in headlines, H2s, nav, buttons, How it works or Compared. Each must name the thing beside it.
 
 ## Copy in use
 

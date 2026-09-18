@@ -1,5 +1,6 @@
 ---
 import RecordCard from "./RecordCard.astro";
+import Glyph from "../Glyph.astro";
 import { hero, site } from "../../data/marketing";
 ---
 
@@ -22,6 +23,7 @@ import { hero, site } from "../../data/marketing";
   <ul class="facts">
     {hero.facts.map((f) => (
       <li>
+        <Glyph name={f.glyph} size={32} on="ground" />
         <b>{f.title}</b>
         <p>{f.body}</p>
       </li>
@@ -77,7 +79,7 @@ import { hero, site } from "../../data/marketing";
     font-size: 19px;
     font-weight: 800;
     letter-spacing: -0.02em;
-    margin-bottom: 6px;
+    margin: 16px 0 6px;
   }
   .facts p {
     font-size: 15px;
