@@ -236,8 +236,8 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
         <h2>Connect your wallet</h2>
         <p>
           Use a fresh mainnet account dedicated to donations. SatsRecord can
-          generate receiving addresses, but cannot spend your bitcoin. Never
-          paste a seed phrase or private key.
+          generate receiving addresses, but cannot spend your bitcoin.{" "}
+          <strong>Never paste a seed phrase or private key.</strong>
         </p>
         {wallet?.needsScriptType && (
           <form method="POST" class="form inset">
@@ -269,10 +269,10 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
               Compare this with address 0 in your wallet’s receiving address
               list.
             </p>
-            <p class="notice">
+            <p class:list={["notice", wallet.used ? "warning" : "success"]}>
               {wallet.used
                 ? "This account has transaction history. We recommend a fresh account so existing activity stays separate from donations."
-                : "No history found in the first 20 receiving addresses."}{" "}
+                : "Fresh-account check passed: no history found in the first 20 receiving addresses."}{" "}
               <strong>
                 Demo check only: real blockchain history has not been checked.
               </strong>
@@ -295,7 +295,9 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
                   choice will be recorded.
                 </label>
               )}
-              <button class="btn ink">Confirm and continue</button>
+              <button class="btn ink" data-confirm-wallet>
+                Confirm and continue
+              </button>
             </form>
             {demo && (
               <p class="hint demo">
@@ -330,10 +332,10 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
           </button>
         </form>
         <details>
-          <summary>Find your wallet’s public key</summary>
+          <summary>Find your wallet’s extended public key</summary>
           <p>
-            Export the public key or receiving descriptor for a fresh account.
-            These wallet guides can help:
+            Export the extended public key (XPUB) or receiving descriptor for a
+            fresh account. These wallet guides can help:
           </p>
           <ul class="guides">
             <li>
@@ -428,6 +430,11 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
       <>
         <h2>Where will the widget live?</h2>
         <p>
+          This only gives the widget permission to run on your website. It does
+          not add it to any page. Later, you’ll choose exactly which pages show
+          it by adding the install snippet to those pages.
+        </p>
+        <p>
           Enter each website origin on its own line, including https://. List
           www and other subdomains separately. Leave out page paths.
         </p>
@@ -491,9 +498,14 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
             </p>
             <pre id="snippet"><code>{snippet}</code></pre>
             <button class="btn ghost" id="copy" type="button">
-              Copy snippet
+              <span class="copy-reserve" aria-hidden="true">
+                Copy snippet
+              </span>
+              <span id="copy-label" aria-live="polite">
+                Copy snippet
+              </span>
             </button>
-            <span id="copy-status" role="status" />
+            <span id="copy-status" class="sr-only" role="status" />
             <p class="notice">
               The widget arrives in Phase 5. This snippet cannot accept
               donations yet. Simulated donation records arrive in Phase 6.
@@ -518,13 +530,30 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
   </div>
 </App>
 <script>
+  const confirmButton = document.querySelector<HTMLButtonElement>(
+    "[data-confirm-wallet]",
+  );
+  if (confirmButton?.form) {
+    const boxes = [
+      ...confirmButton.form.querySelectorAll<HTMLInputElement>(
+        'input[type="checkbox"][required]',
+      ),
+    ];
+    const updateConfirmation = () => {
+      confirmButton.disabled = boxes.some((box) => !box.checked);
+    };
+    boxes.forEach((box) => box.addEventListener("change", updateConfirmation));
+    window.addEventListener("pageshow", updateConfirmation);
+    updateConfirmation();
+  }
   document.getElementById("copy")?.addEventListener("click", async () => {
     const status = document.getElementById("copy-status")!;
     try {
       await navigator.clipboard.writeText(
         document.getElementById("snippet")!.textContent ?? "",
       );
-      status.textContent = "Copied.";
+      document.getElementById("copy-label")!.textContent = "Copied";
+      status.textContent = "";
     } catch {
       status.textContent = "Select and copy the snippet above.";
     }
@@ -598,6 +627,25 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
     border-left: 3px solid var(--color-ground);
     font-size: 14px;
   }
+  .notice.warning {
+    background: #fdf0ed;
+    border-color: #a3341a;
+    color: #7d2814;
+  }
+  .notice.success {
+    background: #edf6ef;
+    border-color: #367748;
+    color: #245332;
+  }
+  #copy {
+    display: inline-grid;
+  }
+  #copy > span {
+    grid-area: 1 / 1;
+  }
+  .copy-reserve {
+    visibility: hidden;
+  }
   .check {
     display: flex;
     align-items: start;
@@ -614,7 +662,7 @@ const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsreco
   .btn {
     justify-self: start;
   }
-  a:not(.btn),
+  a:not(.btn):not(.back):not(.steps a),
   summary {
     text-decoration: underline;
   }
