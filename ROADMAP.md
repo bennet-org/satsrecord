@@ -57,7 +57,6 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 ## Phase 5: widget
 
 - [ ] Widget design pass: three fully styled presets — SatsRecord default, Minimal and Editorial (working name). Revisit the preview and customisation controls around these presets, rather than individual colour pickers.
-
 - [ ] Web component: form → address (QR, copy, BIP21) → received
 - [ ] Submit → server derives → address email with verification link → verification recorded on click
 - [ ] `localStorage` and session token; funded check on load; rate limits; origin enforcement
@@ -68,6 +67,7 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 ## Phase 6: demo polish
 
 - [ ] Simulate-donation action → settlement, valuation (fixed rate), acknowledgement email, widget received state
+- [ ] Charity donation notifications: per-organisation opt-in, per donation or daily digest, to the owner or a chosen address; sent from the settlement path alongside the acknowledgement
 - [ ] Seed script; `pnpm demo` brings everything up
 - [ ] `docs/demo.md`: the five-minute walkthrough to show a charity
 - [ ] README, AGPL-3.0 (app) and MIT (widget) licence files
