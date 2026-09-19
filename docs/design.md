@@ -94,7 +94,7 @@ Every donor record carries `claimed | email_confirmed`, and any rendered documen
 
 Three transactional emails in v1: address issued (with verification link), acknowledgement on receipt, and auth magic links. Plus access-request and invite emails for the hosted flow.
 
-**Sender identity.** v1 sends from the SatsRecord domain as `<Charity Name> via SatsRecord`, with `Reply-To` set to the charity. Branded sending from the charity's own domain (DKIM and Return-Path delegation) is a later feature; the sender-identity model exists from day one so it is additive.
+**Sender identity.** v1 sends from the SatsRecord domain as `<Charity Name> via SatsRecord`, with `Reply-To` set to the charity. Optional branded sending from the charity's own domain is planned for Phase 9; see [scope and DNS requirements](branded-email.md). Phase 3 stores display name and reply-to; verified domains and From addresses will need a separate sender-identity model.
 
 **Templates are versioned**, and the version is recorded on every acknowledgement row, because the brief requires an auditable record of what was sent.
 

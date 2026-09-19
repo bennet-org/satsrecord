@@ -42,7 +42,7 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 - [x] Allowed origins
 - [x] Finish: install snippet
 
-**Acceptance:** a Sparrow-exported zpub yields addresses matching Sparrow, and a used account triggers the warning. Implemented 18 September 2026; automated vectors and local wizard walkthrough pass. Awaiting user testing with Sparrow before commit. See [testing checklist](docs/onboarding-testing.md).
+**Acceptance:** a Sparrow-exported zpub yields addresses matching Sparrow, and a used account triggers the warning. Implemented 18 September 2026; automated vectors and local wizard walkthrough pass. User approved committing Phase 3 on 19 September 2026. See [testing checklist](docs/onboarding-testing.md).
 
 ## Phase 4: dashboard
 
@@ -93,7 +93,7 @@ Show the demo to prospects. Proceed → Phase 7.
 ## Phase 9: hardening
 
 - [ ] Amendments UI; erasure UI; "this wasn't me"
-- [ ] Branded email sending via DNS delegation
+- [ ] Optional charity-branded email sending via DNS verification; verified From addresses, delivery events and safe fallback. [Scope](docs/branded-email.md).
 - [ ] Multisig issuance via Core `deriveaddresses`
 - [ ] Jurisdiction renderers, US acknowledgement letter first
 - [ ] CRM exports, two, chosen by design partners
