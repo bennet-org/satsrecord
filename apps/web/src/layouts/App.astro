@@ -17,6 +17,7 @@ const path = Astro.url.pathname;
 const nav = org
   ? [
       { label: "Dashboard", href: "/app" },
+      { label: "Setup", href: "/app/setup" },
       { label: "Team", href: "/app/settings/team" },
     ]
   : [];
@@ -141,11 +142,19 @@ const active = (href: string) =>
     margin-top: 32px;
   }
   @media (max-width: 760px) {
+    .bar {
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .wm {
+      flex-shrink: 0;
+    }
     .who,
     .org {
       display: none;
     }
     nav {
+      flex-wrap: wrap;
       gap: 16px;
     }
   }

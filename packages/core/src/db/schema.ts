@@ -301,3 +301,23 @@ export const emailLog = pgTable("email_log", {
   providerMessageId: text("provider_message_id"),
   sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Resumable onboarding. Wallet drafts remain encrypted and cannot issue addresses. */
+export const organisationSettings = pgTable("organisation_settings", {
+  organisationId: uuid("organisation_id")
+    .primaryKey()
+    .references(() => organization.id),
+  registrationNumber: text("registration_number"),
+  country: text("country"),
+  reportingCurrency: text("reporting_currency"),
+  senderName: text("sender_name"),
+  replyTo: text("reply_to"),
+  allowedOrigins: text("allowed_origins").array(),
+  walletDraftEnc: text("wallet_draft_enc"),
+  walletRevision: uuid("wallet_revision"),
+  walletConfirmed: boolean("wallet_confirmed").notNull().default(false),
+  freshCheckOverridden: boolean("fresh_check_overridden")
+    .notNull()
+    .default(false),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+});

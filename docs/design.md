@@ -20,6 +20,8 @@ Only the external chain (`/0/*`) is used; donations never touch change. `tr(...)
 
 **Confirm address 0.** After parsing, onboarding shows the first address and asks the charity to match it against its wallet. This catches wrong script type and wrong account cheaply.
 
+**Onboarding wizard (Phase 3).** Mainnet-only in the UI; the core parser retains testnet support. Progress lives in `organisation_settings`, with encrypted wallet drafts and a revision token so an old tab cannot confirm a replacement wallet. The active descriptor is created atomically on finish. Registration number is optional. Multisig is recognised with an explanation, but cannot complete activation until derivation is supported. The demo uses the fake chain source only; the optional live check is deferred to the chain-backend phase.
+
 **Fresh-account check.** Scan the first 20 indices through the chain source. Any history means the account is not fresh: warn, allow override, record the override.
 
 **Derivation is server-side only.** The descriptor never reaches the browser. The widget requests an address; the server derives it. Single-sig via `@scure/bip32` and `@scure/btc-signer`. Multisig later via Bitcoin Core `deriveaddresses`, behind the same `Deriver` interface.

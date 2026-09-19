@@ -1,0 +1,669 @@
+---
+import App from "../../layouts/App.astro";
+import {
+  getSetup,
+  nextSetupStep,
+  saveOrganisationDetails,
+  saveWalletDraft,
+  chooseWalletScript,
+  inspectWallet,
+  confirmWallet,
+  saveSender,
+  saveOrigins,
+  finishSetup,
+  OnboardingError,
+  DescriptorError,
+  countryCodes,
+  reportingCurrencies,
+  FakeChainSource,
+} from "@satsrecord/core";
+import {
+  db,
+  crypto,
+  appUrl,
+  chain,
+  simulateDonations,
+} from "../../lib/services";
+const org = Astro.locals.org!;
+Astro.response.headers.set("Cache-Control", "no-store");
+if (!["owner", "admin"].includes(org.role))
+  return new Response("Organisation admin access required.", { status: 403 });
+let setup = await getSetup(db, org.id);
+const maxStep = nextSetupStep(setup);
+const requested = Number(Astro.url.searchParams.get("step"));
+const step = setup?.completedAt
+  ? 5
+  : Number.isInteger(requested) && requested >= 1 && requested <= maxStep
+    ? requested
+    : maxStep;
+const demo = import.meta.env.DEV && simulateDonations;
+// Per-request fake fixture: no public chain access and no global fake history contamination.
+const usedDemo = demo && Astro.url.searchParams.get("history") === "used";
+async function source() {
+  if (!usedDemo || !setup?.walletDraftEnc) return chain;
+  const preview = await inspectWallet(crypto(), setup, chain);
+  const fake = new FakeChainSource();
+  if (preview && !preview.needsScriptType) fake.fund(preview.address, 1000);
+  return fake;
+}
+let error = "";
+let posted: FormData | undefined;
+if (Astro.request.method === "POST") {
+  if (Astro.request.headers.get("origin") !== Astro.url.origin)
+    return new Response("Invalid origin", { status: 403 });
+  try {
+    posted = await Astro.request.formData();
+    const field = (key: string) => String(posted!.get(key) ?? "");
+    let next = step;
+    switch (field("intent")) {
+      case "organisation":
+        await saveOrganisationDetails(db, org.id, {
+          name: field("name"),
+          registrationNumber: field("registrationNumber"),
+          country: field("country"),
+          reportingCurrency: field("reportingCurrency"),
+        });
+        next = 2;
+        break;
+      case "wallet":
+        await saveWalletDraft(db, crypto(), org.id, field("wallet"));
+        next = 2;
+        break;
+      case "script":
+        await chooseWalletScript(
+          db,
+          crypto(),
+          org.id,
+          field("revision"),
+          field("script") as "wpkh" | "sh_wpkh" | "tr",
+        );
+        next = 2;
+        break;
+      case "confirm":
+        await confirmWallet(
+          db,
+          crypto(),
+          await source(),
+          org.id,
+          field("revision"),
+          field("matched") === "on",
+          field("override") === "on",
+        );
+        next = 3;
+        break;
+      case "sender":
+        await saveSender(db, org.id, field("senderName"), field("replyTo"));
+        next = 4;
+        break;
+      case "origins":
+        await saveOrigins(db, org.id, field("origins"));
+        next = 5;
+        break;
+      case "finish":
+        await finishSetup(db, crypto(), org.id);
+        next = 5;
+        break;
+      default:
+        throw new OnboardingError("Choose a setup action.");
+    }
+    return Astro.redirect(
+      `/app/setup?step=${next}${usedDemo && next === 2 ? "&history=used" : ""}`,
+      303,
+    );
+  } catch (err) {
+    error =
+      err instanceof OnboardingError || err instanceof DescriptorError
+        ? err.message
+        : "Could not save setup. Please try again. If this continues, ask the operator to check the server configuration.";
+    // Never log wallet input or third-party parsing errors that could contain key material.
+  }
+}
+setup = await getSetup(db, org.id);
+let wallet: Awaited<ReturnType<typeof inspectWallet>> = null;
+if (step === 2 && setup?.walletDraftEnc) {
+  try {
+    wallet = await inspectWallet(crypto(), setup, await source());
+  } catch {
+    error ||= "Could not check this wallet. Please try again.";
+  }
+}
+const value = (key: string, fallback = "") =>
+  String(posted?.get(key) ?? fallback);
+const labels = ["Organisation", "Wallet", "Email", "Website", "Finish"];
+const names = new Intl.DisplayNames(["en"], { type: "region" });
+const countries = countryCodes
+  .map((code) => ({ code, name: names.of(code)! }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsrecord-donate org="${org.id}"></satsrecord-donate>`;
+---
+
+<App
+  title="Set up your organisation"
+  heading={setup?.completedAt ? "Your setup is saved." : "Make it yours."}
+  intro={
+    setup?.completedAt
+      ? "Your wallet and organisation details are ready for the next step."
+      : "Connect a receiving wallet and get ready to accept bitcoin donations. Your progress is saved as you go."
+  }
+>
+  <nav class="steps" aria-label="Setup progress">
+    {labels.map((label, i) => (
+      <a
+        href={`/app/setup?step=${i + 1}`}
+        aria-current={step === i + 1 ? "step" : undefined}
+        aria-disabled={i + 1 > maxStep ? "true" : undefined}
+      >
+        <span>{i + 1}</span>
+        {label}
+      </a>
+    ))}
+  </nav>
+  <div class="panel">
+    {error && (
+      <p class="error notice" role="alert">
+        {error}
+      </p>
+    )}
+    {step === 1 && (
+      <>
+        <h2>Your organisation</h2>
+        <form method="POST" class="form">
+          <input type="hidden" name="intent" value="organisation" />
+          <label>
+            Organisation name
+            <input
+              name="name"
+              required
+              minlength="2"
+              maxlength="200"
+              autocomplete="organization"
+              value={value("name", org.name)}
+            />
+          </label>
+          <label>
+            Registration number{" "}
+            <span class="hint">
+              Optional if your organisation is not registered.
+            </span>
+            <input
+              name="registrationNumber"
+              maxlength="100"
+              value={value(
+                "registrationNumber",
+                setup?.registrationNumber ?? "",
+              )}
+            />
+          </label>
+          <div class="columns">
+            <label>
+              Country
+              <select name="country" required>
+                <option value="">Choose a country</option>
+                {countries.map((c) => (
+                  <option
+                    value={c.code}
+                    selected={value("country", setup?.country ?? "") === c.code}
+                  >
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Reporting currency
+              <select name="reportingCurrency" required>
+                {reportingCurrencies.map((c) => (
+                  <option
+                    selected={
+                      value(
+                        "reportingCurrency",
+                        setup?.reportingCurrency ?? "GBP",
+                      ) === c
+                    }
+                  >
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <button class="btn ink">Save and continue</button>
+        </form>
+      </>
+    )}
+    {step === 2 && (
+      <>
+        <h2>Connect your wallet</h2>
+        <p>
+          Use a fresh mainnet account dedicated to donations. SatsRecord can
+          generate receiving addresses, but cannot spend your bitcoin. Never
+          paste a seed phrase or private key.
+        </p>
+        {wallet?.needsScriptType && (
+          <form method="POST" class="form inset">
+            <input type="hidden" name="intent" value="script" />
+            <input
+              type="hidden"
+              name="revision"
+              value={setup?.walletRevision}
+            />
+            <label>
+              Which address type does this account use?
+              <span class="hint">
+                An xpub does not tell us. Match the setting in your wallet.
+              </span>
+              <select name="script">
+                <option value="wpkh">Native SegWit · bc1q (recommended)</option>
+                <option value="sh_wpkh">Nested SegWit · 3</option>
+                <option value="tr">Taproot · bc1p</option>
+              </select>
+            </label>
+            <button class="btn ink">Show first address</button>
+          </form>
+        )}
+        {wallet && !wallet.needsScriptType && (
+          <div class="inset">
+            <p class="eyebrow">First receiving address · index 0</p>
+            <code class="address">{wallet.address}</code>
+            <p>
+              Compare this with address 0 in your wallet’s receiving address
+              list.
+            </p>
+            <p class="notice">
+              {wallet.used
+                ? "This account has transaction history. We recommend a fresh account so existing activity stays separate from donations."
+                : "No history found in the first 20 receiving addresses."}{" "}
+              <strong>
+                Demo check only: real blockchain history has not been checked.
+              </strong>
+            </p>
+            <form method="POST" class="form">
+              <input type="hidden" name="intent" value="confirm" />
+              <input
+                type="hidden"
+                name="revision"
+                value={setup?.walletRevision}
+              />
+              <label class="check">
+                <input type="checkbox" name="matched" required />
+                Address 0 matches my wallet.
+              </label>
+              {wallet.used && (
+                <label class="check">
+                  <input type="checkbox" name="override" required />I understand
+                  this account has history and want to use it anyway. This
+                  choice will be recorded.
+                </label>
+              )}
+              <button class="btn ink">Confirm and continue</button>
+            </form>
+            {demo && (
+              <p class="hint demo">
+                Development test:{" "}
+                <a href={`/app/setup?step=2${usedDemo ? "" : "&history=used"}`}>
+                  {usedDemo
+                    ? "Show fresh-account result"
+                    : "Simulate existing account history"}
+                </a>
+              </p>
+            )}
+          </div>
+        )}
+        <form method="POST" class="form">
+          <input type="hidden" name="intent" value="wallet" />
+          <label>
+            {wallet
+              ? "Use a different key or descriptor"
+              : "Extended public key or descriptor"}
+            <textarea
+              name="wallet"
+              rows="4"
+              required
+              maxlength="5000"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="zpub… or wpkh(…)"
+            ></textarea>
+          </label>
+          <button class:list={["btn", wallet ? "ghost" : "ink"]}>
+            {wallet ? "Replace wallet" : "Check wallet"}
+          </button>
+        </form>
+        <details>
+          <summary>Find your wallet’s public key</summary>
+          <p>
+            Export the public key or receiving descriptor for a fresh account.
+            These wallet guides can help:
+          </p>
+          <ul class="guides">
+            <li>
+              <a
+                href="https://sparrowwallet.com/docs/quick-start.html"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Sparrow ↗
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://coldcard.com/docs/descriptor_export/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Coldcard ↗
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://support.ledger.com/article/360011069619-zd"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Ledger ↗
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://trezor.io/learn/supported-assets/bitcoin/what-is-a-public-key-xpub"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Trezor ↗
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://bluewallet.io/watch-only/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                BlueWallet ↗
+              </a>
+            </li>
+          </ul>
+          <p class="hint">
+            Single-signature wallets are supported. Multisig receiving will be
+            enabled in a later phase.
+          </p>
+        </details>
+      </>
+    )}
+    {step === 3 && (
+      <>
+        <h2>Emails from your organisation</h2>
+        <p>
+          Donation emails will come from the SatsRecord domain as “your display
+          name via SatsRecord”. Replies go directly to your team.
+        </p>
+        <form method="POST" class="form">
+          <input type="hidden" name="intent" value="sender" />
+          <label>
+            Display name
+            <input
+              name="senderName"
+              required
+              maxlength="120"
+              value={value("senderName", setup?.senderName ?? org.name)}
+            />
+          </label>
+          <label>
+            Reply-to email
+            <input
+              type="email"
+              name="replyTo"
+              required
+              maxlength="254"
+              value={value(
+                "replyTo",
+                setup?.replyTo ?? Astro.locals.user!.email,
+              )}
+            />
+          </label>
+          <button class="btn ink">Save and continue</button>
+        </form>
+      </>
+    )}
+    {step === 4 && (
+      <>
+        <h2>Where will the widget live?</h2>
+        <p>
+          Enter each website origin on its own line, including https://. List
+          www and other subdomains separately. Leave out page paths.
+        </p>
+        <form method="POST" class="form">
+          <input type="hidden" name="intent" value="origins" />
+          <label>
+            Allowed origins
+            <textarea
+              name="origins"
+              rows="4"
+              required
+              maxlength="5000"
+              placeholder="https://example.org"
+            >{value("origins", setup?.allowedOrigins?.join("\n") ?? "")}</textarea>
+          </label>
+          <p class="hint">
+            For local testing, HTTP is supported on localhost and 127.0.0.1.
+            Include the port, for example http://localhost:8080.
+          </p>
+          <button class="btn ink">Save and continue</button>
+        </form>
+      </>
+    )}
+    {step === 5 && (
+      <>
+        <h2>
+          {setup?.completedAt ? "Your install snippet" : "Review your setup"}
+        </h2>
+        <dl>
+          <dt>Organisation</dt>
+          <dd>{org.name}</dd>
+          <dt>Registration number</dt>
+          <dd>{setup?.registrationNumber || "Not provided"}</dd>
+          <dt>Country / currency</dt>
+          <dd>
+            {names.of(setup?.country ?? "GB")} / {setup?.reportingCurrency}
+          </dd>
+          <dt>Email sender</dt>
+          <dd>
+            {setup?.senderName} via SatsRecord
+            <br />
+            Reply to {setup?.replyTo}
+          </dd>
+          <dt>Allowed origins</dt>
+          <dd>
+            {setup?.allowedOrigins?.map((o) => (
+              <div>{o}</div>
+            ))}
+          </dd>
+          <dt>Wallet</dt>
+          <dd>
+            Mainnet · address 0 confirmed
+            {setup?.freshCheckOverridden && " · existing history accepted"}
+          </dd>
+        </dl>
+        {setup?.completedAt ? (
+          <>
+            <p>
+              Place this snippet on an allowed website when the widget is
+              available.
+            </p>
+            <pre id="snippet"><code>{snippet}</code></pre>
+            <button class="btn ghost" id="copy" type="button">
+              Copy snippet
+            </button>
+            <span id="copy-status" role="status" />
+            <p class="notice">
+              The widget arrives in Phase 5. This snippet cannot accept
+              donations yet. Simulated donation records arrive in Phase 6.
+            </p>
+            <a class="btn ink" href="/app">
+              Go to dashboard
+            </a>
+          </>
+        ) : (
+          <form method="POST">
+            <input type="hidden" name="intent" value="finish" />
+            <button class="btn ink">Finish setup</button>
+          </form>
+        )}
+      </>
+    )}
+    {step > 1 && !setup?.completedAt && (
+      <a class="back" href={`/app/setup?step=${step - 1}`}>
+        ← Back
+      </a>
+    )}
+  </div>
+</App>
+<script>
+  document.getElementById("copy")?.addEventListener("click", async () => {
+    const status = document.getElementById("copy-status")!;
+    try {
+      await navigator.clipboard.writeText(
+        document.getElementById("snippet")!.textContent ?? "",
+      );
+      status.textContent = "Copied.";
+    } catch {
+      status.textContent = "Select and copy the snippet above.";
+    }
+  });
+</script>
+<style>
+  .steps {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .steps a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px 8px 0;
+    font-size: 14px;
+  }
+  .steps span {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--color-paper-hair);
+    border-radius: 50%;
+  }
+  .steps [aria-current] {
+    font-weight: 800;
+  }
+  .steps [aria-current] span {
+    background: var(--color-ground);
+    border-color: var(--color-ground);
+  }
+  .steps [aria-disabled="true"] {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .panel {
+    max-width: 660px;
+    display: grid;
+    gap: 24px;
+  }
+  h2 {
+    font-size: 28px;
+  }
+  .hint {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-paper-mute);
+  }
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .inset {
+    padding: 24px;
+    border: 2px solid var(--color-ink);
+    background: white;
+    display: grid;
+    gap: 18px;
+  }
+  .address {
+    overflow-wrap: anywhere;
+    font-size: 18px;
+  }
+  .notice {
+    padding: 16px;
+    background: #f7931a18;
+    border-left: 3px solid var(--color-ground);
+    font-size: 14px;
+  }
+  .check {
+    display: flex;
+    align-items: start;
+    gap: 12px;
+    font-weight: 500;
+  }
+  .form .check input {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--color-ink);
+  }
+  .btn {
+    justify-self: start;
+  }
+  a:not(.btn),
+  summary {
+    text-decoration: underline;
+  }
+  summary {
+    cursor: pointer;
+  }
+  details p {
+    margin-top: 14px;
+  }
+  .guides {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 14px;
+  }
+  pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    background: white;
+    padding: 18px;
+    border: 1px solid var(--color-paper-hair);
+    font-size: 13px;
+    margin: 0;
+  }
+  dt {
+    font-size: 13px;
+    color: var(--color-paper-mute);
+  }
+  dd {
+    margin: 2px 0 16px;
+    overflow-wrap: anywhere;
+  }
+  .back {
+    justify-self: start;
+    font-size: 14px;
+  }
+  @media (max-width: 480px) {
+    .columns {
+      grid-template-columns: 1fr;
+    }
+    .inset {
+      padding: 16px;
+    }
+    .steps {
+      gap: 4px;
+    }
+    .steps a {
+      font-size: 12px;
+      gap: 4px;
+    }
+  }
+</style>

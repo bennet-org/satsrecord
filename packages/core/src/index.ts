@@ -10,3 +10,5 @@ export * from "./fakes";
 export * from "./auth";
 export * from "./organisations";
 export * from "./organisation-invites";
+
+export * from "./onboarding";

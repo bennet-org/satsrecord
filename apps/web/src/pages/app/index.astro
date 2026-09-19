@@ -1,7 +1,7 @@
 ---
 // Dashboard. Phase 4 fills this; until then it points at what exists.
 import App from "../../layouts/App.astro";
-import { passkeysFor } from "@satsrecord/core";
+import { passkeysFor, getSetup } from "@satsrecord/core";
 import { db } from "../../lib/services";
 const { user, org } = Astro.locals;
 if (
@@ -9,13 +9,17 @@ if (
   (await passkeysFor(db, user!.id)).length === 0
 )
   return Astro.redirect("/app/welcome");
+const setup = await getSetup(db, org!.id);
+if (!setup?.completedAt) return Astro.redirect("/app/setup");
 ---
 
 <App title="Dashboard" heading={org!.name}>
   <div class="grid">
     <section>
       <p class="eyebrow">Wallet</p>
-      <p>Not connected yet. Onboarding arrives in the next phase.</p>
+      <p>
+        Connected. <a href="/app/setup">View your setup and install snippet</a>.
+      </p>
     </section>
     <section>
       <p class="eyebrow">Team</p>

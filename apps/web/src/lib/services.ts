@@ -11,9 +11,11 @@ import {
   OPERATOR_EMAILS,
   DEV_OUTBOX,
   OPEN_SIGNUP,
+  SIMULATE_DONATIONS,
 } from "astro:env/server";
 import {
   ConsoleMailer,
+  FakeChainSource,
   createAuth,
   createCrypto,
   createDb,
@@ -70,3 +72,6 @@ export function crypto(): Crypto {
 export function safeNext(next: string | null | undefined, fallback = "/app") {
   return next && /^\/(?!\/)/.test(next) ? next : fallback;
 }
+
+export const chain = new FakeChainSource();
+export const simulateDonations = SIMULATE_DONATIONS;

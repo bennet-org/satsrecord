@@ -35,14 +35,14 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Phase 3: onboarding
 
-- [ ] Organisation: name, registration number, country, reporting currency
-- [ ] Wallet: paste xpub/ypub/zpub/descriptor → normalise → script-type prompt for bare xpub → confirm address 0 → fresh-account check (fake source in demo; mempool.space if configured)
-- [ ] Wallet guides: Sparrow, Coldcard, Ledger, Trezor, BlueWallet (links to begin with)
-- [ ] Email sender: display name, reply-to
-- [ ] Allowed origins
-- [ ] Finish: install snippet
+- [x] Organisation: name, registration number, country, reporting currency
+- [x] Wallet: paste xpub/ypub/zpub/descriptor → normalise → script-type prompt for bare xpub → confirm address 0 → fresh-account check (fake source in demo; live source deferred)
+- [x] Wallet guides: Sparrow, Coldcard, Ledger, Trezor, BlueWallet (links to begin with)
+- [x] Email sender: display name, reply-to
+- [x] Allowed origins
+- [x] Finish: install snippet
 
-**Done when:** a Sparrow-exported zpub yields addresses matching Sparrow, and a used account triggers the warning.
+**Acceptance:** a Sparrow-exported zpub yields addresses matching Sparrow, and a used account triggers the warning. Implemented 18 September 2026; automated vectors and local wizard walkthrough pass. Awaiting user testing with Sparrow before commit. See [testing checklist](docs/onboarding-testing.md).
 
 ## Phase 4: dashboard
 
