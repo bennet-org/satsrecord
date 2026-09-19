@@ -50,7 +50,7 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 - [ ] Donors list and detail; erasure action
 - [ ] Exports: CSV; address manifest with gap-limit guidance
 - [ ] Widget page: snippet, live preview, CSS variable and text-slot customisation
-- [ ] Settings: organisation, wallet, email, origins, team
+- [ ] Settings: organisation, wallet, email, origins, team. Wallet is read-only; replacing it goes through hello@satsrecord.org, and addresses already issued stay monitored.
 
 **Done when:** every page renders against seeded data.
 
@@ -88,6 +88,7 @@ Show the demo to prospects. Proceed → Phase 7.
 
 - [ ] Hosting: web on Netlify from Phase 2; worker and node on a box (Fly or similar) with Cloudflare in front, web moves there if it simplifies things. Neon, backups, DNS.
 - [ ] ICO registration, DPA template, retention and deletion policy
+- [ ] Operator wallet rotation in `/admin`: retire the active descriptor, add a new one, keep watching retired addresses, decide what open submissions do
 - [ ] First design partners invited
 
 ## Phase 9: hardening
