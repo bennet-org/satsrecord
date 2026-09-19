@@ -56,6 +56,8 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Phase 5: widget
 
+- [ ] Widget design pass: three fully styled presets — SatsRecord default, Minimal and Editorial (working name). Revisit the preview and customisation controls around these presets, rather than individual colour pickers.
+
 - [ ] Web component: form → address (QR, copy, BIP21) → received
 - [ ] Submit → server derives → address email with verification link → verification recorded on click
 - [ ] `localStorage` and session token; funded check on load; rate limits; origin enforcement
@@ -100,5 +102,7 @@ Show the demo to prospects. Proceed → Phase 7.
 - [ ] CRM exports, two, chosen by design partners
 
 ## Later
+
+Brand-matched widget styling: “Style it based on my brand” uses the organisation’s website to generate matching CSS, with a preview before applying it.
 
 Self-host packaging and docs. Billing. Lightning via NWC. EU prescribed forms.

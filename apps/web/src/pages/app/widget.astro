@@ -14,6 +14,7 @@ const setup = await getSetup(db, org.id);
 if (!setup?.completedAt) return Astro.redirect("/app/setup");
 let config = setup.widgetConfig ?? widgetDefaults;
 let error = "";
+const inline = Astro.request.headers.get("accept") === "application/json";
 if (Astro.request.method === "POST") {
   if (Astro.request.headers.get("origin") !== Astro.url.origin)
     return new Response("Invalid origin", { status: 403 });
@@ -23,10 +24,20 @@ if (Astro.request.method === "POST") {
       Object.keys(widgetDefaults).map((k) => [k, String(form.get(k) ?? "")]),
     ) as WidgetConfig;
     await saveWidgetConfig(db, org.id, org.role, input);
-    return Astro.redirect("/app/widget?saved=1", 303);
+    if (inline)
+      return Response.json(
+        { snippet: widgetSnippet(appUrl, org.id, input) },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    return Astro.redirect("/app/widget", 303);
   } catch (e) {
     if (!(e instanceof OnboardingError)) throw e;
     error = e.message;
+    if (inline)
+      return Response.json(
+        { error },
+        { status: 400, headers: { "Cache-Control": "no-store" } },
+      );
   }
 }
 ---
@@ -39,11 +50,6 @@ if (Astro.request.method === "POST") {
   {error && (
     <p class="error notice" role="alert">
       {error}
-    </p>
-  )}
-  {Astro.url.searchParams.has("saved") && (
-    <p class="notice" role="status">
-      Customisation saved.
     </p>
   )}
   <div class="columns">
@@ -75,7 +81,10 @@ if (Astro.request.method === "POST") {
               <input name={key} value={config[key]} required maxlength={max} />
             </label>
           ))}
-          <button class="btn ink">Save customisation</button>
+          <button class="btn ink" id="save-widget">
+            Save customisation
+          </button>
+          <span id="save-status" role="status" aria-live="polite"></span>
         </fieldset>
       </form>
     </section>
@@ -114,10 +123,15 @@ if (Astro.request.method === "POST") {
       will become available in Phase 5.
     </p>
     <textarea
+      id="install-snippet"
       aria-label="Install snippet"
       readonly
       rows="9"
     >{widgetSnippet(appUrl,org.id,config)}</textarea>
+    <button class="btn" type="button" id="copy-snippet">
+      Copy snippet
+    </button>
+    <span id="copy-status" role="status" aria-live="polite"></span>
     <p class="mute">
       CSS variables: --sr-accent, --sr-background, --sr-text. Text slots:
       heading, button, consent.
@@ -127,6 +141,66 @@ if (Astro.request.method === "POST") {
 <script>
   const form = document.querySelector<HTMLFormElement>("#widget-config")!;
   const preview = document.querySelector<HTMLElement>("#widget-preview")!;
+  const save = document.querySelector<HTMLButtonElement>("#save-widget")!;
+  const status = document.querySelector<HTMLElement>("#save-status")!;
+  const snippet =
+    document.querySelector<HTMLTextAreaElement>("#install-snippet")!;
+  let reset: ReturnType<typeof setTimeout>;
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const body = new FormData(form);
+    clearTimeout(reset);
+    save.disabled = true;
+    save.textContent = "Saving…";
+    status.textContent = "";
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body,
+        headers: { Accept: "application/json" },
+      });
+      if (response.redirected)
+        throw new Error(
+          "Your session has expired. Reload and sign in to save.",
+        );
+      if (
+        !(response.headers.get("content-type") ?? "").includes(
+          "application/json",
+        )
+      )
+        throw new Error("Could not save. Please try again.");
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.error ?? "Could not save. Please try again.");
+      snippet.value = result.snippet;
+      save.textContent = "Done";
+      status.textContent = "Changes saved.";
+    } catch (error) {
+      status.textContent =
+        error instanceof Error
+          ? error.message
+          : "Could not save. Please try again.";
+      save.textContent = "Try again";
+    } finally {
+      save.disabled = false;
+      reset = setTimeout(() => {
+        save.textContent = "Save customisation";
+      }, 2000);
+    }
+  });
+  document
+    .querySelector<HTMLButtonElement>("#copy-snippet")!
+    .addEventListener("click", async () => {
+      const status = document.querySelector<HTMLElement>("#copy-status")!;
+      try {
+        await navigator.clipboard.writeText(snippet.value);
+        status.textContent = "Copied.";
+      } catch {
+        snippet.focus();
+        snippet.select();
+        status.textContent = "Select and copy the snippet above.";
+      }
+    });
   form.addEventListener("input", () => {
     const data = new FormData(form);
     for (const key of ["accent", "background", "text"])
@@ -190,6 +264,9 @@ if (Astro.request.method === "POST") {
     font-weight: 700;
   }
   textarea {
+    background: #fff;
+    border: 2px solid var(--color-ink);
+    margin-bottom: 12px;
     width: 100%;
     margin-top: 16px;
     font-family: monospace;
