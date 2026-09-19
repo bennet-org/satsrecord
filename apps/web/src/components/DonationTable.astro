@@ -1,6 +1,6 @@
 ---
 import type { listDonations, listDonors } from "@satsrecord/core";
-import { date, money, emailStatus } from "../lib/dashboard";
+import { date, money, emailStatus, paymentStatus } from "../lib/dashboard";
 import BitcoinAmount from "./BitcoinAmount.astro";
 interface Props {
   rows: Awaited<ReturnType<typeof listDonations>>;
@@ -38,9 +38,9 @@ const { rows, donors } = Astro.props;
               <td>
                 {r.values.length
                   ? r.values.map((v) => money(v.amount, v.currency)).join("; ")
-                  : "Pending"}
+                  : "TBC"}
               </td>
-              <td>{r.settlement.status}</td>
+              <td>{paymentStatus(r.settlement.status)}</td>
               <td>
                 {donor && donor.attribution !== "anonymous" ? (
                   <a href={`/app/donors/${donor.id}`}>

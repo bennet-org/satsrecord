@@ -2,7 +2,12 @@
 import App from "../../../layouts/App.astro";
 import { donationDetail, listDonors } from "@satsrecord/core";
 import { db, crypto } from "../../../lib/services";
-import { date, money, attribution } from "../../../lib/dashboard";
+import {
+  date,
+  money,
+  attribution,
+  paymentStatus,
+} from "../../../lib/dashboard";
 const org = Astro.locals.org!;
 const data = await donationDetail(db, org.id, Astro.params.id!);
 if (!data) return Astro.rewrite("/404");
@@ -18,7 +23,7 @@ const s = data.settlement;
     <h2>Settlement</h2>
     <dl>
       <dt>Status</dt>
-      <dd>{s.status}</dd>
+      <dd>{paymentStatus(s.status)}</dd>
       <dt>First seen</dt>
       <dd>{date(s.firstSeenAt)}</dd>
       <dt>Block time</dt>
@@ -49,9 +54,7 @@ const s = data.settlement;
   </section>
   <section class="panel">
     <h2>Fair market value</h2>
-    {!data.values.length && (
-      <p>Pending valuation. No value has been recorded.</p>
-    )}
+    {!data.values.length && <p>Value TBC. No valuation has been recorded.</p>}
     {data.values.map((v) => (
       <article>
         <p>
@@ -72,7 +75,11 @@ const s = data.settlement;
   <section class="panel">
     <h2>Audit trail</h2>
     <p>
-      {date(s.createdAt)} · Settlement recorded ({s.status}).
+      {date(s.createdAt)} · Settlement recorded (
+      {s.status === "reorged"
+        ? "Confirmation reversed by a blockchain reorganisation; awaiting confirmation again"
+        : paymentStatus(s.status)}
+      ).
     </p>
     {data.values.map((v) => (
       <p>

@@ -89,16 +89,19 @@ const [rows, donors, wallets] = await Promise.all([
 </App>
 <style>
   .amount-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
     margin-bottom: 10px;
   }
   .amount-row .number {
     margin-bottom: 0;
+    overflow-wrap: anywhere;
   }
   .unit-toggle {
+    justify-self: end;
+    margin-top: 7px;
     display: flex;
     gap: 0;
     flex-shrink: 0;

@@ -30,3 +30,10 @@ export const attribution = (s?: string) =>
 
 export const emailStatus = (s?: string) =>
   s === "email_confirmed" ? "Verified" : s === "claimed" ? "Not verified" : "—";
+
+export const paymentStatus = (status: "mempool" | "confirmed" | "reorged") =>
+  ({
+    mempool: "Pending",
+    confirmed: "Confirmed",
+    reorged: "Pending",
+  })[status];
