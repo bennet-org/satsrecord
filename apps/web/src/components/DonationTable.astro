@@ -1,6 +1,7 @@
 ---
 import type { listDonations, listDonors } from "@satsrecord/core";
-import { date, sats, attribution } from "../lib/dashboard";
+import { date, money, attribution } from "../lib/dashboard";
+import BitcoinAmount from "./BitcoinAmount.astro";
 interface Props {
   rows: Awaited<ReturnType<typeof listDonations>>;
   donors: Awaited<ReturnType<typeof listDonors>>;
@@ -15,7 +16,7 @@ const { rows, donors } = Astro.props;
         <tr>
           <th>Received</th>
           <th>Amount</th>
-          <th>FMV</th>
+          <th>Value</th>
           <th>Status</th>
           <th>Donor</th>
           <th>Attribution</th>
@@ -31,23 +32,27 @@ const { rows, donors } = Astro.props;
                   {date(r.settlement.firstSeenAt)}
                 </a>
               </td>
-              <td>{sats(r.settlement.amountSats)}</td>
+              <td>
+                <BitcoinAmount amount={r.settlement.amountSats} />
+              </td>
               <td>
                 {r.values.length
-                  ? r.values.map((v) => `${v.currency} ${v.amount}`).join("; ")
+                  ? r.values.map((v) => money(v.amount, v.currency)).join("; ")
                   : "Pending"}
               </td>
               <td>{r.settlement.status}</td>
               <td>
-                {donor ? (
+                {donor && donor.attribution !== "anonymous" ? (
                   <a href={`/app/donors/${donor.id}`}>
                     {donor.name || donor.email || "Unnamed donor"}
                   </a>
                 ) : (
-                  "Unattributed"
+                  "Anonymous"
                 )}
               </td>
-              <td>{attribution(donor?.attribution)}</td>
+              <td class:list={{ unverified: donor?.attribution === "claimed" }}>
+                {attribution(donor?.attribution)}
+              </td>
             </tr>
           );
         })}

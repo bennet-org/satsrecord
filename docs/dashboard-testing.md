@@ -8,7 +8,7 @@ Run migrations before starting the app (`pnpm --filter @satsrecord/core db:migra
 2. Visit `/dev/dashboard` and choose **Create demo organisation**. It creates a separate organisation owned by the signed-in user and switches their active organisation. Existing data is untouched. Each invocation creates a fresh fixture.
 3. Open the dashboard, donations list and each donation detail. The fixture contains two payments to one address, confirmed and pending valuations, a reorg amendment, claimed and confirmed identities, and an anonymous payment.
 4. Open donors and donor detail. Repeated email addresses remain separate submissions. Confirm that consent and related payments render.
-5. Download all three exports from `/app/exports`. The address manifest includes the unfunded address and a recommended gap limit of 24. All wallets, including retired descriptors, are included. CSVs quote embedded commas/newlines and neutralise spreadsheet formulas.
+5. Download all three exports from `/app/exports`. The address manifest includes 85 issued addresses (only indices 0, 14, 39 and 72 have payments) and a recommended gap limit of 104. All wallets, including retired descriptors, are included. CSVs quote embedded commas/newlines and neutralise spreadsheet formulas.
 6. On `/app/widget`, change colours and labels: the visual preview updates immediately. Save, reload and check the snippet. Only saved values enter the snippet. This is a visual preview; the serving widget, address issuance and emails arrive in Phase 5.
 7. Edit organisation, email and origins in settings. Wallet details are read-only, with a support link for replacement. Existing valuation currencies remain unchanged when reporting currency changes. Team management is linked from settings.
 8. On a donor detail, explicitly confirm permanent erasure. The donor page then returns 404; donations, valuations, acknowledgements and email logs remain without that donor reference. Consent records disappear. A separate submission with the same email remains.
@@ -27,3 +27,5 @@ Use the existing `<satsrecord-donate org="…">` element and `/widget/v1.js`. Cu
 - `pnpm build`: passed.
 - All nine dashboard/list/detail/settings pages rendered at 1440px and 390px against an isolated PostgreSQL fixture, with no horizontal page overflow.
 - Browser checks passed for three CSV downloads, live text preview, saved widget configuration, saved email settings and donor erasure.
+
+The BTC/sats display preference is stored in a one-year browser cookie and applies throughout the app. CSV exports retain explicit `amount_sats` and ISO currency columns for machine-readable, unambiguous data.

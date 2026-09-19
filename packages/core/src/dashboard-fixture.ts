@@ -57,24 +57,25 @@ export async function seedDashboard(db: Db, crypto: Crypto, userId?: string) {
         scriptType: "wpkh",
         network: "mainnet",
         label: "DEMO",
-        nextIndex: 5,
+        nextIndex: 85,
       })
       .returning();
     const donorIds: string[] = [],
       settlementIds: string[] = [];
-    for (let i = 0; i < 5; i++) {
-      const time = new Date(Date.UTC(2026, 8, 10 + i, 12));
+    for (let index = 0; index < 85; index++) {
+      const i = [0, 14, 39, 72].indexOf(index);
+      const time = new Date(Date.UTC(2026, 8, 10 + Math.floor(index / 10), 12));
       const [address] = await tx
         .insert(addresses)
         .values({
           descriptorId: wallet!.id,
-          index: i,
-          address: deriveAddress(p, i),
+          index,
+          address: deriveAddress(p, index),
           issuedAt: time,
         })
         .returning();
       let donorId: string | null = null;
-      if (i < 3) {
+      if (i >= 0 && i < 3) {
         const email = [
           "alex@example.org",
           "sam@example.org",
@@ -110,7 +111,7 @@ export async function seedDashboard(db: Db, crypto: Crypto, userId?: string) {
         origin: "https://example.org",
         createdAt: time,
       });
-      if (i === 4) continue; // Unfunded address remains in manifest.
+      if (i === -1) continue; // Unfunded address remains in manifest.
       for (let payment = 0; payment < (i === 0 ? 2 : 1); payment++) {
         const status = i === 1 ? "mempool" : i === 3 ? "reorged" : "confirmed";
         const [s] = await tx

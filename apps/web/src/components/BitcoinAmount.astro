@@ -1,0 +1,11 @@
+---
+import { bitcoin } from "../lib/dashboard";
+interface Props {
+  amount: number;
+}
+const { amount } = Astro.props;
+---
+
+<span data-bitcoin-sats={amount}>
+  {bitcoin(amount, Astro.cookies.get("bitcoin-unit")?.value)}
+</span>

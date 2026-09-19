@@ -45,7 +45,9 @@ const consentRows = await donorConsents(db, org.id, donor.id);
     <h2>Personal details</h2>
     <p>{donor.email || "Email not supplied"}</p>
     <p>
-      {attribution(donor.attribution)}
+      <span class:list={{ unverified: donor.attribution === "claimed" }}>
+        {attribution(donor.attribution)}
+      </span>
       {donor.verifiedAt && ` · ${date(donor.verifiedAt)}`}
     </p>
     <p>Created {date(donor.createdAt)}</p>
@@ -83,7 +85,7 @@ const consentRows = await donorConsents(db, org.id, donor.id);
         </p>
       )}
       <form method="POST" class="form">
-        <label>
+        <label class="checkbox-label">
           <input type="checkbox" name="confirm" value="erase" required /> I
           confirm permanent erasure of this donor’s personal data.
         </label>

@@ -2,7 +2,7 @@
 import App from "../../../layouts/App.astro";
 import { donationDetail, listDonors } from "@satsrecord/core";
 import { db, crypto } from "../../../lib/services";
-import { date, sats, attribution } from "../../../lib/dashboard";
+import { date, money, attribution } from "../../../lib/dashboard";
 const org = Astro.locals.org!;
 const data = await donationDetail(db, org.id, Astro.params.id!);
 if (!data) return Astro.rewrite("/404");
@@ -12,7 +12,7 @@ const donor = (await listDonors(db, crypto(), org.id)).find(
 const s = data.settlement;
 ---
 
-<App title="Donation" heading={sats(s.amountSats)} intro="Donation record">
+<App title="Donation" headingSats={s.amountSats} intro="Donation record">
   <a href="/app/donations">← All donations</a>
   <section class="panel">
     <h2>Settlement</h2>
@@ -38,9 +38,12 @@ const s = data.settlement;
             {donor.name || donor.email || "Unnamed donor"}
           </a>
         ) : (
-          "Unattributed"
+          "Anonymous"
         )}{" "}
-        · {attribution(donor?.attribution)}
+        ·{" "}
+        <span class:list={{ unverified: donor?.attribution === "claimed" }}>
+          {attribution(donor?.attribution)}
+        </span>
       </dd>
     </dl>
   </section>
@@ -52,10 +55,8 @@ const s = data.settlement;
     {data.values.map((v) => (
       <article>
         <p>
-          <strong>
-            {v.currency} {v.amount}
-          </strong>{" "}
-          at {v.rate} {v.currency}/BTC
+          <strong>{money(v.amount, v.currency)}</strong> at{" "}
+          {money(v.rate, v.currency)}/BTC
         </p>
         <p>
           {v.source} · {v.pair} · {v.method}
@@ -75,7 +76,7 @@ const s = data.settlement;
     </p>
     {data.values.map((v) => (
       <p>
-        {date(v.createdAt)} · Valuation recorded: {v.currency} {v.amount}.
+        {date(v.createdAt)} · Valuation recorded: {money(v.amount, v.currency)}.
       </p>
     ))}
     {data.receipts.map((r) => (

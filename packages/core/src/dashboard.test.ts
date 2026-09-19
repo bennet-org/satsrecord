@@ -64,10 +64,10 @@ it("erases PII and consent while preserving both payments, valuations, acknowled
     (await db.query.emailLog.findMany()).filter((l) => l.donorId === null),
   ).toHaveLength(2);
   expect(await walletManifest(db, fixture.orgId)).toMatchObject([
-    { gapLimit: 24, addresses: expect.any(Array) },
+    { gapLimit: 104, addresses: expect.any(Array) },
   ]);
   expect((await walletManifest(db, fixture.orgId))[0]!.addresses).toHaveLength(
-    5,
+    85,
   );
 });
 it("validates settings and preserves existing valuations and wallet", async () => {

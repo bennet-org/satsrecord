@@ -30,7 +30,9 @@ const rows = await listDonors(db, crypto(), Astro.locals.org!.id);
                 <a href={`/app/donors/${d.id}`}>{d.name || "Unnamed donor"}</a>
               </td>
               <td>{d.email || "Not supplied"}</td>
-              <td>{attribution(d.attribution)}</td>
+              <td class:list={{ unverified: d.attribution === "claimed" }}>
+                {attribution(d.attribution)}
+              </td>
               <td>{date(d.createdAt)}</td>
             </tr>
           ))}

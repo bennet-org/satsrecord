@@ -205,3 +205,16 @@ ul {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+.form .checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.form input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  padding: 0;
+  margin-top: 2px;
+}

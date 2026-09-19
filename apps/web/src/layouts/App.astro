@@ -1,17 +1,19 @@
 ---
 // Signed-in area: paper ground, black type, orange as a small accent. Header carries the organisation
 // and the signed-in user; pages set their own heading.
+import BitcoinAmount from "../components/BitcoinAmount.astro";
 import Base from "./Base.astro";
 import Mark from "../assets/brand/mark.svg";
 import { site } from "../data/marketing";
 interface Props {
   title: string;
+  headingSats?: number;
   heading?: string;
   intro?: string;
   /** Narrow, centred column for auth and invite pages. */
   narrow?: boolean;
 }
-const { title, heading, intro, narrow = false } = Astro.props;
+const { title, heading, headingSats, intro, narrow = false } = Astro.props;
 const { user, org, isOperator } = Astro.locals;
 const path = Astro.url.pathname;
 const nav = org
@@ -57,7 +59,13 @@ const active = (href: string) =>
     </div>
   </header>
   <main class:list={["wrap", { narrow }]}>
-    {heading && <h1>{heading}</h1>}
+    {headingSats !== undefined ? (
+      <h1>
+        <BitcoinAmount amount={headingSats} />
+      </h1>
+    ) : (
+      heading && <h1>{heading}</h1>
+    )}
     {intro && <p class="intro">{intro}</p>}
     <slot />
   </main>
@@ -204,13 +212,39 @@ const active = (href: string) =>
     padding: 16px;
     border: 1px solid;
   }
-  .table a,
-  .panel a,
-  main > p a {
+  .table a:not(.btn),
+  .panel a:not(.btn),
+  main > p a:not(.btn) {
     text-decoration: underline;
   }
   .scroll {
     overflow-x: auto;
     margin-top: 20px;
+  }
+</style>
+
+<script>
+  import { bitcoin } from "../lib/dashboard";
+  for (const button of document.querySelectorAll<HTMLButtonElement>(
+    "[data-bitcoin-unit]",
+  )) {
+    button.addEventListener("click", () => {
+      const unit = button.dataset.bitcoinUnit!;
+      document.cookie = `bitcoin-unit=${unit}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+      for (const el of document.querySelectorAll<HTMLElement>(
+        "[data-bitcoin-sats]",
+      ))
+        el.textContent = bitcoin(Number(el.dataset.bitcoinSats), unit);
+      for (const b of document.querySelectorAll<HTMLElement>(
+        "[data-bitcoin-unit]",
+      ))
+        b.setAttribute("aria-pressed", String(b.dataset.bitcoinUnit === unit));
+    });
+  }
+</script>
+<style is:global>
+  .unverified {
+    font-style: italic;
+    color: var(--color-paper-mute);
   }
 </style>
