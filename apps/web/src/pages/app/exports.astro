@@ -1,0 +1,183 @@
+---
+import App from "../../layouts/App.astro";
+import {
+  csv,
+  listDonations,
+  listDonors,
+  walletManifest,
+} from "@satsrecord/core";
+import { db, crypto } from "../../lib/services";
+const org = Astro.locals.org!;
+const wallets = await walletManifest(db, org.id);
+const download = Astro.url.searchParams.get("download");
+if (download) {
+  let rows: unknown[][];
+  if (download === "manifest")
+    rows = [
+      [
+        "descriptor_id",
+        "label",
+        "status",
+        "network",
+        "script_type",
+        "index",
+        "address",
+        "issued_at",
+        "recommended_gap_limit",
+      ],
+      ...wallets.flatMap((w) =>
+        w.addresses.length
+          ? w.addresses.map((a) => [
+              w.id,
+              w.label,
+              w.status,
+              w.network,
+              w.scriptType,
+              a.index,
+              a.address,
+              a.issuedAt,
+              w.gapLimit,
+            ])
+          : [
+              [
+                w.id,
+                w.label,
+                w.status,
+                w.network,
+                w.scriptType,
+                "",
+                "",
+                "",
+                w.gapLimit,
+              ],
+            ],
+      ),
+    ];
+  else if (download === "donors") {
+    const donors = await listDonors(db, crypto(), org.id);
+    rows = [
+      ["donor_id", "name", "email", "attribution", "verified_at", "created_at"],
+      ...donors.map((d) => [
+        d.id,
+        d.name,
+        d.email,
+        d.attribution,
+        d.verifiedAt,
+        d.createdAt,
+      ]),
+    ];
+  } else if (download === "donations") {
+    const [donations, donors] = await Promise.all([
+      listDonations(db, org.id),
+      listDonors(db, crypto(), org.id),
+    ]);
+    rows = [
+      [
+        "settlement_id",
+        "first_seen_at",
+        "block_time",
+        "status",
+        "amount_sats",
+        "txid",
+        "vout",
+        "address",
+        "donor_id",
+        "name",
+        "email",
+        "attribution",
+        "valuation_id",
+        "currency",
+        "fmv",
+        "rate",
+        "source",
+        "method",
+        "rate_timestamp",
+      ],
+    ];
+    for (const r of donations) {
+      const d = donors.find((d) => d.id === r.donorId);
+      for (const v of r.values.length ? r.values : [null])
+        rows.push([
+          r.settlement.id,
+          r.settlement.firstSeenAt,
+          r.settlement.blockTime,
+          r.settlement.status,
+          r.settlement.amountSats,
+          r.settlement.txid,
+          r.settlement.vout,
+          r.address,
+          d?.id,
+          d?.name,
+          d?.email,
+          d?.attribution ?? "anonymous",
+          v?.id,
+          v?.currency,
+          v?.amount,
+          v?.rate,
+          v?.source,
+          v?.method,
+          v?.rateTimestamp,
+        ]);
+    }
+  } else return new Response("Unknown export", { status: 400 });
+  return new Response(csv(rows), {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="satsrecord-${download}.csv"`,
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+---
+
+<App
+  title="Exports"
+  heading="Your records. Portable."
+  intro="Download donation records, donor details and every address issued to your organisation."
+>
+  <section class="panel">
+    <h2>CSV exports</h2>
+    <p>
+      <a class="btn ink" href="?download=donations">
+        Download donations
+      </a>{" "}
+      <a class="btn" href="?download=donors">
+        Download donors
+      </a>
+    </p>
+    <p class="mute">
+      Donation exports include all recorded valuations, one row per valuation.
+      Do not sum repeated settlement amounts. Dates use UTC; missing valuations
+      remain blank.
+    </p>
+  </section>
+  <section class="panel">
+    <h2>Address manifest</h2>
+    <p>
+      Keep this with your wallet recovery records. It includes active and
+      retired wallets and every issued address, including unfunded addresses.
+    </p>
+    {wallets.map((w) => (
+      <p>
+        Wallet {w.label} ({w.status}): set your gap limit to at least{" "}
+        <strong>{w.gapLimit}</strong>. This covers the highest issued index plus
+        a margin of 20.
+      </p>
+    ))}
+    {!wallets.length && (
+      <p>
+        No wallet connected yet. <a href="/app/setup">Complete setup</a>.
+      </p>
+    )}
+    <p>
+      <a class="btn ink" href="?download=manifest">
+        Download address manifest
+      </a>
+    </p>
+    <p class="mute">
+      The manifest does not contain private keys. You need your own wallet
+      backup to recover funds.
+    </p>
+  </section>
+</App>

@@ -1,0 +1,59 @@
+---
+import type { listDonations, listDonors } from "@satsrecord/core";
+import { date, sats, attribution } from "../lib/dashboard";
+interface Props {
+  rows: Awaited<ReturnType<typeof listDonations>>;
+  donors: Awaited<ReturnType<typeof listDonors>>;
+}
+const { rows, donors } = Astro.props;
+---
+
+{rows.length ? (
+  <div class="scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Received</th>
+          <th>Amount</th>
+          <th>FMV</th>
+          <th>Status</th>
+          <th>Donor</th>
+          <th>Attribution</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => {
+          const donor = donors.find((d) => d.id === r.donorId);
+          return (
+            <tr>
+              <td>
+                <a href={`/app/donations/${r.settlement.id}`}>
+                  {date(r.settlement.firstSeenAt)}
+                </a>
+              </td>
+              <td>{sats(r.settlement.amountSats)}</td>
+              <td>
+                {r.values.length
+                  ? r.values.map((v) => `${v.currency} ${v.amount}`).join("; ")
+                  : "Pending"}
+              </td>
+              <td>{r.settlement.status}</td>
+              <td>
+                {donor ? (
+                  <a href={`/app/donors/${donor.id}`}>
+                    {donor.name || donor.email || "Unnamed donor"}
+                  </a>
+                ) : (
+                  "Unattributed"
+                )}
+              </td>
+              <td>{attribution(donor?.attribution)}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+) : (
+  <p class="notice">No donations yet. Received payments will appear here.</p>
+)}

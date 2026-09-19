@@ -1,0 +1,184 @@
+---
+import App from "../../../layouts/App.astro";
+import {
+  getSetup,
+  walletManifest,
+  updateDashboardSettings,
+  OnboardingError,
+  countryCodes,
+  reportingCurrencies,
+} from "@satsrecord/core";
+import { db } from "../../../lib/services";
+const org = Astro.locals.org!;
+let setup = await getSetup(db, org.id);
+if (!setup?.completedAt) return Astro.redirect("/app/setup");
+const editable = ["owner", "admin"].includes(org.role);
+let error = "";
+let posted: Record<string, string> = {};
+if (Astro.request.method === "POST") {
+  if (Astro.request.headers.get("origin") !== Astro.url.origin)
+    return new Response("Invalid origin", { status: 403 });
+  try {
+    posted = Object.fromEntries(
+      [...(await Astro.request.formData())].map(([k, v]) => [k, String(v)]),
+    );
+    await updateDashboardSettings(db, org.id, org.role, posted);
+    return Astro.redirect("/app/settings?saved=1", 303);
+  } catch (e) {
+    if (!(e instanceof OnboardingError)) throw e;
+    error = e.message;
+  }
+}
+const wallets = await walletManifest(db, org.id);
+const countries = new Intl.DisplayNames(["en"], { type: "region" });
+---
+
+<App title="Settings" heading="Settings.">
+  <p>
+    <a href="/app/settings/team">Manage team →</a> ·{" "}
+    <a href="/app/welcome">Add a passkey</a>
+  </p>
+  {error && (
+    <p class="error notice" role="alert">
+      {error}
+    </p>
+  )}
+  {Astro.url.searchParams.has("saved") && (
+    <p class="notice" role="status">
+      Settings saved.
+    </p>
+  )}
+  <section class="panel">
+    <h2>Organisation</h2>
+    <form method="POST" class="form">
+      <input type="hidden" name="intent" value="organisation" />
+      <fieldset disabled={!editable}>
+        <label>
+          Name
+          <input
+            name="name"
+            value={posted.name ?? org.name}
+            required
+            maxlength="200"
+          />
+        </label>
+        <label>
+          Registration number
+          <input
+            name="registrationNumber"
+            value={posted.registrationNumber ?? setup.registrationNumber}
+            maxlength="100"
+          />
+        </label>
+        <label>
+          Country
+          <select name="country">
+            {countryCodes.map((c) => (
+              <option
+                value={c}
+                selected={c === (posted.country ?? setup.country)}
+              >
+                {countries.of(c)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Reporting currency
+          <select name="reportingCurrency">
+            {reportingCurrencies.map((c) => (
+              <option
+                selected={
+                  c === (posted.reportingCurrency ?? setup.reportingCurrency)
+                }
+              >
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p class="mute">
+          Changes apply to future valuations. Recorded values retain their
+          original currency.
+        </p>
+        <button class="btn ink">Save organisation</button>
+      </fieldset>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>Wallet</h2>
+    {wallets.map((w) => (
+      <p>
+        {w.label} · {w.scriptType} · {w.network} · {w.status}
+        <br />
+        Set your gap limit to at least {w.gapLimit}.
+      </p>
+    ))}
+    <p>
+      Your wallet is read-only. To replace it, contact{" "}
+      <a href="mailto:hello@satsrecord.org">hello@satsrecord.org</a>. Addresses
+      already issued stay monitored.
+    </p>
+    <a href="/app/exports">Export address manifest →</a>
+  </section>
+  <section class="panel">
+    <h2>Email sender</h2>
+    <form method="POST" class="form">
+      <input type="hidden" name="intent" value="email" />
+      <fieldset disabled={!editable}>
+        <label>
+          Display name
+          <input
+            name="senderName"
+            value={posted.senderName ?? setup.senderName}
+            required
+            maxlength="120"
+          />
+        </label>
+        <label>
+          Reply-to
+          <input
+            name="replyTo"
+            type="email"
+            value={posted.replyTo ?? setup.replyTo}
+            required
+            maxlength="254"
+          />
+        </label>
+        <button class="btn ink">Save email sender</button>
+      </fieldset>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>Allowed origins</h2>
+    <form method="POST" class="form">
+      <input type="hidden" name="intent" value="origins" />
+      <fieldset disabled={!editable}>
+        <label>
+          One website origin per line
+          <textarea
+            name="origins"
+            rows="5"
+            required
+          >{posted.origins ?? setup.allowedOrigins?.join("\n")}</textarea>
+        </label>
+        <p class="mute">
+          Use HTTPS with no path. HTTP is allowed for localhost.
+        </p>
+        <button class="btn ink">Save origins</button>
+      </fieldset>
+    </form>
+  </section>
+</App>
+<style>
+  fieldset {
+    border: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+  }
+  fieldset button {
+    justify-self: start;
+  }
+</style>

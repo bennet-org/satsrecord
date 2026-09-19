@@ -12,3 +12,6 @@ export * from "./organisations";
 export * from "./organisation-invites";
 
 export * from "./onboarding";
+
+export * from "./dashboard";
+export { seedDashboard } from "./dashboard-fixture";

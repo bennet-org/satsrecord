@@ -2,6 +2,8 @@
 import App from "../../layouts/App.astro";
 import {
   getSetup,
+  widgetSnippet,
+  widgetDefaults,
   nextSetupStep,
   saveOrganisationDetails,
   saveWalletDraft,
@@ -134,7 +136,11 @@ const names = new Intl.DisplayNames(["en"], { type: "region" });
 const countries = countryCodes
   .map((code) => ({ code, name: names.of(code)! }))
   .sort((a, b) => a.name.localeCompare(b.name));
-const snippet = `<script async src="${appUrl}/widget/v1.js"></script>\n<satsrecord-donate org="${org.id}"></satsrecord-donate>`;
+const snippet = widgetSnippet(
+  appUrl,
+  org.id,
+  setup?.widgetConfig ?? widgetDefaults,
+);
 ---
 
 <App

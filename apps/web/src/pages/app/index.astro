@@ -1,8 +1,15 @@
 ---
-// Dashboard. Phase 4 fills this; until then it points at what exists.
 import App from "../../layouts/App.astro";
-import { passkeysFor, getSetup } from "@satsrecord/core";
-import { db } from "../../lib/services";
+import {
+  passkeysFor,
+  getSetup,
+  listDonations,
+  listDonors,
+  walletManifest,
+} from "@satsrecord/core";
+import { db, crypto } from "../../lib/services";
+import DonationTable from "../../components/DonationTable.astro";
+import { sats } from "../../lib/dashboard";
 const { user, org } = Astro.locals;
 if (
   Astro.cookies.get("passkey-prompt")?.value !== "skip" &&
@@ -11,45 +18,72 @@ if (
   return Astro.redirect("/app/welcome");
 const setup = await getSetup(db, org!.id);
 if (!setup?.completedAt) return Astro.redirect("/app/setup");
+const [rows, donors, wallets] = await Promise.all([
+  listDonations(db, org!.id),
+  listDonors(db, crypto(), org!.id),
+  walletManifest(db, org!.id),
+]);
 ---
 
-<App title="Dashboard" heading={org!.name}>
-  <div class="grid">
-    <section>
-      <p class="eyebrow">Wallet</p>
-      <p>
-        Connected. <a href="/app/setup">View your setup and install snippet</a>.
-      </p>
+<App
+  title="Dashboard"
+  heading={org!.name}
+  intro="Your bitcoin donation records."
+>
+  <div class="summary">
+    <section class="panel">
+      <h2>Donations</h2>
+      <p class="number">{rows.length}</p>
+      <a href="/app/donations">View all donations →</a>
     </section>
-    <section>
-      <p class="eyebrow">Team</p>
-      <p>
-        Invite colleagues from the <a href="/app/settings/team">team page</a>.
+    <section class="panel">
+      <h2>Confirmed bitcoin</h2>
+      <p class="number">
+        {sats(
+          rows
+            .filter((r) => r.settlement.status === "confirmed")
+            .reduce((sum, r) => sum + r.settlement.amountSats, 0),
+        )}
       </p>
+      <p class="mute">Mempool and reorged payments excluded.</p>
     </section>
-    <section>
-      <p class="eyebrow">Sign-in</p>
-      <p>
-        Passwordless. <a href="/app/welcome">Add a passkey</a> to sign in
-        without waiting for an email.
-      </p>
+    <section class="panel">
+      <h2>Donor records</h2>
+      <p class="number">{donors.length}</p>
+      <a href="/app/donors">View donors →</a>
     </section>
   </div>
+  <section class="panel">
+    <h2>Recent donations</h2>
+    <DonationTable rows={rows.slice(0, 10)} donors={donors} />
+  </section>
+  <section class="panel">
+    <h2>Wallet recovery</h2>
+    {wallets.map((w) => (
+      <p>
+        Wallet {w.label}: set your gap limit to at least{" "}
+        <strong>{w.gapLimit}</strong>.
+      </p>
+    ))}
+    <p>
+      <a href="/app/exports">Download your address manifest →</a>
+    </p>
+  </section>
 </App>
 <style>
-  .grid {
+  .summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 24px;
   }
-  section {
-    border-top: 2px solid var(--color-ink);
-    padding-top: 14px;
+  .number {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 10px;
   }
-  .eyebrow {
-    margin-bottom: 8px;
-  }
-  a {
-    text-decoration: underline;
+  @media (max-width: 700px) {
+    .summary {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

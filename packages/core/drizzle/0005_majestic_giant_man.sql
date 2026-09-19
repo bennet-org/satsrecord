@@ -1,0 +1,1 @@
+ALTER TABLE "organisation_settings" ADD COLUMN "widget_config" jsonb;

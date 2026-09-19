@@ -1,0 +1,96 @@
+---
+import App from "../../../layouts/App.astro";
+import { donationDetail, listDonors } from "@satsrecord/core";
+import { db, crypto } from "../../../lib/services";
+import { date, sats, attribution } from "../../../lib/dashboard";
+const org = Astro.locals.org!;
+const data = await donationDetail(db, org.id, Astro.params.id!);
+if (!data) return Astro.rewrite("/404");
+const donor = (await listDonors(db, crypto(), org.id)).find(
+  (d) => d.id === data.donorId,
+);
+const s = data.settlement;
+---
+
+<App title="Donation" heading={sats(s.amountSats)} intro="Donation record">
+  <a href="/app/donations">← All donations</a>
+  <section class="panel">
+    <h2>Settlement</h2>
+    <dl>
+      <dt>Status</dt>
+      <dd>{s.status}</dd>
+      <dt>First seen</dt>
+      <dd>{date(s.firstSeenAt)}</dd>
+      <dt>Block time</dt>
+      <dd>{date(s.blockTime)}</dd>
+      <dt>Block height</dt>
+      <dd>{s.blockHeight ?? "Pending"}</dd>
+      <dt>Address</dt>
+      <dd class="break">{data.address}</dd>
+      <dt>Transaction / output</dt>
+      <dd class="break">
+        {s.txid ?? s.paymentHash ?? "Unavailable"} / {s.vout ?? "—"}
+      </dd>
+      <dt>Donor</dt>
+      <dd>
+        {donor ? (
+          <a href={`/app/donors/${donor.id}`}>
+            {donor.name || donor.email || "Unnamed donor"}
+          </a>
+        ) : (
+          "Unattributed"
+        )}{" "}
+        · {attribution(donor?.attribution)}
+      </dd>
+    </dl>
+  </section>
+  <section class="panel">
+    <h2>Fair market value</h2>
+    {!data.values.length && (
+      <p>Pending valuation. No value has been recorded.</p>
+    )}
+    {data.values.map((v) => (
+      <article>
+        <p>
+          <strong>
+            {v.currency} {v.amount}
+          </strong>{" "}
+          at {v.rate} {v.currency}/BTC
+        </p>
+        <p>
+          {v.source} · {v.pair} · {v.method}
+        </p>
+        <p>
+          Rate time: {date(v.rateTimestamp)} · {v.confirmationsAtValuation}{" "}
+          confirmation(s)
+        </p>
+        <p class="mute break">Record {v.id}</p>
+      </article>
+    ))}
+  </section>
+  <section class="panel">
+    <h2>Audit trail</h2>
+    <p>
+      {date(s.createdAt)} · Settlement recorded ({s.status}).
+    </p>
+    {data.values.map((v) => (
+      <p>
+        {date(v.createdAt)} · Valuation recorded: {v.currency} {v.amount}.
+      </p>
+    ))}
+    {data.receipts.map((r) => (
+      <p>
+        {date(r.sentAt)} · Acknowledgement sent · template {r.templateVersion} ·
+        attribution at send: {attribution(r.attributionAtSend)} · provider
+        reference {r.providerMessageId ?? "Unavailable"}.
+      </p>
+    ))}
+    {!data.receipts.length && <p>No acknowledgement recorded.</p>}
+    {data.changes.map((c) => (
+      <p>
+        {date(c.createdAt)} · {c.table} amendment by {c.amendedBy}: {c.reason} ·
+        supersedes {c.supersedesId} · replacement {c.replacementId ?? "None"}.
+      </p>
+    ))}
+  </section>
+</App>

@@ -58,5 +58,8 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     if (path.startsWith("/app") && !ctx.locals.org && path !== "/app/new")
       return ctx.redirect(ctx.locals.isOperator ? "/admin" : "/app/new");
   }
-  return next();
+  const response = await next();
+  if (path.startsWith("/app") || path.startsWith("/_actions"))
+    response.headers.set("Cache-Control", "no-store");
+  return response;
 });

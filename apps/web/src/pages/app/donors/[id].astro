@@ -1,0 +1,96 @@
+---
+import App from "../../../layouts/App.astro";
+import DonationTable from "../../../components/DonationTable.astro";
+import {
+  listDonors,
+  listDonations,
+  donorConsents,
+  eraseDonor,
+  OnboardingError,
+} from "@satsrecord/core";
+import { db, crypto } from "../../../lib/services";
+import { date, attribution } from "../../../lib/dashboard";
+const org = Astro.locals.org!;
+const donors = await listDonors(db, crypto(), org.id);
+const donor = donors.find((d) => d.id === Astro.params.id);
+if (!donor) return Astro.rewrite("/404");
+let error = "";
+if (Astro.request.method === "POST") {
+  if (Astro.request.headers.get("origin") !== Astro.url.origin)
+    return new Response("Invalid origin", { status: 403 });
+  try {
+    const form = await Astro.request.formData();
+    await eraseDonor(
+      db,
+      org.id,
+      org.role,
+      donor.id,
+      form.get("confirm") === "erase",
+    );
+    return Astro.redirect("/app/donors", 303);
+  } catch (e) {
+    if (!(e instanceof OnboardingError)) throw e;
+    error = e.message;
+  }
+}
+const rows = (await listDonations(db, org.id)).filter(
+  (r) => r.donorId === donor.id,
+);
+const consentRows = await donorConsents(db, org.id, donor.id);
+---
+
+<App title="Donor" heading={donor.name || "Unnamed donor"}>
+  <a href="/app/donors">← All donors</a>
+  <section class="panel">
+    <h2>Personal details</h2>
+    <p>{donor.email || "Email not supplied"}</p>
+    <p>
+      {attribution(donor.attribution)}
+      {donor.verifiedAt && ` · ${date(donor.verifiedAt)}`}
+    </p>
+    <p>Created {date(donor.createdAt)}</p>
+  </section>
+  <section class="panel">
+    <h2>Consent</h2>
+    {consentRows.length ? (
+      consentRows.map(({ consent: c }) => (
+        <p>
+          {date(c.createdAt)} · Marketing:{" "}
+          {c.granted ? "Opted in" : "Not opted in"} · label version{" "}
+          {c.labelVersion}
+        </p>
+      ))
+    ) : (
+      <p>No consent recorded.</p>
+    )}
+  </section>
+  <section class="panel">
+    <h2>Donations</h2>
+    <DonationTable rows={rows} donors={donors} />
+  </section>
+  {["owner", "admin"].includes(org.role) && (
+    <section class="panel">
+      <h2>Erase personal data</h2>
+      <p>
+        This permanently deletes this donor’s name, email, verification and
+        consent records. Financial records and acknowledgements remain, without
+        a linked identity. Other submissions with the same details are separate
+        records.
+      </p>
+      {error && (
+        <p class="error" role="alert">
+          {error}
+        </p>
+      )}
+      <form method="POST" class="form">
+        <label>
+          <input type="checkbox" name="confirm" value="erase" required /> I
+          confirm permanent erasure of this donor’s personal data.
+        </label>
+        <button class="btn ink" type="submit">
+          Erase personal data
+        </button>
+      </form>
+    </section>
+  )}
+</App>

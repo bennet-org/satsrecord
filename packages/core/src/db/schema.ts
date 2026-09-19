@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb } from "drizzle-orm/pg-core";
 
 export const accessRequestCountries = ["GB", "US", "EU", "other"] as const;
 export type AccessRequestCountry = (typeof accessRequestCountries)[number];
@@ -307,6 +307,8 @@ export const organisationSettings = pgTable("organisation_settings", {
   organisationId: uuid("organisation_id")
     .primaryKey()
     .references(() => organization.id),
+  widgetConfig:
+    jsonb("widget_config").$type<import("../dashboard").WidgetConfig>(),
   registrationNumber: text("registration_number"),
   country: text("country"),
   reportingCurrency: text("reporting_currency"),

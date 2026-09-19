@@ -1,0 +1,22 @@
+---
+import App from "../../../layouts/App.astro";
+import DonationTable from "../../../components/DonationTable.astro";
+import { listDonations, listDonors } from "@satsrecord/core";
+import { db, crypto } from "../../../lib/services";
+const org = Astro.locals.org!;
+const [rows, donors] = await Promise.all([
+  listDonations(db, org.id),
+  listDonors(db, crypto(), org.id),
+]);
+---
+
+<App
+  title="Donations"
+  heading="Donations."
+  intro="Each payment has its own settlement, valuation and acknowledgement record."
+>
+  <p>
+    <a href="/app/exports?download=donations">Download donations CSV</a>
+  </p>
+  <DonationTable rows={rows} donors={donors} />
+</App>

@@ -36,3 +36,7 @@ Netlify builds `apps/web` with the Netlify adapter (`netlify.toml`; the adapter 
 ## Licence
 
 Application: AGPL-3.0. Widget (`packages/widget`): MIT. Licence files land with the first release.
+
+## Dashboard
+
+Phase 4 adds donations and donor records, confirmed donor erasure, CSV exports, address manifests with gap-limit guidance, widget customisation and settings. Apply migration 0005 before use. For a separate seeded demo organisation, sign in and visit `/dev/dashboard` with `SIMULATE_DONATIONS=true` in development. See the [dashboard testing checklist](docs/dashboard-testing.md). The widget preview is visual; address issuance and email delivery arrive in Phase 5.

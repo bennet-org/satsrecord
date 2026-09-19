@@ -1,0 +1,43 @@
+---
+import App from "../../../layouts/App.astro";
+import { listDonors } from "@satsrecord/core";
+import { db, crypto } from "../../../lib/services";
+import { date, attribution } from "../../../lib/dashboard";
+const rows = await listDonors(db, crypto(), Astro.locals.org!.id);
+---
+
+<App
+  title="Donors"
+  heading="Donors."
+  intro="One record per submission. Repeated details remain separate records."
+>
+  <a href="/app/exports?download=donors">Download donors CSV</a>
+  {rows.length ? (
+    <div class="scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Attribution</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((d) => (
+            <tr>
+              <td>
+                <a href={`/app/donors/${d.id}`}>{d.name || "Unnamed donor"}</a>
+              </td>
+              <td>{d.email || "Not supplied"}</td>
+              <td>{attribution(d.attribution)}</td>
+              <td>{date(d.createdAt)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    <p class="notice">No donor records yet.</p>
+  )}
+</App>

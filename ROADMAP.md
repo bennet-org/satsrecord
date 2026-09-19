@@ -46,13 +46,13 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Phase 4: dashboard
 
-- [ ] Donations list and detail (settlement, FMV, attribution status, audit trail)
-- [ ] Donors list and detail; erasure action
-- [ ] Exports: CSV; address manifest with gap-limit guidance
-- [ ] Widget page: snippet, live preview, CSS variable and text-slot customisation
-- [ ] Settings: organisation, wallet, email, origins, team. Wallet is read-only; replacing it goes through hello@satsrecord.org, and addresses already issued stay monitored.
+- [x] Donations list and detail (settlement, FMV, attribution status, audit trail)
+- [x] Donors list and detail; erasure action
+- [x] Exports: CSV; address manifest with gap-limit guidance
+- [x] Widget page: snippet, live visual preview, CSS variable and text-slot customisation
+- [x] Settings: organisation, wallet, email, origins, team. Wallet is read-only; replacing it goes through hello@satsrecord.org, and addresses already issued stay monitored.
 
-**Done when:** every page renders against seeded data.
+**Done when:** every page renders against seeded data. Implemented 19 September 2026: desktop and phone walkthrough, CSV downloads, settings and erasure verified. Widget preview is visual; issuance and delivery remain Phase 5. See [testing checklist](docs/dashboard-testing.md).
 
 ## Phase 5: widget
 
@@ -93,7 +93,7 @@ Show the demo to prospects. Proceed → Phase 7.
 
 ## Phase 9: hardening
 
-- [ ] Amendments UI; erasure UI; "this wasn't me"
+- [ ] Amendments UI; "this wasn't me" (erasure shipped in Phase 4)
 - [ ] Optional charity-branded email sending via DNS verification; verified From addresses, delivery events and safe fallback. [Scope](docs/branded-email.md).
 - [ ] Multisig issuance via Core `deriveaddresses`
 - [ ] Jurisdiction renderers, US acknowledgement letter first

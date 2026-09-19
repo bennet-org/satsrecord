@@ -1,0 +1,41 @@
+---
+import App from "../../layouts/App.astro";
+import { seedDashboard } from "@satsrecord/core";
+import { db, crypto, auth, simulateDonations } from "../../lib/services";
+if (!import.meta.env.DEV || !simulateDonations) return Astro.rewrite("/404");
+if (!Astro.locals.user) return Astro.redirect("/login?next=/dev/dashboard");
+if (Astro.request.method === "POST") {
+  if (Astro.request.headers.get("origin") !== Astro.url.origin)
+    return new Response("Invalid origin", { status: 403 });
+  const { orgId } = await seedDashboard(db, crypto(), Astro.locals.user.id);
+  await auth.api.setActiveOrganization({
+    body: { organizationId: orgId },
+    headers: Astro.request.headers,
+  });
+  Astro.cookies.set("passkey-prompt", "skip", {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+  });
+  return Astro.redirect("/app", 303);
+}
+---
+
+<App
+  title="Dashboard fixture"
+  heading="Seed a demo dashboard."
+  intro="Creates a separate demo organisation for your signed-in account. Existing organisations are untouched."
+>
+  <p>
+    Includes confirmed, pending, anonymous and reorged payments, repeated
+    payments to one address, donor consent, valuation and acknowledgement
+    records, and an unfunded address.
+  </p>
+  <p>
+    These are fictional records and public test-vector wallets. Never send funds
+    to them. No emails are sent.
+  </p>
+  <form method="POST">
+    <button class="btn ink">Create demo organisation</button>
+  </form>
+</App>

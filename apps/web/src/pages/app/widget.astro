@@ -1,0 +1,204 @@
+---
+import App from "../../layouts/App.astro";
+import {
+  getSetup,
+  widgetDefaults,
+  saveWidgetConfig,
+  widgetSnippet,
+  OnboardingError,
+  type WidgetConfig,
+} from "@satsrecord/core";
+import { db, appUrl } from "../../lib/services";
+const org = Astro.locals.org!;
+const setup = await getSetup(db, org.id);
+if (!setup?.completedAt) return Astro.redirect("/app/setup");
+let config = setup.widgetConfig ?? widgetDefaults;
+let error = "";
+if (Astro.request.method === "POST") {
+  if (Astro.request.headers.get("origin") !== Astro.url.origin)
+    return new Response("Invalid origin", { status: 403 });
+  try {
+    const form = await Astro.request.formData();
+    const input = Object.fromEntries(
+      Object.keys(widgetDefaults).map((k) => [k, String(form.get(k) ?? "")]),
+    ) as WidgetConfig;
+    await saveWidgetConfig(db, org.id, org.role, input);
+    return Astro.redirect("/app/widget?saved=1", 303);
+  } catch (e) {
+    if (!(e instanceof OnboardingError)) throw e;
+    error = e.message;
+  }
+}
+---
+
+<App
+  title="Widget"
+  heading="Make it yours."
+  intro="Customise the colours and words your donors will see."
+>
+  {error && (
+    <p class="error notice" role="alert">
+      {error}
+    </p>
+  )}
+  {Astro.url.searchParams.has("saved") && (
+    <p class="notice" role="status">
+      Customisation saved.
+    </p>
+  )}
+  <div class="columns">
+    <section class="panel">
+      <h2>Customisation</h2>
+      <form method="POST" class="form" id="widget-config">
+        <fieldset disabled={!["owner", "admin"].includes(org.role)}>
+          {(
+            [
+              ["accent", "Accent"],
+              ["background", "Background"],
+              ["text", "Text"],
+            ] as const
+          ).map(([key, label]) => (
+            <label>
+              {label}
+              <input type="color" name={key} value={config[key]} />
+            </label>
+          ))}
+          {(
+            [
+              ["heading", "Heading", 100],
+              ["button", "Button label", 60],
+              ["consent", "Marketing opt-in label", 300],
+            ] as const
+          ).map(([key, label, max]) => (
+            <label>
+              {label}
+              <input name={key} value={config[key]} required maxlength={max} />
+            </label>
+          ))}
+          <button class="btn ink">Save customisation</button>
+        </fieldset>
+      </form>
+    </section>
+    <section class="panel">
+      <h2>Live visual preview</h2>
+      <p class="mute">
+        Preview only. Address issuance and email delivery arrive in Phase 5.
+      </p>
+      <div
+        id="widget-preview"
+        style={`--sr-accent:${config.accent};--sr-background:${config.background};--sr-text:${config.text}`}
+      >
+        <h3 data-slot="heading">{config.heading}</h3>
+        <label>
+          Name (optional)
+          <input disabled placeholder="Your name" />
+        </label>
+        <label>
+          Email (optional)
+          <input disabled placeholder="you@example.org" />
+        </label>
+        <label class="consent">
+          <input disabled type="checkbox" />
+          <span data-slot="consent">{config.consent}</span>
+        </label>
+        <button disabled data-slot="button">
+          {config.button}
+        </button>
+      </div>
+    </section>
+  </div>
+  <section class="panel">
+    <h2>Install snippet</h2>
+    <p>
+      Save your changes, then copy this snippet. The versioned widget script
+      will become available in Phase 5.
+    </p>
+    <textarea
+      aria-label="Install snippet"
+      readonly
+      rows="9"
+    >{widgetSnippet(appUrl,org.id,config)}</textarea>
+    <p class="mute">
+      CSS variables: --sr-accent, --sr-background, --sr-text. Text slots:
+      heading, button, consent.
+    </p>
+  </section>
+</App>
+<script>
+  const form = document.querySelector<HTMLFormElement>("#widget-config")!;
+  const preview = document.querySelector<HTMLElement>("#widget-preview")!;
+  form.addEventListener("input", () => {
+    const data = new FormData(form);
+    for (const key of ["accent", "background", "text"])
+      preview.style.setProperty(`--sr-${key}`, String(data.get(key)));
+    for (const key of ["heading", "button", "consent"])
+      preview.querySelector(`[data-slot="${key}"]`)!.textContent = String(
+        data.get(key),
+      );
+  });
+</script>
+<style>
+  input[type="color"] {
+    height: 44px;
+    padding: 4px;
+    cursor: pointer;
+  }
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+  fieldset {
+    border: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+  }
+  #widget-preview {
+    margin-top: 20px;
+    padding: 24px;
+    border: 1px solid;
+    border-radius: 8px;
+    background: var(--sr-background);
+    color: var(--sr-text);
+    display: grid;
+    gap: 18px;
+  }
+  #widget-preview h3 {
+    font-size: 26px;
+  }
+  #widget-preview label {
+    display: grid;
+    gap: 6px;
+  }
+  #widget-preview input:not([type="checkbox"]) {
+    width: 100%;
+    background: transparent;
+    border: 1px solid currentColor;
+    padding: 10px;
+    color: inherit;
+  }
+  #widget-preview .consent {
+    display: flex;
+    align-items: start;
+  }
+  #widget-preview button {
+    background: var(--sr-accent);
+    color: var(--sr-text);
+    padding: 12px;
+    font-weight: 700;
+  }
+  textarea {
+    width: 100%;
+    margin-top: 16px;
+    font-family: monospace;
+    font-size: 13px;
+    padding: 14px;
+  }
+  @media (max-width: 700px) {
+    .columns {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

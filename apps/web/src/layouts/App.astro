@@ -17,8 +17,11 @@ const path = Astro.url.pathname;
 const nav = org
   ? [
       { label: "Dashboard", href: "/app" },
-      { label: "Setup", href: "/app/setup" },
-      { label: "Team", href: "/app/settings/team" },
+      { label: "Donations", href: "/app/donations" },
+      { label: "Donors", href: "/app/donors" },
+      { label: "Exports", href: "/app/exports" },
+      { label: "Widget", href: "/app/widget" },
+      { label: "Settings", href: "/app/settings" },
     ]
   : [];
 if (isOperator) nav.push({ label: "Admin", href: "/admin" });
@@ -62,6 +65,7 @@ const active = (href: string) =>
 <style>
   .bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
@@ -157,5 +161,56 @@ const active = (href: string) =>
       flex-wrap: wrap;
       gap: 16px;
     }
+  }
+</style>
+
+<style is:global>
+  .panel {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 2px solid var(--color-ink);
+  }
+  .panel h2 {
+    font-size: 24px;
+    margin-bottom: 14px;
+  }
+  .panel p + p {
+    margin-top: 10px;
+  }
+  .panel article + article {
+    margin-top: 20px;
+  }
+  .panel .form {
+    margin-top: 18px;
+    max-width: 36em;
+  }
+  .panel .form button {
+    justify-self: start;
+  }
+  .break,
+  dd {
+    overflow-wrap: anywhere;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: minmax(100px, 1fr) minmax(0, 3fr);
+    gap: 12px;
+  }
+  dt {
+    font-weight: 600;
+  }
+  .notice {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid;
+  }
+  .table a,
+  .panel a,
+  main > p a {
+    text-decoration: underline;
+  }
+  .scroll {
+    overflow-x: auto;
+    margin-top: 20px;
   }
 </style>
