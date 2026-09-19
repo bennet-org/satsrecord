@@ -81,10 +81,15 @@ if (Astro.request.method === "POST") {
               <input name={key} value={config[key]} required maxlength={max} />
             </label>
           ))}
-          <button class="btn ink" id="save-widget">
+          <button class="btn ink" id="save-widget" aria-live="polite">
             Save customisation
           </button>
-          <span id="save-status" role="status" aria-live="polite"></span>
+          <span
+            id="save-status"
+            class="save-error"
+            role="status"
+            aria-live="polite"
+          ></span>
         </fieldset>
       </form>
     </section>
@@ -131,7 +136,12 @@ if (Astro.request.method === "POST") {
     <button class="btn" type="button" id="copy-snippet">
       Copy snippet
     </button>
-    <span id="copy-status" role="status" aria-live="polite"></span>
+    <span
+      id="copy-status"
+      class="sr-only"
+      role="status"
+      aria-live="polite"
+    ></span>
     <p class="mute">
       CSS variables: --sr-accent, --sr-background, --sr-text. Text slots:
       heading, button, consent.
@@ -174,7 +184,6 @@ if (Astro.request.method === "POST") {
         throw new Error(result.error ?? "Could not save. Please try again.");
       snippet.value = result.snippet;
       save.textContent = "Done";
-      status.textContent = "Changes saved.";
     } catch (error) {
       status.textContent =
         error instanceof Error
@@ -188,13 +197,21 @@ if (Astro.request.method === "POST") {
       }, 2000);
     }
   });
+  let copyReset: ReturnType<typeof setTimeout>;
   document
     .querySelector<HTMLButtonElement>("#copy-snippet")!
     .addEventListener("click", async () => {
       const status = document.querySelector<HTMLElement>("#copy-status")!;
       try {
         await navigator.clipboard.writeText(snippet.value);
-        status.textContent = "Copied.";
+        const button =
+          document.querySelector<HTMLButtonElement>("#copy-snippet")!;
+        button.textContent = "Copied";
+        status.textContent = "Snippet copied.";
+        clearTimeout(copyReset);
+        copyReset = setTimeout(() => {
+          button.textContent = "Copy snippet";
+        }, 2000);
       } catch {
         snippet.focus();
         snippet.select();
@@ -212,6 +229,19 @@ if (Astro.request.method === "POST") {
   });
 </script>
 <style>
+  .save-error:empty {
+    display: none;
+  }
+  .save-error {
+    color: #a3341a;
+  }
+  #save-widget {
+    min-width: 210px;
+  }
+  #copy-snippet {
+    min-width: 150px;
+  }
+
   input[type="color"] {
     height: 44px;
     padding: 4px;

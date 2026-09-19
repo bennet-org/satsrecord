@@ -27,3 +27,6 @@ export const attribution = (s?: string) =>
     : s === "claimed"
       ? "Email not verified"
       : "—";
+
+export const emailStatus = (s?: string) =>
+  s === "email_confirmed" ? "Verified" : s === "claimed" ? "Not verified" : "—";

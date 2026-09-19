@@ -2,7 +2,7 @@
 import App from "../../../layouts/App.astro";
 import { listDonors } from "@satsrecord/core";
 import { db, crypto } from "../../../lib/services";
-import { date, attribution } from "../../../lib/dashboard";
+import { date, emailStatus } from "../../../lib/dashboard";
 const rows = await listDonors(db, crypto(), Astro.locals.org!.id);
 ---
 
@@ -19,7 +19,7 @@ const rows = await listDonors(db, crypto(), Astro.locals.org!.id);
           <tr>
             <th>Name</th>
             <th>Email</th>
-            <th>Attribution</th>
+            <th>Email status</th>
             <th>Created</th>
           </tr>
         </thead>
@@ -31,7 +31,7 @@ const rows = await listDonors(db, crypto(), Astro.locals.org!.id);
               </td>
               <td>{d.email || "Not supplied"}</td>
               <td class:list={{ unverified: d.attribution === "claimed" }}>
-                {attribution(d.attribution)}
+                {emailStatus(d.attribution)}
               </td>
               <td>{date(d.createdAt)}</td>
             </tr>

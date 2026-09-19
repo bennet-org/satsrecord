@@ -1,6 +1,6 @@
 ---
 import type { listDonations, listDonors } from "@satsrecord/core";
-import { date, money, attribution } from "../lib/dashboard";
+import { date, money, emailStatus } from "../lib/dashboard";
 import BitcoinAmount from "./BitcoinAmount.astro";
 interface Props {
   rows: Awaited<ReturnType<typeof listDonations>>;
@@ -19,7 +19,7 @@ const { rows, donors } = Astro.props;
           <th>Value</th>
           <th>Status</th>
           <th>Donor</th>
-          <th>Attribution</th>
+          <th>Email status</th>
         </tr>
       </thead>
       <tbody>
@@ -51,7 +51,7 @@ const { rows, donors } = Astro.props;
                 )}
               </td>
               <td class:list={{ unverified: donor?.attribution === "claimed" }}>
-                {attribution(donor?.attribution)}
+                {emailStatus(donor?.attribution)}
               </td>
             </tr>
           );

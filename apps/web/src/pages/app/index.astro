@@ -38,28 +38,30 @@ const [rows, donors, wallets] = await Promise.all([
     </section>
     <section class="panel">
       <h2>Confirmed bitcoin</h2>
-      <div class="unit-toggle" role="group" aria-label="Bitcoin display unit">
-        {["sats", "BTC"].map((unit) => (
-          <button
-            type="button"
-            data-bitcoin-unit={unit}
-            aria-pressed={
-              (Astro.cookies.get("bitcoin-unit")?.value === "BTC"
-                ? "BTC"
-                : "sats") === unit
-            }
-          >
-            {unit}
-          </button>
-        ))}
+      <div class="amount-row">
+        <p class="number">
+          <BitcoinAmount
+            amount={rows
+              .filter((r) => r.settlement.status === "confirmed")
+              .reduce((sum, r) => sum + r.settlement.amountSats, 0)}
+          />
+        </p>
+        <div class="unit-toggle" role="group" aria-label="Bitcoin display unit">
+          {["sats", "BTC"].map((unit) => (
+            <button
+              type="button"
+              data-bitcoin-unit={unit}
+              aria-pressed={
+                (Astro.cookies.get("bitcoin-unit")?.value === "BTC"
+                  ? "BTC"
+                  : "sats") === unit
+              }
+            >
+              {unit}
+            </button>
+          ))}
+        </div>
       </div>
-      <p class="number">
-        <BitcoinAmount
-          amount={rows
-            .filter((r) => r.settlement.status === "confirmed")
-            .reduce((sum, r) => sum + r.settlement.amountSats, 0)}
-        />
-      </p>
       <p class="mute">Pending payments excluded.</p>
     </section>
     <section class="panel">
@@ -86,15 +88,27 @@ const [rows, donors, wallets] = await Promise.all([
   </section>
 </App>
 <style>
+  .amount-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-bottom: 10px;
+  }
+  .amount-row .number {
+    margin-bottom: 0;
+  }
   .unit-toggle {
     display: flex;
     gap: 0;
-    margin-bottom: 12px;
+    flex-shrink: 0;
+    border: 1px solid var(--color-ink);
   }
   .unit-toggle button {
-    border: 1px solid;
-    padding: 4px 10px;
-    font-size: 13px;
+    border: 0;
+    padding: 4px 6px;
+    font-size: 11px;
+    line-height: 1.4;
     cursor: pointer;
   }
   .unit-toggle button[aria-pressed="true"] {
