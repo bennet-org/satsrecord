@@ -64,11 +64,6 @@ const [rows, donors, wallets] = await Promise.all([
       </div>
       <p class="mute">Pending payments excluded.</p>
     </section>
-    <section class="panel">
-      <h2>Donor records</h2>
-      <p class="number">{donors.length}</p>
-      <a href="/app/donors">View donors →</a>
-    </section>
   </div>
   <section class="panel">
     <h2>Recent donations</h2>
@@ -101,7 +96,7 @@ const [rows, donors, wallets] = await Promise.all([
   }
   .unit-toggle {
     justify-self: end;
-    margin-top: 7px;
+    margin-top: 5px;
     display: flex;
     gap: 0;
     flex-shrink: 0;
@@ -109,8 +104,8 @@ const [rows, donors, wallets] = await Promise.all([
   }
   .unit-toggle button {
     border: 0;
-    padding: 4px 6px;
-    font-size: 11px;
+    padding: 5px 9px;
+    font-size: 13px;
     line-height: 1.4;
     cursor: pointer;
   }
@@ -120,7 +115,7 @@ const [rows, donors, wallets] = await Promise.all([
   }
   .summary {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
   }
   .number {
