@@ -7,11 +7,28 @@ services:
       POSTGRES_DB: satsrecord
     ports: ["5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U satsrecord"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
   web:
     build: .
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgres://satsrecord:satsrecord@db:5432/satsrecord
+      # Local only. Generate real ones per docs; APP_URL must match the origin the browser uses,
+      # because email links and the passkey relying party derive from it.
+      BETTER_AUTH_SECRET: local-development-secret-not-for-production
+      APP_URL: http://localhost:4321
+      OPEN_SIGNUP: "true"
+      # Onboarding a wallet and the widget endpoint need these; generate a pair per environment with
+      #   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+      # and set them here. There is no recovery path once data is encrypted under them.
+      # ENCRYPTION_KEY: ""
+      # INDEX_KEY: ""
       HOST: 0.0.0.0
       PORT: "4321"
     ports: ["4321:4321"]

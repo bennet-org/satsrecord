@@ -1,0 +1,21 @@
+# Build context only. Secrets must never reach a layer, and host node_modules are the wrong platform.
+.env
+.env.*
+!.env.example
+node_modules
+**/node_modules
+dist
+**/dist
+.astro
+**/.astro
+.netlify
+**/.netlify
+apps/web/public/widget
+.git
+.DS_Store
+**/.DS_Store
+*.log
+shots
+brand
+docs
+scripts/shots.mjs
