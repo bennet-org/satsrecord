@@ -310,11 +310,11 @@ try {
   assert(await dashboard.locator("#custom-colours").isVisible());
   assert.equal(
     await dashboard.locator('input[name="accent"]').inputValue(),
-    "#ded7f5",
+    "#d5e4f8",
   );
   assert.equal(
     await dashboard.locator('input[name="background"]').inputValue(),
-    "#faf8ff",
+    "#fafcff",
   );
   assert(await dashboard.locator('[name="showBranding"]').isChecked());
   await dashboard.locator('[name="showBranding"]').uncheck();

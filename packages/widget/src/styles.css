@@ -405,8 +405,8 @@ input::placeholder {
 }
 
 :host([preset="custom"]) {
-  --surface: var(--sr-background, #faf8ff);
-  --accent: var(--sr-accent, #ded7f5);
-  --ink: var(--sr-text, #302941);
-  --button-ink: var(--sr-button-text, #302941);
+  --surface: var(--sr-background, #fafcff);
+  --accent: var(--sr-accent, #d5e4f8);
+  --ink: var(--sr-text, #293442);
+  --button-ink: var(--sr-button-text, #293442);
 }

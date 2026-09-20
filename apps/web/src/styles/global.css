@@ -151,6 +151,10 @@ ul {
   opacity: 0.5;
   cursor: default;
 }
+/* the magic-link form hides itself and reveals its sent panel, which then owns the gap under the heading */
+form[data-magic-link][hidden] + [id="sent"] {
+  margin-top: 32px;
+}
 .error {
   color: #a3341a;
   font-weight: 500;

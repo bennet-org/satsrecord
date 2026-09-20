@@ -250,10 +250,10 @@ export async function updateDashboardSettings(
 export const widgetPresets = ["satsrecord", "minimal", "custom"] as const;
 export const widgetDefaults = {
   preset: "satsrecord",
-  accent: "#ded7f5",
-  background: "#faf8ff",
-  text: "#302941",
-  buttonText: "#302941",
+  accent: "#d5e4f8",
+  background: "#fafcff",
+  text: "#293442",
+  buttonText: "#293442",
   showBranding: true,
   heading: "Donate bitcoin",
   description: "Support our work with a bitcoin donation.",
