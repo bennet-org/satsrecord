@@ -35,23 +35,27 @@ import { organization } from "./auth-schema";
  * Operator-issued invite to create an organisation. Distinct from Better Auth's `invitation`, which adds a
  * member to an existing organisation. Only the token's hash is stored; the link carries the token.
  */
-export const organisationInvites = pgTable("organisation_invites", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  email: text("email").notNull(),
-  organisationName: text("organisation_name").notNull(),
-  accessRequestId: uuid("access_request_id").references(
-    () => accessRequests.id,
-  ),
-  tokenHash: text("token_hash").notNull().unique(),
-  /** Operator email, or "open-signup". */
-  invitedBy: text("invited_by").notNull(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  acceptedAt: timestamp("accepted_at", { withTimezone: true }),
-  organisationId: uuid("organisation_id").references(() => organization.id),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const organisationInvites = pgTable(
+  "organisation_invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    organisationName: text("organisation_name").notNull(),
+    accessRequestId: uuid("access_request_id").references(
+      () => accessRequests.id,
+    ),
+    tokenHash: text("token_hash").notNull().unique(),
+    /** Operator email, or "open-signup". */
+    invitedBy: text("invited_by").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    organisationId: uuid("organisation_id").references(() => organization.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("organisation_invites_email").on(t.email)],
+);
 
 // ---------------------------------------------------------------------------
 // Domain tables (docs/design.md, "Data model").
@@ -105,6 +109,7 @@ export const descriptors = pgTable(
     uniqueIndex("descriptors_one_active_per_org")
       .on(t.organisationId)
       .where(sql`${t.status} = 'active'`),
+    index("descriptors_organisation").on(t.organisationId),
   ],
 );
 
@@ -162,51 +167,67 @@ export const donors = pgTable(
 );
 
 /** One widget submission: an address handed to (at most) one donor. */
-export const submissions = pgTable("submissions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  organisationId: uuid("organisation_id")
-    .notNull()
-    .references(() => organization.id),
-  addressId: uuid("address_id")
-    .notNull()
-    .references(() => addresses.id),
-  donorId: uuid("donor_id").references(() => donors.id, {
-    onDelete: "set null",
-  }),
-  /** Hash of the widget session token; lets the same session see the same address until funded. */
-  sessionTokenHash: text("session_token_hash").notNull().unique(),
-  addressEmailStatus: text("address_email_status", {
-    enum: ["none", "pending", "sent", "failed"],
-  })
-    .notNull()
-    .default("none"),
-  origin: text("origin"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const submissions = pgTable(
+  "submissions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organisationId: uuid("organisation_id")
+      .notNull()
+      .references(() => organization.id),
+    addressId: uuid("address_id")
+      .notNull()
+      .references(() => addresses.id),
+    donorId: uuid("donor_id").references(() => donors.id, {
+      onDelete: "set null",
+    }),
+    /** Hash of the widget session token; lets the same session see the same address until funded. */
+    sessionTokenHash: text("session_token_hash").notNull().unique(),
+    addressEmailStatus: text("address_email_status", {
+      enum: ["none", "pending", "sent", "failed"],
+    })
+      .notNull()
+      .default("none"),
+    origin: text("origin"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("submissions_address").on(t.addressId),
+    index("submissions_organisation").on(t.organisationId),
+    index("submissions_donor").on(t.donorId),
+  ],
+);
 
 /** Shared fixed-window limits; keys are keyed hashes, never raw IP addresses. */
-export const widgetRateLimits = pgTable("widget_rate_limits", {
-  key: text("key").primaryKey(),
-  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
-  count: integer("count").notNull(),
-});
+export const widgetRateLimits = pgTable(
+  "widget_rate_limits",
+  {
+    key: text("key").primaryKey(),
+    windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+    count: integer("count").notNull(),
+  },
+  (t) => [index("widget_rate_limits_window").on(t.windowStart)],
+);
 
 /** Consent records travel with the donor row and disappear with it. */
-export const consents = pgTable("consents", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  donorId: uuid("donor_id")
-    .notNull()
-    .references(() => donors.id, { onDelete: "cascade" }),
-  kind: text("kind", { enum: ["marketing"] }).notNull(),
-  granted: boolean("granted").notNull(),
-  /** Version of the label text the donor saw. */
-  labelVersion: text("label_version").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const consents = pgTable(
+  "consents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    donorId: uuid("donor_id")
+      .notNull()
+      .references(() => donors.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["marketing"] }).notNull(),
+    granted: boolean("granted").notNull(),
+    /** Version of the label text the donor saw. */
+    labelVersion: text("label_version").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("consents_donor").on(t.donorId)],
+);
 
 export const settlementKinds = ["onchain", "lightning"] as const;
 export const settlementStatuses = ["mempool", "confirmed", "reorged"] as const;
@@ -238,48 +259,63 @@ export const settlements = pgTable(
   (t) => [
     uniqueIndex("settlements_onchain_ref").on(t.txid, t.vout),
     uniqueIndex("settlements_lightning_ref").on(t.paymentHash),
+    index("settlements_organisation").on(t.organisationId, t.firstSeenAt),
+    index("settlements_address").on(t.addressId),
   ],
 );
 
 /** Append-only. Fair market value pinned at block time, with full provenance. */
-export const valuations = pgTable("valuations", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  settlementId: uuid("settlement_id")
-    .notNull()
-    .references(() => settlements.id),
-  currency: text("currency").notNull(),
-  /** Price of one BTC in `currency`. */
-  rate: numeric("rate", { precision: 18, scale: 6 }).notNull(),
-  amount: numeric("amount", { precision: 18, scale: 2 }).notNull(),
-  source: text("source").notNull(),
-  pair: text("pair").notNull(),
-  method: text("method").notNull(),
-  rateTimestamp: timestamp("rate_timestamp", { withTimezone: true }).notNull(),
-  confirmationsAtValuation: integer("confirmations_at_valuation").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const valuations = pgTable(
+  "valuations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    settlementId: uuid("settlement_id")
+      .notNull()
+      .references(() => settlements.id),
+    currency: text("currency").notNull(),
+    /** Price of one BTC in `currency`. */
+    rate: numeric("rate", { precision: 18, scale: 6 }).notNull(),
+    amount: numeric("amount", { precision: 18, scale: 2 }).notNull(),
+    source: text("source").notNull(),
+    pair: text("pair").notNull(),
+    method: text("method").notNull(),
+    rateTimestamp: timestamp("rate_timestamp", {
+      withTimezone: true,
+    }).notNull(),
+    confirmationsAtValuation: integer("confirmations_at_valuation").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("valuations_settlement").on(t.settlementId, t.createdAt)],
+);
 
 /** Append-only. What was sent to whom, and under which template. Content is reproducible from the row plus the template. */
-export const acknowledgements = pgTable("acknowledgements", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  settlementId: uuid("settlement_id")
-    .notNull()
-    .references(() => settlements.id),
-  valuationId: uuid("valuation_id")
-    .notNull()
-    .references(() => valuations.id),
-  donorId: uuid("donor_id").references(() => donors.id, {
-    onDelete: "set null",
-  }),
-  attributionAtSend: text("attribution_at_send", {
-    enum: attributionStatuses,
-  }).notNull(),
-  templateVersion: text("template_version").notNull(),
-  providerMessageId: text("provider_message_id"),
-  sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const acknowledgements = pgTable(
+  "acknowledgements",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    settlementId: uuid("settlement_id")
+      .notNull()
+      .references(() => settlements.id),
+    valuationId: uuid("valuation_id")
+      .notNull()
+      .references(() => valuations.id),
+    donorId: uuid("donor_id").references(() => donors.id, {
+      onDelete: "set null",
+    }),
+    attributionAtSend: text("attribution_at_send", {
+      enum: attributionStatuses,
+    }).notNull(),
+    templateVersion: text("template_version").notNull(),
+    providerMessageId: text("provider_message_id"),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("acknowledgements_settlement").on(t.settlementId, t.sentAt),
+    index("acknowledgements_donor").on(t.donorId),
+  ],
+);
 
 export const amendableTables = [
   "settlements",
@@ -289,33 +325,41 @@ export const amendableTables = [
 ] as const;
 
 /** The one way to change history: a new row supersedes an old one, and this says who, why, and which. */
-export const amendments = pgTable("amendments", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  organisationId: uuid("organisation_id")
-    .notNull()
-    .references(() => organization.id),
-  table: text("table_name", { enum: amendableTables }).notNull(),
-  supersedesId: uuid("supersedes_id").notNull(),
-  replacementId: uuid("replacement_id"),
-  reason: text("reason").notNull(),
-  amendedBy: text("amended_by").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const amendments = pgTable(
+  "amendments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organisationId: uuid("organisation_id")
+      .notNull()
+      .references(() => organization.id),
+    table: text("table_name", { enum: amendableTables }).notNull(),
+    supersedesId: uuid("supersedes_id").notNull(),
+    replacementId: uuid("replacement_id"),
+    reason: text("reason").notNull(),
+    amendedBy: text("amended_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("amendments_supersedes").on(t.organisationId, t.supersedesId)],
+);
 
 /** Every send, without the address. Provider id is enough to trace a message; the donor row holds the PII. */
-export const emailLog = pgTable("email_log", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  organisationId: uuid("organisation_id").references(() => organization.id),
-  donorId: uuid("donor_id").references(() => donors.id, {
-    onDelete: "set null",
-  }),
-  templateVersion: text("template_version").notNull(),
-  provider: text("provider").notNull(),
-  providerMessageId: text("provider_message_id"),
-  sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const emailLog = pgTable(
+  "email_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organisationId: uuid("organisation_id").references(() => organization.id),
+    donorId: uuid("donor_id").references(() => donors.id, {
+      onDelete: "set null",
+    }),
+    templateVersion: text("template_version").notNull(),
+    provider: text("provider").notNull(),
+    providerMessageId: text("provider_message_id"),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("email_log_donor").on(t.donorId)],
+);
 
 /** Resumable onboarding. Wallet drafts remain encrypted and cannot issue addresses. */
 export const organisationSettings = pgTable("organisation_settings", {
