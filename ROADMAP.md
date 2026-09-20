@@ -103,6 +103,6 @@ Show the demo to prospects. Proceed → Phase 7.
 
 ## Later
 
-Brand-matched widget styling: “Style it based on my brand” uses the organisation’s website to generate matching CSS, with a preview before applying it.
+Brand-matched widget styling: “Style it based on my brand” uses the organisation’s website to generate matching styling, with a preview before applying it.
 
 Self-host packaging and docs. Billing. Lightning via NWC. EU prescribed forms.
