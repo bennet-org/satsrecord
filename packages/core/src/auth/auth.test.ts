@@ -123,6 +123,32 @@ describe("organisation invite", () => {
     expect(s3?.session.activeOrganizationId).toBe(accepted.organisation.id);
   });
 
+  it("concurrent accepts of one invite create one organisation", async () => {
+    const { token } = await createOrganisationInvite(
+      db,
+      mailer,
+      {
+        email: "twice@example.org",
+        organisationName: "Double Trust",
+        invitedBy: "operator@satsrecord.org",
+      },
+      { from, appUrl, appName: "SatsRecord" },
+    );
+    const h = await signIn("twice@example.org");
+    const user = (await auth.api.getSession({ headers: h! }))!.user;
+
+    // Both read the invite as valid before either transaction starts: a double click on the link.
+    const states = (
+      await Promise.all([
+        acceptOrganisationInvite(db, token, user),
+        acceptOrganisationInvite(db, token, user),
+      ])
+    ).map((r) => r.state);
+    expect(states.sort()).toEqual(["accepted", "created"]);
+    expect(await db.select().from(organization)).toHaveLength(1);
+    expect(await db.select().from(member)).toHaveLength(1);
+  });
+
   it("slugs collide safely", async () => {
     const mk = (email: string) =>
       createOrganisationInvite(

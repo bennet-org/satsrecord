@@ -1,6 +1,6 @@
 // Operator-issued invites: the hosted product is invite-only. Distinct from Better Auth's member invitations.
 import { createHash, randomBytes } from "node:crypto";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { desc, eq, isNull } from "drizzle-orm";
 import type { Db } from "./db/client";
 import { accessRequests, organisationInvites } from "./db/schema";
 import type { MailAddress, Mailer } from "./mail/types";
@@ -92,19 +92,25 @@ export async function acceptOrganisationInvite(
   if (normaliseEmail(user.email) !== invite.email)
     return { state: "wrong_email" as const, invite };
   return db.transaction(async (tx) => {
+    // Re-read under a row lock. Two hits on the link — a double click, a prefetch — would otherwise
+    // both pass the check above and create an organisation each, with only one of them recorded.
+    const [locked] = await tx
+      .select()
+      .from(organisationInvites)
+      .where(eq(organisationInvites.id, invite.id))
+      .for("update");
+    if (!locked) return { state: "unknown" as const };
+    if (locked.acceptedAt) return { state: "accepted" as const };
+    if (locked.expiresAt.getTime() < Date.now())
+      return { state: "expired" as const };
     const org = await createOrganisation(tx, {
-      name: invite.organisationName,
+      name: locked.organisationName,
       userId: user.id,
     });
     await tx
       .update(organisationInvites)
       .set({ acceptedAt: new Date(), organisationId: org.id })
-      .where(
-        and(
-          eq(organisationInvites.id, invite.id),
-          isNull(organisationInvites.acceptedAt),
-        ),
-      );
+      .where(eq(organisationInvites.id, locked.id));
     return { state: "created" as const, organisation: org };
   });
 }
