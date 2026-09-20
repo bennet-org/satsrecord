@@ -342,6 +342,13 @@ input::placeholder {
   font-family: var(--sr-font, system-ui, sans-serif);
   font-weight: 400;
 }
+/* Custom keeps minimal's shape but starts from its own palette. */
+:host([preset="custom"]) {
+  --surface: var(--sr-background, #fafcff);
+  --accent: var(--sr-accent, #d5e4f8);
+  --ink: var(--sr-text, #293442);
+  --button-ink: var(--sr-button-text, #293442);
+}
 :host([preset="minimal"]) .card,
 :host([preset="custom"]) .card {
   border: 1px solid color-mix(in srgb, var(--ink) 18%, var(--surface));
@@ -402,11 +409,4 @@ input::placeholder {
     animation: none !important;
     transition: none !important;
   }
-}
-
-:host([preset="custom"]) {
-  --surface: var(--sr-background, #fafcff);
-  --accent: var(--sr-accent, #d5e4f8);
-  --ink: var(--sr-text, #293442);
-  --button-ink: var(--sr-button-text, #293442);
 }
