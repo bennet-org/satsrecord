@@ -68,10 +68,5 @@ export function crypto(): Crypto {
   return cryptoInstance;
 }
 
-/** Only same-site paths are allowed as post-login destinations. */
-export function safeNext(next: string | null | undefined, fallback = "/app") {
-  return next && /^\/(?!\/)/.test(next) ? next : fallback;
-}
-
 export const chain = new FakeChainSource();
 export const simulateDonations = SIMULATE_DONATIONS;

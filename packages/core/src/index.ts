@@ -1,5 +1,6 @@
 // Public surface of @satsrecord/core. Design in docs/design.md.
 export * from "./domain";
+export * from "./url";
 export * from "./db/schema";
 export { createDb, migrateDb, type Db } from "./db/client";
 export * from "./mail";

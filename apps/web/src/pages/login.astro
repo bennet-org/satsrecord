@@ -1,6 +1,6 @@
 ---
 import App from "../layouts/App.astro";
-import { safeNext } from "../lib/services";
+import { safeNext } from "@satsrecord/core";
 if (Astro.locals.user) return Astro.redirect("/app");
 const next = safeNext(Astro.url.searchParams.get("next"));
 const error = Astro.url.searchParams.get("error");
