@@ -15,3 +15,5 @@ export * from "./onboarding";
 
 export * from "./dashboard";
 export { seedDashboard } from "./dashboard-fixture";
+export * from "./widget";
+export * from "./widget-http";

@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "pnpm --filter @satsrecord/widget build && astro dev",
+    "build": "pnpm --filter @satsrecord/widget build && astro build",
     "preview": "astro preview",
     "check": "astro check"
   },

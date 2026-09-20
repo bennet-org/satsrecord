@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter @satsrecord/web dev",
-    "build": "pnpm -r build",
+    "build": "pnpm --filter @satsrecord/web build",
     "check": "pnpm -r check",
     "test": "pnpm -r test",
     "start": "node apps/web/dist/server/entry.mjs",

@@ -3,6 +3,7 @@ import App from "../../layouts/App.astro";
 import {
   getSetup,
   widgetDefaults,
+  widgetPresets,
   saveWidgetConfig,
   widgetSnippet,
   OnboardingError,
@@ -12,7 +13,7 @@ import { db, appUrl } from "../../lib/services";
 const org = Astro.locals.org!;
 const setup = await getSetup(db, org.id);
 if (!setup?.completedAt) return Astro.redirect("/app/setup");
-let config = setup.widgetConfig ?? widgetDefaults;
+let config = { ...widgetDefaults, ...setup.widgetConfig };
 let error = "";
 const inline = Astro.request.headers.get("accept") === "application/json";
 if (Astro.request.method === "POST") {
@@ -21,7 +22,10 @@ if (Astro.request.method === "POST") {
   try {
     const form = await Astro.request.formData();
     const input = Object.fromEntries(
-      Object.keys(widgetDefaults).map((k) => [k, String(form.get(k) ?? "")]),
+      Object.keys(widgetDefaults).map((k) => [
+        k,
+        String(form.get(k) ?? widgetDefaults[k as keyof WidgetConfig]),
+      ]),
     ) as WidgetConfig;
     await saveWidgetConfig(db, org.id, org.role, input);
     if (inline)
@@ -45,7 +49,7 @@ if (Astro.request.method === "POST") {
 <App
   title="Widget"
   heading="Make it yours."
-  intro="Customise the colours and words your donors will see."
+  intro="Choose a style, add your words, and make giving feel at home on your website."
 >
   {error && (
     <p class="error notice" role="alert">
@@ -57,18 +61,35 @@ if (Astro.request.method === "POST") {
       <h2>Customisation</h2>
       <form method="POST" class="form" id="widget-config">
         <fieldset disabled={!["owner", "admin"].includes(org.role)}>
-          {(
-            [
-              ["accent", "Accent"],
-              ["background", "Background"],
-              ["text", "Text"],
-            ] as const
-          ).map(([key, label]) => (
-            <label>
-              {label}
-              <input type="color" name={key} value={config[key]} />
-            </label>
-          ))}
+          <div class="presets" role="group" aria-label="Widget style">
+            {widgetPresets.map((preset) => (
+              <label class={`preset-choice ${preset}`}>
+                <input
+                  type="radio"
+                  name="preset"
+                  value={preset}
+                  checked={config.preset === preset}
+                />
+                <span class="swatch" aria-hidden="true">
+                  Aa <i>↗</i>
+                </span>
+                <strong>
+                  {preset === "satsrecord"
+                    ? "SatsRecord"
+                    : preset === "minimal"
+                      ? "Minimal"
+                      : "Editorial"}
+                </strong>
+                <small>
+                  {preset === "satsrecord"
+                    ? "Warm & direct"
+                    : preset === "minimal"
+                      ? "Quiet & simple"
+                      : "Considered & classic"}
+                </small>
+              </label>
+            ))}
+          </div>
           {(
             [
               ["heading", "Heading", 100],
@@ -94,38 +115,33 @@ if (Astro.request.method === "POST") {
       </form>
     </section>
     <section class="panel">
-      <h2>Live visual preview</h2>
-      <p class="mute">
-        Preview only. Address issuance and email delivery arrive in Phase 5.
-      </p>
-      <div
-        id="widget-preview"
-        style={`--sr-accent:${config.accent};--sr-background:${config.background};--sr-text:${config.text}`}
-      >
-        <h3 data-slot="heading">{config.heading}</h3>
-        <label>
-          Name (optional)
-          <input disabled placeholder="Your name" />
-        </label>
-        <label>
-          Email (optional)
-          <input disabled placeholder="you@example.org" />
-        </label>
-        <label class="consent">
-          <input disabled type="checkbox" />
-          <span data-slot="consent">{config.consent}</span>
-        </label>
-        <button disabled data-slot="button">
-          {config.button}
-        </button>
+      <div class="preview-heading">
+        <h2>Live preview</h2>
+        <select id="preview-state" aria-label="Preview step">
+          <option value="form">Donation form</option>
+          <option value="address">Donation address</option>
+          <option value="received">Received</option>
+        </select>
+      </div>
+      <div class="preview-stage">
+        <satsrecord-donate
+          id="widget-preview"
+          preview
+          preset={config.preset}
+          organisation={org.name}
+        >
+          <span slot="heading">{config.heading}</span>
+          <span slot="button">{config.button}</span>
+          <span slot="consent">{config.consent}</span>
+        </satsrecord-donate>
       </div>
     </section>
   </div>
   <section class="panel">
     <h2>Install snippet</h2>
     <p>
-      Save your changes, then copy this snippet. The versioned widget script
-      will become available in Phase 5.
+      Save your changes, then place this snippet on an allowed website. Manage
+      allowed websites in settings.
     </p>
     <textarea
       id="install-snippet"
@@ -148,6 +164,7 @@ if (Astro.request.method === "POST") {
     </p>
   </section>
 </App>
+<script is:inline src="/widget/v1.js" defer></script>
 <script>
   const form = document.querySelector<HTMLFormElement>("#widget-config")!;
   const preview = document.querySelector<HTMLElement>("#widget-preview")!;
@@ -218,14 +235,27 @@ if (Astro.request.method === "POST") {
         status.textContent = "Select and copy the snippet above.";
       }
     });
+  document
+    .querySelector("#preview-state")!
+    .addEventListener("change", (event) => {
+      preview.setAttribute(
+        "preview-state",
+        (event.target as HTMLSelectElement).value,
+      );
+    });
   form.addEventListener("input", () => {
     const data = new FormData(form);
-    for (const key of ["accent", "background", "text"])
-      preview.style.setProperty(`--sr-${key}`, String(data.get(key)));
+    preview.setAttribute("preset", String(data.get("preset")));
     for (const key of ["heading", "button", "consent"])
-      preview.querySelector(`[data-slot="${key}"]`)!.textContent = String(
+      preview.querySelector(`[slot="${key}"]`)!.textContent = String(
         data.get(key),
       );
+    preview.setAttribute(
+      "preview-state",
+      String(
+        (document.querySelector("#preview-state") as HTMLSelectElement).value,
+      ),
+    );
   });
 </script>
 <style>
@@ -242,56 +272,116 @@ if (Astro.request.method === "POST") {
     min-width: 150px;
   }
 
-  input[type="color"] {
-    height: 44px;
-    padding: 4px;
-    cursor: pointer;
-  }
   .columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 36px;
+    gap: 28px;
+    align-items: start;
   }
   fieldset {
     border: 0;
     padding: 0;
     display: grid;
-    gap: 16px;
+    gap: 20px;
     min-width: 0;
   }
-  #widget-preview {
-    margin-top: 20px;
-    padding: 24px;
-    border: 1px solid;
-    border-radius: 8px;
-    background: var(--sr-background);
-    color: var(--sr-text);
+  .presets {
     display: grid;
-    gap: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
   }
-  #widget-preview h3 {
-    font-size: 26px;
-  }
-  #widget-preview label {
+  .preset-choice {
+    position: relative;
     display: grid;
-    gap: 6px;
-  }
-  #widget-preview input:not([type="checkbox"]) {
-    width: 100%;
-    background: transparent;
-    border: 1px solid currentColor;
-    padding: 10px;
-    color: inherit;
-  }
-  #widget-preview .consent {
-    display: flex;
-    align-items: start;
-  }
-  #widget-preview button {
-    background: var(--sr-accent);
-    color: var(--sr-text);
+    gap: 8px;
+    border: 1px solid #17171730;
     padding: 12px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .preset-choice:has(input:checked) {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+  .preset-choice input {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    accent-color: var(--color-ink);
+  }
+  .preset-choice strong {
+    font-size: 13px;
+  }
+  .preset-choice small {
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+  .swatch {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    height: 72px;
+    padding: 10px;
+    border: 1px solid #17171755;
+    background: #fffaf3;
+    font-size: 25px;
     font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .swatch i {
+    font-style: normal;
+    background: #f7931a;
+    font-size: 16px;
+    line-height: 1;
+    padding: 5px;
+  }
+  .minimal .swatch {
+    background: white;
+    border-radius: 8px;
+    font-weight: 400;
+  }
+  .minimal .swatch i {
+    background: #171717;
+    color: white;
+    border-radius: 4px;
+  }
+  .editorial .swatch {
+    background: #f4f0e7;
+    font-family: Georgia, serif;
+    font-weight: 400;
+    border: 0;
+    border-top: 3px solid #171717;
+  }
+  .editorial .swatch i {
+    background: #213e32;
+    color: white;
+  }
+  .preview-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .preview-heading select {
+    font-size: 12px;
+    padding: 8px;
+    border: 1px solid #17171740;
+    background: white;
+    border-radius: 4px;
+  }
+  .preview-stage {
+    margin-top: 24px;
+    padding: 20px 8px;
+  }
+  #widget-preview {
+    margin: auto;
+  }
+  @media (max-width: 1100px) {
+    .columns {
+      grid-template-columns: 1fr;
+    }
   }
   textarea {
     background: #fff;

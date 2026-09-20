@@ -247,7 +247,9 @@ export async function updateDashboardSettings(
       .where(eq(organisationSettings.organisationId, orgId));
   });
 }
+export const widgetPresets = ["satsrecord", "minimal", "editorial"] as const;
 export const widgetDefaults = {
+  preset: "satsrecord",
   accent: "#f7931a",
   background: "#ffffff",
   text: "#171717",
@@ -263,6 +265,8 @@ export async function saveWidgetConfig(
   input: WidgetConfig,
 ) {
   requireAdmin(role);
+  if (!widgetPresets.includes(input.preset as (typeof widgetPresets)[number]))
+    throw new OnboardingError("Choose a valid preset.");
   for (const key of ["accent", "background", "text"] as const)
     if (!/^#[0-9a-f]{6}$/i.test(input[key]))
       throw new OnboardingError("Choose a valid colour.");
@@ -288,5 +292,5 @@ export function widgetSnippet(
       .replaceAll('"', "&quot;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;");
-  return `<script type="module" src="${escape(origin)}/widget/v1.js"></script>\n<satsrecord-donate org="${escape(orgId)}" style="--sr-accent:${escape(config.accent)};--sr-background:${escape(config.background)};--sr-text:${escape(config.text)}">\n  <span slot="heading">${escape(config.heading)}</span>\n  <span slot="button">${escape(config.button)}</span>\n  <span slot="consent">${escape(config.consent)}</span>\n</satsrecord-donate>`;
+  return `<script defer src="${escape(origin)}/widget/v1.js"></script>\n<satsrecord-donate org="${escape(orgId)}" api="${escape(origin)}" preset="${escape(config.preset ?? "satsrecord")}">\n  <span slot="heading">${escape(config.heading)}</span>\n  <span slot="button">${escape(config.button)}</span>\n  <span slot="consent">${escape(config.consent)}</span>\n</satsrecord-donate>`;
 }

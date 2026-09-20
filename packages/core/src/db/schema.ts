@@ -150,6 +150,9 @@ export const donors = pgTable(
     emailIndex: text("email_index"),
     attribution: text("attribution", { enum: attributionStatuses }).notNull(),
     verificationTokenHash: text("verification_token_hash"),
+    verificationExpiresAt: timestamp("verification_expires_at", {
+      withTimezone: true,
+    }),
     verifiedAt: timestamp("verified_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -171,11 +174,23 @@ export const submissions = pgTable("submissions", {
     onDelete: "set null",
   }),
   /** Hash of the widget session token; lets the same session see the same address until funded. */
-  sessionTokenHash: text("session_token_hash").notNull(),
+  sessionTokenHash: text("session_token_hash").notNull().unique(),
+  addressEmailStatus: text("address_email_status", {
+    enum: ["none", "pending", "sent", "failed"],
+  })
+    .notNull()
+    .default("none"),
   origin: text("origin"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+});
+
+/** Shared fixed-window limits; keys are keyed hashes, never raw IP addresses. */
+export const widgetRateLimits = pgTable("widget_rate_limits", {
+  key: text("key").primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  count: integer("count").notNull(),
 });
 
 /** Consent records travel with the donor row and disappear with it. */

@@ -56,13 +56,13 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Phase 5: widget
 
-- [ ] Widget design pass: three fully styled presets — SatsRecord default, Minimal and Editorial (working name). Revisit the preview and customisation controls around these presets, rather than individual colour pickers.
-- [ ] Web component: form → address (QR, copy, BIP21) → received
-- [ ] Submit → server derives → address email with verification link → verification recorded on click
-- [ ] `localStorage` and session token; funded check on load; rate limits; origin enforcement
-- [ ] Built and served from `apps/web` at a versioned path
+- [x] Widget design pass: three fully styled presets — SatsRecord default, Minimal and Editorial (working name). Revisit the preview and customisation controls around these presets, rather than individual colour pickers.
+- [x] Web component: form → address (QR, copy, BIP21) → received
+- [x] Submit → server derives → address email with verification link → verification recorded on click
+- [x] `localStorage` and session token; funded check on load; rate limits; origin enforcement
+- [x] Built and served from `apps/web` at a versioned path
 
-**Done when:** embedded in a plain HTML page on another local port, it serves a real address and emails it.
+**Done when:** embedded in a plain HTML page on another local port, it serves a real address and emails it. Implemented 19 September 2026: production-server cross-origin walkthrough, email verification, session restoration, received/new donation states and desktop/phone presets pass. See [testing checklist](docs/widget-testing.md).
 
 ## Phase 6: demo polish
 

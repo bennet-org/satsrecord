@@ -1,0 +1,86 @@
+---
+import Base from "../../layouts/Base.astro";
+import { verifyDonorEmail, WidgetError } from "@satsrecord/core";
+import { db } from "../../lib/services";
+Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Referrer-Policy", "same-origin");
+let result = "";
+if (Astro.request.method === "POST") {
+  if (Astro.request.headers.get("origin") !== Astro.url.origin)
+    return new Response("Invalid origin", { status: 403 });
+  try {
+    const form = await Astro.request.formData();
+    result = (await verifyDonorEmail(db, String(form.get("token") ?? "")))
+      ? "confirmed"
+      : "invalid";
+  } catch (error) {
+    if (!(error instanceof WidgetError)) throw error;
+    result = "invalid";
+  }
+}
+---
+
+<Base title="Confirm your email">
+  <section class="verification">
+    {result === "confirmed" ? (
+      <>
+        <h1>Email confirmed.</h1>
+        <p>
+          Thank you. Your donation record will show that you confirmed this
+          email address. You can close this page.
+        </p>
+      </>
+    ) : result === "invalid" ? (
+      <>
+        <h1>This link is no longer valid.</h1>
+        <p>
+          It may have expired or already been used. Your donation address still
+          works.
+        </p>
+      </>
+    ) : (
+      <>
+        <h1>Confirm your email.</h1>
+        <p>
+          Confirm that you requested a bitcoin donation address. You can donate
+          whether or not you confirm.
+        </p>
+        <form method="POST">
+          <input type="hidden" name="token" id="verification-token" />
+          <button class="btn ink" id="confirm-email" disabled>
+            Confirm my email address
+          </button>
+        </form>
+        <p id="link-error" role="status"></p>
+      </>
+    )}
+  </section>
+</Base>
+<script>
+  const token = location.hash.slice(1);
+  history.replaceState(null, "", location.pathname);
+  const input = document.querySelector<HTMLInputElement>("#verification-token");
+  if (input) {
+    input.value = token;
+    document.querySelector<HTMLButtonElement>("#confirm-email")!.disabled =
+      !/^[a-f0-9]{64}$/.test(token);
+    if (!token)
+      document.querySelector("#link-error")!.textContent =
+        "Open the confirmation link from your donation email.";
+  }
+</script>
+<style>
+  .verification {
+    max-width: 650px;
+    margin: 80px auto;
+    padding: 24px;
+  }
+  h1 {
+    font-size: 42px;
+    line-height: 1.1;
+    margin-bottom: 24px;
+  }
+  p {
+    margin-bottom: 24px;
+  }
+</style>

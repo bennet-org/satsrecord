@@ -12,3 +12,6 @@ dist/
 *.log
 
 .netlify/
+
+# Built by the widget package before web dev/build
+apps/web/public/widget/

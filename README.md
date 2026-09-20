@@ -27,7 +27,7 @@ Hosted is invite-only. Put your address in `OPERATOR_EMAILS`, sign in at `/login
 
 ## Onboarding
 
-Phase 3 lives at `/app/setup`: saved progress, mainnet wallet verification, email sender, website origins and the future widget snippet. See [the test checklist](docs/onboarding-testing.md). Set `SIMULATE_DONATIONS=true` in `apps/web/.env` to expose the development-only used-account warning fixture. The actual donation simulation flow arrives in Phase 6.
+Phase 3 lives at `/app/setup`: saved progress, mainnet wallet verification, email sender, website origins and the widget snippet. See [the test checklist](docs/onboarding-testing.md). Set `SIMULATE_DONATIONS=true` in `apps/web/.env` to expose the development-only used-account warning fixture. The actual donation simulation flow arrives in Phase 6.
 
 ## Deploy
 
@@ -39,4 +39,4 @@ Application: AGPL-3.0. Widget (`packages/widget`): MIT. Licence files land with 
 
 ## Dashboard
 
-Phase 4 adds donations and donor records, confirmed donor erasure, CSV exports, address manifests with gap-limit guidance, widget customisation and settings. Apply migration 0005 before use. For a separate seeded demo organisation, sign in and visit `/dev/dashboard` with `SIMULATE_DONATIONS=true` in development. See the [dashboard testing checklist](docs/dashboard-testing.md). The widget preview is visual; address issuance and email delivery arrive in Phase 5.
+Phase 4 adds donations and donor records, confirmed donor erasure, CSV exports, address manifests with gap-limit guidance, widget customisation and settings. Apply migration 0005 before use. For a separate seeded demo organisation, sign in and visit `/dev/dashboard` with `SIMULATE_DONATIONS=true` in development. See the [dashboard testing checklist](docs/dashboard-testing.md). Phase 5 adds three widget presets, real address issuance, address emails and donor verification. See the [widget testing checklist](docs/widget-testing.md); apply migration 0006 and restart `pnpm dev` to build the script.

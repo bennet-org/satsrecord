@@ -43,6 +43,13 @@
       "when": 1789822651775,
       "tag": "0005_majestic_giant_man",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789846274581,
+      "tag": "0006_funny_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }
