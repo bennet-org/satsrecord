@@ -13,6 +13,7 @@ import {
   walletManifest,
   saveWidgetConfig,
   widgetDefaults,
+  resolveWidgetConfig,
   widgetSnippet,
   updateDashboardSettings,
 } from "./dashboard";
@@ -111,4 +112,36 @@ it("quotes multiline CSV and neutralises spreadsheet formulas", () => {
   expect(csv([["a,b", 'a"b', "line\nbreak", " =SUM(A1)", "@test", null]])).toBe(
     '"a,b","a""b","line\nbreak","\' =SUM(A1)","\'@test",""\r\n',
   );
+});
+
+it("saves custom colours and intro text safely, and upgrades old preset configuration", async () => {
+  await saveWidgetConfig(db, fixture.orgId, "owner", {
+    ...widgetDefaults,
+    preset: "custom",
+    showBranding: false,
+    accent: "#244f46",
+    buttonText: "#ffffff",
+    description: "<strong>Help our work.</strong>",
+  });
+  const setup = await getSetup(db, fixture.orgId);
+  const snippet = widgetSnippet(
+    "https://example.org",
+    fixture.orgId,
+    setup!.widgetConfig!,
+  );
+  expect(snippet).toContain('preset="custom"');
+  expect(snippet).toContain('show-branding="false"');
+  expect(snippet).toContain("--sr-button-text:#ffffff");
+  expect(snippet).toContain("&lt;strong&gt;Help our work.&lt;/strong&gt;");
+  expect(resolveWidgetConfig({ preset: "editorial" })).toMatchObject({
+    preset: "satsrecord",
+    description: widgetDefaults.description,
+    showBranding: true,
+  });
+  await expect(
+    saveWidgetConfig(db, fixture.orgId, "owner", {
+      ...widgetDefaults,
+      buttonText: "red;position:fixed",
+    }),
+  ).rejects.toThrow("colour");
 });

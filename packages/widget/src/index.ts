@@ -1,4 +1,4 @@
-import { renderSVG } from "uqr";
+import { bitcoinQR } from "./qr";
 import styles from "./styles.css?inline";
 const escape = (s: string) =>
   s.replace(
@@ -11,6 +11,7 @@ const escape = (s: string) =>
 const script = Array.from(document.scripts).find((s) =>
   /\/widget\/v1\.js(?:\?|$)/.test(s.src),
 );
+const fontLoads = new Set<string>();
 const defaultApi = script ? new URL(script.src).origin : location.origin;
 type Session = {
   address: string;
@@ -19,19 +20,27 @@ type Session = {
 };
 type Config = {
   heading: string;
+  description: string;
+  accent?: string;
+  background?: string;
+  text?: string;
+  buttonText?: string;
   button: string;
   consent: string;
   preset: string;
+  showBranding: boolean;
 };
 const defaults: Config = {
   heading: "Donate bitcoin",
+  description: "Support our work with a bitcoin donation.",
   button: "Get donation address",
   consent: "Keep me updated by email.",
   preset: "satsrecord",
+  showBranding: true,
 };
 
 class SatsRecordDonate extends HTMLElement {
-  static observedAttributes = ["preview-state"];
+  static observedAttributes = ["preview-state", "show-branding"];
   private root = this.attachShadow({ mode: "open" });
   private config = { ...defaults };
   private organisation = "the organisation";
@@ -39,6 +48,12 @@ class SatsRecordDonate extends HTMLElement {
   private session: Session | null = null;
   private timer?: ReturnType<typeof setTimeout>;
   private initialized = false;
+  private copyTimer?: ReturnType<typeof setTimeout>;
+  private get showBranding() {
+    return this.hasAttribute("show-branding")
+      ? this.getAttribute("show-branding") !== "false"
+      : this.config.showBranding;
+  }
   private get preview() {
     return this.hasAttribute("preview");
   }
@@ -61,11 +76,12 @@ class SatsRecordDonate extends HTMLElement {
   }
   disconnectedCallback() {
     clearTimeout(this.timer);
+    clearTimeout(this.copyTimer);
   }
   attributeChangedCallback() {
     if (this.initialized && this.preview) this.render();
   }
-  private text(slot: keyof Config) {
+  private text(slot: "heading" | "description" | "button" | "consent") {
     return (
       this.querySelector(`[slot="${slot}"]`)?.textContent?.trim() ||
       this.config[slot]
@@ -114,10 +130,28 @@ class SatsRecordDonate extends HTMLElement {
     this.root.innerHTML = `<style>${styles}</style><div class="card loading" role="status">Loading donation form…</div>`;
     try {
       const data = await this.request();
-      this.config = data.config;
+      this.config = { ...defaults, ...data.config };
+      if (!["satsrecord", "minimal", "custom"].includes(this.config.preset))
+        this.config.preset = "satsrecord";
       this.organisation = data.organisation;
       if (!this.hasAttribute("preset"))
         this.setAttribute("preset", this.config.preset);
+      if (this.getAttribute("preset") === "custom") {
+        for (const [key, variable] of [
+          ["accent", "accent"],
+          ["background", "background"],
+          ["text", "text"],
+          ["buttonText", "button-text"],
+        ] as const) {
+          const colour = this.config[key];
+          if (
+            colour &&
+            /^#[0-9a-f]{6}$/i.test(colour) &&
+            !this.style.getPropertyValue(`--sr-${variable}`)
+          )
+            this.style.setProperty(`--sr-${variable}`, colour);
+        }
+      }
       this.readToken();
       if (this.token) {
         try {
@@ -143,11 +177,27 @@ class SatsRecordDonate extends HTMLElement {
       : "Unable to connect. Please try again.";
   }
   private render() {
+    if (!["minimal", "custom"].includes(this.getAttribute("preset") || "")) {
+      const fontUrl = new URL(`${this.api}/widget/font.woff2`, location.href)
+        .href;
+      if (!fontLoads.has(fontUrl) && "FontFace" in window) {
+        fontLoads.add(fontUrl);
+        const face = new FontFace(
+          "SatsRecord Widget",
+          `url(${JSON.stringify(fontUrl)})`,
+          { weight: "400 800", display: "swap" },
+        );
+        document.fonts.add(face);
+        void face.load().catch(() => {
+          fontLoads.delete(fontUrl);
+        });
+      }
+    }
     const previewState = this.preview
       ? this.getAttribute("preview-state") || "form"
       : "";
     const state =
-      previewState ||
+      (previewState === "anonymous" ? "form" : previewState) ||
       (this.session ? (this.session.funded ? "received" : "address") : "form");
     const title =
       state === "received"
@@ -157,25 +207,47 @@ class SatsRecordDonate extends HTMLElement {
           : this.text("heading");
     let body = "";
     if (state === "form")
-      body = `<form class="fields"><label for="name">Name <span class="optional">Optional</span><input id="name" name="name" autocomplete="name" maxlength="200" placeholder="Your name"></label><label for="email">Email <span class="optional">Optional · we’ll email your address</span><input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.org"></label><label class="consent"><input name="marketing" type="checkbox"><span>${escape(this.text("consent"))}</span></label><button class="primary" ${this.preview ? "disabled" : ""}>${escape(this.text("button"))} <span aria-hidden="true">↗</span></button><p class="error" role="alert"></p></form>`;
+      body = `<form class="fields"><div class="form-fields"><label for="name"><span class="field-label">Name <span class="optional">Optional</span></span><input id="name" name="name" autocomplete="name" maxlength="200" placeholder="Your name"></label><label for="email"><span class="field-label">Email <span class="optional">Optional</span></span><input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.org"></label><label class="consent"><input name="marketing" type="checkbox"><span>${escape(this.text("consent"))}</span></label><button class="primary" type="submit" ${this.preview ? "disabled" : ""}>${escape(this.text("button"))}</button></div><div class="anonymous-confirmation" hidden inert role="group" aria-labelledby="anonymous-title"><h3 id="anonymous-title" tabindex="-1">Continue without email?</h3><p>Without your email, the charity can’t send you a receipt, confirmation or thank-you message.</p><div class="actions"><button type="button" class="primary" id="add-details" ${this.preview ? "disabled" : ""}>Add my email</button><button type="button" class="secondary" id="confirm-anonymous" ${this.preview ? "disabled" : ""}>Continue without email</button></div></div><p class="error" role="alert"></p></form>`;
     if (state === "address") {
       const address = this.session?.address || "bc1q…your donation address";
-      body = `<div class="qr" role="img" aria-label="${this.preview ? "Sample QR placeholder" : "Scan to open this Bitcoin donation address"}">${this.preview ? '<div class="sample-qr"><span>Sample QR</span></div>' : renderSVG(`bitcoin:${address}`, { border: 4, ecc: "M" })}</div><code class="address" tabindex="0">${escape(address)}</code><div class="actions"><button class="primary" id="copy" ${this.preview ? "disabled" : ""}>Copy address</button>${this.preview ? '<button class="secondary" disabled>Open in wallet ↗</button>' : `<a class="secondary" href="bitcoin:${escape(address)}">Open in wallet ↗</a>`}</div><p class="status" role="status">${this.session?.emailStatus === "sent" ? "We’ve also emailed this address to you." : this.session?.emailStatus === "failed" ? "We couldn’t email your address. Please copy it and keep it somewhere safe." : this.session?.emailStatus === "pending" ? "Your address email is being prepared." : "Keep this address to donate later."}</p><p class="sub">Send only bitcoin (BTC) on the Bitcoin network. You choose the amount in your wallet.</p>`;
+      body = `<div class="qr" role="img" aria-label="${this.preview ? "Sample QR placeholder" : "Scan to open this Bitcoin donation address"}">${this.preview ? '<div class="sample-qr"><span>Sample QR</span></div>' : bitcoinQR(`bitcoin:${address}`)}</div><code class="address" tabindex="0">${escape(address)}</code><div class="actions"><button class="primary" id="copy" aria-live="polite" ${this.preview ? "disabled" : ""}>Copy address</button>${this.preview ? '<button class="secondary" disabled>Open in wallet ↗</button>' : `<a class="secondary" href="bitcoin:${escape(address)}">Open in wallet ↗</a>`}</div><p class="status" role="status">${this.session?.emailStatus === "sent" ? "We’ve also emailed this address to you." : this.session?.emailStatus === "failed" ? "We couldn’t email your address. Please copy it and keep it somewhere safe." : this.session?.emailStatus === "pending" ? "Your address email is being prepared." : "Keep this address to donate later."}</p><p class="sub">Send only bitcoin (BTC) on the Bitcoin network. You choose the amount in your wallet.</p>`;
     }
     if (state === "received")
       body = `<div class="received"><div class="tick" aria-hidden="true">✓</div><p>Your bitcoin donation has been detected. Thank you for supporting ${escape(this.organisation)}.</p></div><button class="primary" id="again" ${this.preview ? "disabled" : ""}>Make another donation ↗</button>`;
-    this.root.innerHTML = `<style>${styles}</style><section class="card" aria-label="Bitcoin donation"><div class="top"><span class="eyebrow">Bitcoin. Direct to the cause.</span><span class="bitcoin" aria-hidden="true">₿</span></div><div class="body"><div class="intro"><h2 tabindex="-1">${escape(title)}</h2>${state === "form" ? `<p class="sub org">Support ${escape(this.organisation)}. Give directly to their wallet.</p>` : ""}</div>${body}${this.preview ? '<p class="preview-note">Preview only · no address will be issued</p>' : ""}</div><div class="footer"><span>Direct. Self-custodial.</span><a href="https://satsrecord.org" target="_blank" rel="noopener noreferrer">SatsRecord ↗</a></div></section>`;
+    this.root.innerHTML = `<style>${styles}</style><section class="card" aria-label="Bitcoin donation"><div class="body"><div class="intro"><h2 tabindex="-1">${escape(title)}</h2>${state === "form" ? `<p class="sub org">${escape(this.text("description"))}</p>` : ""}</div>${body}${this.preview ? '<p class="preview-note">Preview only · no address will be issued</p>' : ""}</div><div class="footer" ${this.showBranding ? "" : "hidden"}><span>Powered by</span><a href="https://satsrecord.org" target="_blank" rel="noopener noreferrer"><svg viewBox="2 2 28 28" aria-hidden="true"><rect x="6" y="6" width="24" height="24" fill="currentColor"/><rect x="3" y="3" width="22" height="22" fill="var(--surface)" stroke="currentColor" stroke-width="2"/><rect x="7" y="9" width="14" height="3" fill="currentColor"/></svg>SatsRecord</a></div></section>`;
     this.root.querySelector("form")?.addEventListener("submit", (e) => {
       e.preventDefault();
       if (!this.preview) void this.submit();
     });
+    this.root.querySelector("#add-details")?.addEventListener("click", () => {
+      this.confirmAnonymous(false);
+      this.root.querySelector<HTMLInputElement>("#email")?.focus();
+    });
+    this.root
+      .querySelector("#confirm-anonymous")
+      ?.addEventListener("click", () => {
+        if (!this.preview) void this.submit(true);
+      });
+    this.root.querySelector("form")?.addEventListener("keydown", (e) => {
+      if (
+        e.key === "Escape" &&
+        this.root.querySelector("form[data-confirming]") &&
+        !this.root.querySelector('[aria-busy="true"]')
+      ) {
+        this.confirmAnonymous(false);
+        this.root.querySelector<HTMLInputElement>("#email")?.focus();
+      }
+    });
     this.root
       .querySelector<HTMLButtonElement>("#copy")
       ?.addEventListener("click", async () => {
+        const button = this.root.querySelector<HTMLButtonElement>("#copy")!;
+        clearTimeout(this.copyTimer);
         try {
           await navigator.clipboard.writeText(this.session!.address);
-          this.root.querySelector(".status")!.textContent = "Address copied.";
+          button.textContent = "Copied!";
         } catch {
+          button.textContent = "Copy failed";
           const code = this.root.querySelector<HTMLElement>(".address")!;
           const range = document.createRange();
           range.selectNodeContents(code);
@@ -186,6 +258,9 @@ class SatsRecordDonate extends HTMLElement {
           this.root.querySelector(".status")!.textContent =
             "Select and copy the address above.";
         }
+        this.copyTimer = setTimeout(() => {
+          button.textContent = "Copy address";
+        }, 2000);
       });
     this.root.querySelector("#again")?.addEventListener("click", () => {
       clearTimeout(this.timer);
@@ -194,13 +269,27 @@ class SatsRecordDonate extends HTMLElement {
       this.render();
       this.focusHeading();
     });
+    if (previewState === "anonymous") this.confirmAnonymous(true);
   }
   private focusHeading() {
     this.root.querySelector<HTMLElement>("h2")?.focus();
   }
-  private async submit() {
+  private confirmAnonymous(show: boolean) {
     const form = this.root.querySelector<HTMLFormElement>("form")!;
-    const button = form.querySelector("button")!;
+    form.toggleAttribute("data-confirming", show);
+    this.root.querySelector<HTMLElement>(".form-fields")!.inert = show;
+    this.root.querySelector<HTMLElement>(".anonymous-confirmation")!.hidden =
+      !show;
+    this.root.querySelector<HTMLElement>(".anonymous-confirmation")!.inert =
+      !show;
+    if (show && !this.preview)
+      this.root.querySelector<HTMLElement>("#anonymous-title")!.focus();
+  }
+  private async submit(anonymousConfirmed = false) {
+    const form = this.root.querySelector<HTMLFormElement>("form")!;
+    const button = form.querySelector<HTMLButtonElement>(
+      anonymousConfirmed ? "#confirm-anonymous" : "button[type=submit]",
+    )!;
     if (button.disabled) return;
     const data = new FormData(form);
     if (data.get("marketing") && !String(data.get("email") || "").trim()) {
@@ -208,8 +297,18 @@ class SatsRecordDonate extends HTMLElement {
         "Add an email address to receive updates.";
       return;
     }
-    button.disabled = true;
-    button.textContent = "Preparing your address…";
+    if (!anonymousConfirmed && !String(data.get("email") || "").trim()) {
+      this.confirmAnonymous(true);
+      return;
+    }
+    const buttonText = button.textContent;
+    for (const control of form.querySelectorAll<
+      HTMLButtonElement | HTMLInputElement
+    >("button, input"))
+      control.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    button.innerHTML =
+      '<span class="spinner" aria-hidden="true"></span>Preparing address…';
     form.querySelector(".error")!.textContent = "";
     try {
       // Persist before POST so a lost response can safely be retried after a reload.
@@ -231,8 +330,12 @@ class SatsRecordDonate extends HTMLElement {
       this.poll();
     } catch (error) {
       form.querySelector(".error")!.textContent = this.message(error);
-      button.disabled = false;
-      button.textContent = this.text("button");
+      for (const control of form.querySelectorAll<
+        HTMLButtonElement | HTMLInputElement
+      >("button, input"))
+        control.disabled = false;
+      button.removeAttribute("aria-busy");
+      button.textContent = buttonText;
     }
   }
   private poll() {

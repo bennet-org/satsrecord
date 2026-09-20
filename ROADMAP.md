@@ -56,7 +56,7 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Phase 5: widget
 
-- [x] Widget design pass: three fully styled presets — SatsRecord default, Minimal and Editorial (working name). Revisit the preview and customisation controls around these presets, rather than individual colour pickers.
+- [x] Widget design pass: SatsRecord brand styling, Minimal, and Custom with colour controls; editable intro text and previews for each donor step.
 - [x] Web component: form → address (QR, copy, BIP21) → received
 - [x] Submit → server derives → address email with verification link → verification recorded on click
 - [x] `localStorage` and session token; funded check on load; rate limits; origin enforcement

@@ -4,6 +4,7 @@ import {
   getSetup,
   widgetDefaults,
   widgetPresets,
+  resolveWidgetConfig,
   saveWidgetConfig,
   widgetSnippet,
   OnboardingError,
@@ -13,7 +14,7 @@ import { db, appUrl } from "../../lib/services";
 const org = Astro.locals.org!;
 const setup = await getSetup(db, org.id);
 if (!setup?.completedAt) return Astro.redirect("/app/setup");
-let config = { ...widgetDefaults, ...setup.widgetConfig };
+let config = resolveWidgetConfig(setup.widgetConfig);
 let error = "";
 const inline = Astro.request.headers.get("accept") === "application/json";
 if (Astro.request.method === "POST") {
@@ -21,12 +22,17 @@ if (Astro.request.method === "POST") {
     return new Response("Invalid origin", { status: 403 });
   try {
     const form = await Astro.request.formData();
-    const input = Object.fromEntries(
-      Object.keys(widgetDefaults).map((k) => [
-        k,
-        String(form.get(k) ?? widgetDefaults[k as keyof WidgetConfig]),
-      ]),
-    ) as WidgetConfig;
+    const input = {
+      ...Object.fromEntries(
+        Object.keys(widgetDefaults)
+          .filter((k) => k !== "showBranding")
+          .map((k) => [
+            k,
+            String(form.get(k) ?? widgetDefaults[k as keyof WidgetConfig]),
+          ]),
+      ),
+      showBranding: form.has("showBranding"),
+    } as WidgetConfig;
     await saveWidgetConfig(db, org.id, org.role, input);
     if (inline)
       return Response.json(
@@ -78,21 +84,52 @@ if (Astro.request.method === "POST") {
                     ? "SatsRecord"
                     : preset === "minimal"
                       ? "Minimal"
-                      : "Editorial"}
+                      : "Custom"}
                 </strong>
                 <small>
                   {preset === "satsrecord"
-                    ? "Warm & direct"
+                    ? "Our house style"
                     : preset === "minimal"
                       ? "Quiet & simple"
-                      : "Considered & classic"}
+                      : "Your colours"}
                 </small>
               </label>
             ))}
           </div>
+          <div id="custom-colours" hidden={config.preset !== "custom"}>
+            <p class="colour-intro">
+              Choose the colours that fit your website.
+            </p>
+            <div class="colour-grid">
+              {(
+                [
+                  ["background", "Background"],
+                  ["text", "Text & borders"],
+                  ["accent", "Button"],
+                  ["buttonText", "Button text"],
+                ] as const
+              ).map(([key, label]) => (
+                <label class="colour-field">
+                  <span>{label}</span>
+                  <div>
+                    <input
+                      type="color"
+                      name={key}
+                      value={config[key]}
+                      aria-label={label}
+                    />
+                    <output data-colour={key}>
+                      {config[key].toUpperCase()}
+                    </output>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
           {(
             [
               ["heading", "Heading", 100],
+              ["description", "Intro text", 240],
               ["button", "Button label", 60],
               ["consent", "Marketing opt-in label", 300],
             ] as const
@@ -102,6 +139,14 @@ if (Astro.request.method === "POST") {
               <input name={key} value={config[key]} required maxlength={max} />
             </label>
           ))}
+          <label class="branding-toggle">
+            <input
+              type="checkbox"
+              name="showBranding"
+              checked={config.showBranding}
+            />
+            Show “Powered by SatsRecord”
+          </label>
           <button class="btn ink" id="save-widget" aria-live="polite">
             Save customisation
           </button>
@@ -119,6 +164,7 @@ if (Astro.request.method === "POST") {
         <h2>Live preview</h2>
         <select id="preview-state" aria-label="Preview step">
           <option value="form">Donation form</option>
+          <option value="anonymous">No-email confirmation</option>
           <option value="address">Donation address</option>
           <option value="received">Received</option>
         </select>
@@ -128,9 +174,17 @@ if (Astro.request.method === "POST") {
           id="widget-preview"
           preview
           preset={config.preset}
+          show-branding={String(config.showBranding)}
           organisation={org.name}
+          api={appUrl}
+          style={
+            config.preset === "custom"
+              ? `--sr-accent:${config.accent};--sr-background:${config.background};--sr-text:${config.text};--sr-button-text:${config.buttonText}`
+              : undefined
+          }
         >
           <span slot="heading">{config.heading}</span>
+          <span slot="description">{config.description}</span>
           <span slot="button">{config.button}</span>
           <span slot="consent">{config.consent}</span>
         </satsrecord-donate>
@@ -158,9 +212,9 @@ if (Astro.request.method === "POST") {
       role="status"
       aria-live="polite"
     ></span>
-    <p class="mute">
-      CSS variables: --sr-accent, --sr-background, --sr-text. Text slots:
-      heading, button, consent.
+    <p class="mute integration-note">
+      CSS variables: --sr-accent, --sr-background, --sr-text, --sr-button-text.
+      Text slots: heading, description, button, consent.
     </p>
   </section>
 </App>
@@ -246,7 +300,22 @@ if (Astro.request.method === "POST") {
   form.addEventListener("input", () => {
     const data = new FormData(form);
     preview.setAttribute("preset", String(data.get("preset")));
-    for (const key of ["heading", "button", "consent"])
+    preview.setAttribute("show-branding", String(data.has("showBranding")));
+    const custom = data.get("preset") === "custom";
+    document.querySelector<HTMLElement>("#custom-colours")!.hidden = !custom;
+    for (const [key, variable] of [
+      ["accent", "accent"],
+      ["background", "background"],
+      ["text", "text"],
+      ["buttonText", "button-text"],
+    ]) {
+      const value = String(data.get(key!));
+      if (custom) preview.style.setProperty(`--sr-${variable}`, value);
+      else preview.style.removeProperty(`--sr-${variable}`);
+      document.querySelector(`[data-colour="${key}"]`)!.textContent =
+        value.toUpperCase();
+    }
+    for (const key of ["heading", "description", "button", "consent"])
       preview.querySelector(`[slot="${key}"]`)!.textContent = String(
         data.get(key),
       );
@@ -259,6 +328,60 @@ if (Astro.request.method === "POST") {
   });
 </script>
 <style>
+  .branding-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 400;
+  }
+  .branding-toggle input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--color-ink);
+  }
+  .integration-note {
+    margin-top: 24px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  #custom-colours[hidden] {
+    display: none;
+  }
+  .colour-intro {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .colour-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .colour-field {
+    font-size: 12px;
+  }
+  .colour-field div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--color-paper-hair);
+    padding: 8px;
+    background: white;
+  }
+  .colour-field input {
+    width: 36px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+    background: transparent;
+  }
+  .colour-field output {
+    font:
+      12px ui-monospace,
+      monospace;
+  }
   .save-error:empty {
     display: none;
   }
@@ -297,7 +420,7 @@ if (Astro.request.method === "POST") {
     border: 1px solid #17171730;
     padding: 12px;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 0;
   }
   .preset-choice:has(input:checked) {
     outline: 2px solid var(--color-ink);
@@ -324,7 +447,7 @@ if (Astro.request.method === "POST") {
     height: 72px;
     padding: 10px;
     border: 1px solid #17171755;
-    background: #fffaf3;
+    background: #fff7ea;
     font-size: 25px;
     font-weight: 700;
     margin-bottom: 4px;
@@ -346,16 +469,16 @@ if (Astro.request.method === "POST") {
     color: white;
     border-radius: 4px;
   }
-  .editorial .swatch {
-    background: #f4f0e7;
-    font-family: Georgia, serif;
+  .custom .swatch {
+    background: #faf8ff;
+    color: #302941;
     font-weight: 400;
     border: 0;
     border-top: 3px solid #171717;
   }
-  .editorial .swatch i {
-    background: #213e32;
-    color: white;
+  .custom .swatch i {
+    background: #ded7f5;
+    color: #302941;
   }
   .preview-heading {
     display: flex;

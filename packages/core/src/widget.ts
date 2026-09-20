@@ -18,7 +18,7 @@ import { normaliseEmail } from "./crypto";
 import type { Deriver } from "./domain";
 import type { MailAddress, Mailer } from "./mail";
 import { escapeHtml } from "./auth/emails";
-import { widgetDefaults } from "./dashboard";
+import { resolveWidgetConfig } from "./dashboard";
 
 export class WidgetError extends Error {
   constructor(
@@ -72,7 +72,7 @@ export async function widgetConfig(
     );
   return {
     ...row,
-    config: { ...widgetDefaults, ...row.settings.widgetConfig },
+    config: resolveWidgetConfig(row.settings.widgetConfig),
   };
 }
 

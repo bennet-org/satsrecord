@@ -247,17 +247,38 @@ export async function updateDashboardSettings(
       .where(eq(organisationSettings.organisationId, orgId));
   });
 }
-export const widgetPresets = ["satsrecord", "minimal", "editorial"] as const;
+export const widgetPresets = ["satsrecord", "minimal", "custom"] as const;
 export const widgetDefaults = {
   preset: "satsrecord",
-  accent: "#f7931a",
-  background: "#ffffff",
-  text: "#171717",
+  accent: "#ded7f5",
+  background: "#faf8ff",
+  text: "#302941",
+  buttonText: "#302941",
+  showBranding: true,
   heading: "Donate bitcoin",
+  description: "Support our work with a bitcoin donation.",
   button: "Get donation address",
   consent: "Keep me updated by email.",
 };
 export type WidgetConfig = typeof widgetDefaults;
+export function resolveWidgetConfig(
+  input?: Partial<WidgetConfig> | null,
+): WidgetConfig {
+  const config = { ...widgetDefaults, ...input };
+  // Older non-custom presets stored the then-default orange palette even though
+  // they did not use those fields. Start Custom with its own palette instead.
+  if (
+    input?.preset !== "custom" &&
+    input?.accent?.toLowerCase() === "#f7931a" &&
+    ["#ffffff", "#fff7ea"].includes(input.background?.toLowerCase() ?? "")
+  ) {
+    for (const key of ["accent", "background", "text", "buttonText"] as const)
+      config[key] = widgetDefaults[key];
+  }
+  if (!widgetPresets.includes(config.preset as (typeof widgetPresets)[number]))
+    config.preset = "satsrecord";
+  return config;
+}
 export async function saveWidgetConfig(
   db: Db,
   orgId: string,
@@ -267,12 +288,15 @@ export async function saveWidgetConfig(
   requireAdmin(role);
   if (!widgetPresets.includes(input.preset as (typeof widgetPresets)[number]))
     throw new OnboardingError("Choose a valid preset.");
-  for (const key of ["accent", "background", "text"] as const)
+  for (const key of ["accent", "background", "text", "buttonText"] as const)
     if (!/^#[0-9a-f]{6}$/i.test(input[key]))
       throw new OnboardingError("Choose a valid colour.");
+  if (typeof input.showBranding !== "boolean")
+    throw new OnboardingError("Choose whether to show SatsRecord branding.");
   const config = {
     ...input,
     heading: clean(input.heading, "heading", 100),
+    description: clean(input.description, "description", 240),
     button: clean(input.button, "button label", 60),
     consent: clean(input.consent, "consent label", 300),
   };
@@ -292,5 +316,14 @@ export function widgetSnippet(
       .replaceAll('"', "&quot;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;");
-  return `<script defer src="${escape(origin)}/widget/v1.js"></script>\n<satsrecord-donate org="${escape(orgId)}" api="${escape(origin)}" preset="${escape(config.preset ?? "satsrecord")}">\n  <span slot="heading">${escape(config.heading)}</span>\n  <span slot="button">${escape(config.button)}</span>\n  <span slot="consent">${escape(config.consent)}</span>\n</satsrecord-donate>`;
+  const preset = widgetPresets.includes(
+    config.preset as (typeof widgetPresets)[number],
+  )
+    ? config.preset
+    : "satsrecord";
+  const customStyle =
+    preset === "custom"
+      ? ` style="--sr-accent:${escape(config.accent)};--sr-background:${escape(config.background)};--sr-text:${escape(config.text)};--sr-button-text:${escape(config.buttonText ?? widgetDefaults.buttonText)}"`
+      : "";
+  return `<script defer src="${escape(origin)}/widget/v1.js"></script>\n<satsrecord-donate org="${escape(orgId)}" api="${escape(origin)}" preset="${escape(preset)}" show-branding="${config.showBranding !== false}"${customStyle}>\n  <span slot="heading">${escape(config.heading)}</span>\n  <span slot="description">${escape(config.description ?? widgetDefaults.description)}</span>\n  <span slot="button">${escape(config.button)}</span>\n  <span slot="consent">${escape(config.consent)}</span>\n</satsrecord-donate>`;
 }
