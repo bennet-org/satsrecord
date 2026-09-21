@@ -1,13 +1,16 @@
 ---
 import App from "../../../layouts/App.astro";
 import DonationTable from "../../../components/DonationTable.astro";
-import { listDonations, listDonors } from "@satsrecord/core";
+import { listDonations, donorsByIds } from "@satsrecord/core";
 import { db, crypto } from "../../../lib/services";
 const org = Astro.locals.org!;
-const [rows, donors] = await Promise.all([
-  listDonations(db, org.id),
-  listDonors(db, crypto(), org.id),
-]);
+const rows = await listDonations(db, org.id);
+const donors = await donorsByIds(
+  db,
+  crypto(),
+  org.id,
+  rows.map((r) => r.donorId),
+);
 ---
 
 <App

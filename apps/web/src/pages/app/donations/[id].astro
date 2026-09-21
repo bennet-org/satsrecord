@@ -1,6 +1,6 @@
 ---
 import App from "../../../layouts/App.astro";
-import { donationDetail, listDonors } from "@satsrecord/core";
+import { donationDetail, donorById } from "@satsrecord/core";
 import { db, crypto } from "../../../lib/services";
 import {
   date,
@@ -11,9 +11,7 @@ import {
 const org = Astro.locals.org!;
 const data = await donationDetail(db, org.id, Astro.params.id!);
 if (!data) return Astro.rewrite("/404");
-const donor = (await listDonors(db, crypto(), org.id)).find(
-  (d) => d.id === data.donorId,
-);
+const donor = await donorById(db, crypto(), org.id, data.donorId);
 const s = data.settlement;
 ---
 

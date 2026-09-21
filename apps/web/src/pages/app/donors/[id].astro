@@ -2,7 +2,7 @@
 import App from "../../../layouts/App.astro";
 import DonationTable from "../../../components/DonationTable.astro";
 import {
-  listDonors,
+  donorById,
   listDonations,
   donorConsents,
   eraseDonor,
@@ -11,8 +11,7 @@ import {
 import { db, crypto } from "../../../lib/services";
 import { date, attribution } from "../../../lib/dashboard";
 const org = Astro.locals.org!;
-const donors = await listDonors(db, crypto(), org.id);
-const donor = donors.find((d) => d.id === Astro.params.id);
+const donor = await donorById(db, crypto(), org.id, Astro.params.id);
 if (!donor) return Astro.rewrite("/404");
 let error = "";
 if (Astro.request.method === "POST") {
@@ -33,9 +32,7 @@ if (Astro.request.method === "POST") {
     error = e.message;
   }
 }
-const rows = (await listDonations(db, org.id)).filter(
-  (r) => r.donorId === donor.id,
-);
+const rows = await listDonations(db, org.id, { donorId: donor.id });
 const consentRows = await donorConsents(db, org.id, donor.id);
 ---
 
@@ -68,7 +65,7 @@ const consentRows = await donorConsents(db, org.id, donor.id);
   </section>
   <section class="panel">
     <h2>Donations</h2>
-    <DonationTable rows={rows} donors={donors} />
+    <DonationTable rows={rows} donors={[donor]} />
   </section>
   {["owner", "admin"].includes(org.role) && (
     <section class="panel">

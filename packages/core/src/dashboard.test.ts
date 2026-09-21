@@ -6,6 +6,10 @@ import { createCrypto } from "./crypto";
 import { seedDashboard } from "./dashboard-fixture";
 import {
   csv,
+  donationTotals,
+  donorById,
+  donorsByIds,
+  walletGapLimits,
   donationDetail,
   eraseDonor,
   listDonations,
@@ -108,6 +112,65 @@ it("validates settings and preserves existing valuations and wallet", async () =
     widgetSnippet("https://example.org", fixture.orgId, s!.widgetConfig!),
   ).toContain("&lt;img");
 });
+it("scoped reads agree with reading the whole organisation", async () => {
+  const orgId = fixture.orgId;
+  const all = await listDonations(db, orgId);
+  const everyDonor = await listDonors(db, crypto, orgId);
+
+  const totals = await donationTotals(db, orgId);
+  expect(totals.count).toBe(all.length);
+  expect(totals.confirmedSats).toBe(
+    all
+      .filter((r) => r.settlement.status === "confirmed")
+      .reduce((sum, r) => sum + r.settlement.amountSats, 0),
+  );
+
+  expect(await walletGapLimits(db, orgId)).toEqual(
+    (await walletManifest(db, orgId)).map((w) => ({
+      id: w.id,
+      label: w.label,
+      gapLimit: w.gapLimit,
+    })),
+  );
+
+  const recent = await listDonations(db, orgId, { limit: 10 });
+  expect(recent).toEqual(all.slice(0, 10));
+
+  const donorId = fixture.donorIds[0]!;
+  expect(await donorById(db, crypto, orgId, donorId)).toEqual(
+    everyDonor.find((d) => d.id === donorId),
+  );
+  expect(await listDonations(db, orgId, { donorId })).toEqual(
+    all.filter((r) => r.donorId === donorId),
+  );
+
+  // Exactly the donors the rows reference, and no fallback to reading them all.
+  const shown = await donorsByIds(
+    db,
+    crypto,
+    orgId,
+    recent.map((r) => r.donorId),
+  );
+  expect(shown.map((d) => d.id).sort()).toEqual(
+    [...new Set(recent.map((r) => r.donorId).filter(Boolean))].sort(),
+  );
+  expect(await donorsByIds(db, crypto, orgId, [])).toEqual([]);
+  expect(await donorsByIds(db, crypto, orgId, [null, null])).toEqual([]);
+  expect(everyDonor.length).toBeGreaterThan(0);
+});
+
+it("keeps scoped reads inside the organisation", async () => {
+  const other = await seedDashboard(db, crypto);
+  expect(
+    await donorById(db, crypto, fixture.orgId, other.donorIds[0]!),
+  ).toBeNull();
+  expect(await donorsByIds(db, crypto, fixture.orgId, other.donorIds)).toEqual(
+    [],
+  );
+  expect(await donorById(db, crypto, fixture.orgId, "not-a-uuid")).toBeNull();
+  expect(await donorById(db, crypto, fixture.orgId, null)).toBeNull();
+});
+
 it("quotes multiline CSV and neutralises spreadsheet formulas", () => {
   expect(csv([["a,b", 'a"b', "line\nbreak", " =SUM(A1)", "@test", null]])).toBe(
     '"a,b","a""b","line\nbreak","\' =SUM(A1)","\'@test",""\r\n',

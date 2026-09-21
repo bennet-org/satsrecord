@@ -1,4 +1,4 @@
-import { and, eq, desc, inArray } from "drizzle-orm";
+import { and, eq, desc, inArray, sql } from "drizzle-orm";
 import type { Db } from "./db/client";
 import type { Crypto } from "./crypto";
 import {
@@ -27,8 +27,12 @@ export function requireAdmin(role: string) {
   if (!["owner", "admin"].includes(role))
     throw new OnboardingError("Organisation admin access required.");
 }
-export async function listDonations(db: Db, orgId: string, id?: string) {
-  const rows = await db
+export async function listDonations(
+  db: Db,
+  orgId: string,
+  opts: { id?: string; donorId?: string; limit?: number } = {},
+) {
+  const query = db
     .select({
       settlement: settlements,
       address: addresses.address,
@@ -46,10 +50,12 @@ export async function listDonations(db: Db, orgId: string, id?: string) {
     .where(
       and(
         eq(settlements.organisationId, orgId),
-        id ? eq(settlements.id, id) : undefined,
+        opts.id ? eq(settlements.id, opts.id) : undefined,
+        opts.donorId ? eq(submissions.donorId, opts.donorId) : undefined,
       ),
     )
     .orderBy(desc(settlements.firstSeenAt), desc(settlements.id));
+  const rows = await (opts.limit ? query.limit(opts.limit) : query);
   const values = rows.length
     ? await db
         .select()
@@ -67,24 +73,91 @@ export async function listDonations(db: Db, orgId: string, id?: string) {
     values: values.filter((v) => v.settlementId === r.settlement.id),
   }));
 }
+type DonorRow = typeof donors.$inferSelect;
+const readDonor = (crypto: Crypto, d: DonorRow) => ({
+  id: d.id,
+  name: d.nameEnc ? crypto.decrypt(d.nameEnc) : "",
+  email: d.emailEnc ? crypto.decrypt(d.emailEnc) : "",
+  attribution: d.attribution,
+  verifiedAt: d.verifiedAt,
+  createdAt: d.createdAt,
+});
 export async function listDonors(db: Db, crypto: Crypto, orgId: string) {
   const rows = await db
     .select()
     .from(donors)
     .where(eq(donors.organisationId, orgId))
     .orderBy(desc(donors.createdAt));
-  return rows.map((d) => ({
-    id: d.id,
-    name: d.nameEnc ? crypto.decrypt(d.nameEnc) : "",
-    email: d.emailEnc ? crypto.decrypt(d.emailEnc) : "",
-    attribution: d.attribution,
-    verifiedAt: d.verifiedAt,
-    createdAt: d.createdAt,
+  return rows.map((d) => readDonor(crypto, d));
+}
+export async function donorById(
+  db: Db,
+  crypto: Crypto,
+  orgId: string,
+  id: string | null | undefined,
+) {
+  if (!id || !validId(id)) return null;
+  const [row] = await db
+    .select()
+    .from(donors)
+    .where(and(eq(donors.id, id), eq(donors.organisationId, orgId)));
+  return row ? readDonor(crypto, row) : null;
+}
+/** Only the donors a page actually shows, so listing donations never decrypts the whole organisation. */
+export async function donorsByIds(
+  db: Db,
+  crypto: Crypto,
+  orgId: string,
+  ids: ReadonlyArray<string | null>,
+) {
+  const wanted = [...new Set(ids.filter((id): id is string => !!id))];
+  if (!wanted.length) return [];
+  const rows = await db
+    .select()
+    .from(donors)
+    .where(and(eq(donors.organisationId, orgId), inArray(donors.id, wanted)));
+  return rows.map((d) => readDonor(crypto, d));
+}
+/** Counts and totals for the dashboard, so it does not read every settlement to add them up. */
+export async function donationTotals(db: Db, orgId: string) {
+  const [row] = await db
+    .select({
+      count: sql<number>`count(*)::int`,
+      confirmedSats: sql<number>`coalesce(sum(${settlements.amountSats}) filter (where ${settlements.status} = 'confirmed'), 0)::bigint`,
+    })
+    .from(settlements)
+    .where(eq(settlements.organisationId, orgId));
+  return {
+    count: row?.count ?? 0,
+    confirmedSats: Number(row?.confirmedSats ?? 0),
+  };
+}
+/** Gap-limit guidance without reading every address ever issued. */
+export async function walletGapLimits(db: Db, orgId: string) {
+  const rows = await db
+    .select({
+      id: descriptors.id,
+      label: descriptors.label,
+      nextIndex: descriptors.nextIndex,
+      highestIndex: sql<number | null>`max(${addresses.index})`,
+    })
+    .from(descriptors)
+    .leftJoin(addresses, eq(addresses.descriptorId, descriptors.id))
+    .where(eq(descriptors.organisationId, orgId))
+    .groupBy(descriptors.id, descriptors.label, descriptors.nextIndex);
+  return rows.map((w) => ({
+    id: w.id,
+    label: w.label,
+    gapLimit: Math.max(
+      20,
+      w.nextIndex - 1 + 20,
+      w.highestIndex === null ? 20 : Number(w.highestIndex) + 20,
+    ),
   }));
 }
 export async function donationDetail(db: Db, orgId: string, id: string) {
   if (!validId(id)) return null;
-  const row = (await listDonations(db, orgId, id))[0];
+  const row = (await listDonations(db, orgId, { id }))[0];
   if (!row) return null;
   const values = await db
     .select()
