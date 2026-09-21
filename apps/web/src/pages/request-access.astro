@@ -70,7 +70,7 @@ const fieldErrors: Record<string, string[] | undefined> = isInputError(
             ></textarea>
           </label>
           {result?.error && !isInputError(result.error) && (
-            <p class="err">Something went wrong. Please try again.</p>
+            <p class="err">{result.error.message}</p>
           )}
           <button class="btn solid" type="submit">
             Send request

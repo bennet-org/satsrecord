@@ -2,6 +2,15 @@ import { desc, eq } from "drizzle-orm";
 import type { Db } from "./db/client";
 import { accessRequests, type AccessRequestCountry } from "./db/schema";
 import type { MailAddress, Mailer } from "./mail/types";
+import { createHmac } from "node:crypto";
+import { normaliseEmail } from "./crypto";
+import { consumeWidgetLimit, WidgetError } from "./widget";
+
+export class AccessRequestLimitError extends Error {
+  constructor() {
+    super("Too many access requests. Please try again later.");
+  }
+}
 
 export interface AccessRequestInput {
   organisation: string;
@@ -63,7 +72,34 @@ export async function submitAccessRequest(
   mailer: Mailer,
   input: AccessRequestInput,
   mail: { from: MailAddress; notify?: string | undefined },
+  limit: { ip: string; secret: string; now?: Date },
 ) {
+  // Shared database counters apply across instances. Never persist raw IPs or email addresses as keys.
+  const key = (value: string) =>
+    createHmac("sha256", limit.secret)
+      .update(`access-request:${value}`)
+      .digest("hex");
+  try {
+    await consumeWidgetLimit(
+      db,
+      key(`ip:${limit.ip}`),
+      5,
+      3_600_000,
+      limit.now,
+    );
+    await consumeWidgetLimit(
+      db,
+      key(`email:${normaliseEmail(input.email)}`),
+      3,
+      86_400_000,
+      limit.now,
+    );
+    await consumeWidgetLimit(db, key("global"), 100, 3_600_000, limit.now);
+  } catch (error) {
+    if (error instanceof WidgetError && error.status === 429)
+      throw new AccessRequestLimitError();
+    throw error;
+  }
   const [row] = await db
     .insert(accessRequests)
     .values({

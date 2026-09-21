@@ -2,6 +2,7 @@ import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
 import {
   submitAccessRequest,
+  AccessRequestLimitError,
   accessRequestCountries,
   createOrganisationInvite,
   createOrganisation,
@@ -10,6 +11,7 @@ import {
 import { isAPIError } from "better-auth/api";
 import { db, mailer, mail, auth, appUrl, openSignup } from "../lib/services";
 import { site } from "../data/marketing";
+import { BETTER_AUTH_SECRET } from "astro:env/server";
 
 /** Better Auth's errors carry a message meant for the user; everything else is logged and generic. */
 function rethrow(tag: string, err: unknown): never {
@@ -33,11 +35,19 @@ export const server = {
       country: z.enum(accessRequestCountries),
       message: z.string().trim().max(2000).optional(),
     }),
-    handler: async (input) => {
+    handler: async (input, ctx) => {
       try {
-        const { id } = await submitAccessRequest(db, mailer, input, mail);
+        const { id } = await submitAccessRequest(db, mailer, input, mail, {
+          ip: ctx.clientAddress,
+          secret: BETTER_AUTH_SECRET,
+        });
         return { ok: true as const, id };
       } catch (err) {
+        if (err instanceof AccessRequestLimitError)
+          throw new ActionError({
+            code: "TOO_MANY_REQUESTS",
+            message: err.message,
+          });
         console.error("[requestAccess]", err);
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
