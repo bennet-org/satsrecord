@@ -2,7 +2,7 @@
 import App from "../../../layouts/App.astro";
 import DonationTable from "../../../components/DonationTable.astro";
 import { listDonations, donorsByIds } from "@satsrecord/core";
-import { db, crypto } from "../../../lib/services";
+import { db, crypto, simulateDonations } from "../../../lib/services";
 const org = Astro.locals.org!;
 const rows = await listDonations(db, org.id);
 const donors = await donorsByIds(
@@ -21,5 +21,12 @@ const donors = await donorsByIds(
   <p>
     <a href="/app/exports?download=donations">Download donations CSV</a>
   </p>
+  {import.meta.env.DEV &&
+    simulateDonations &&
+    ["owner", "admin"].includes(org.role) && (
+      <p>
+        <a href="/dev/donations">Simulate a donation →</a>
+      </p>
+    )}
   <DonationTable rows={rows} donors={donors} />
 </App>

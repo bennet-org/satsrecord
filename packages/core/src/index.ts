@@ -18,3 +18,6 @@ export * from "./dashboard";
 export { seedDashboard } from "./dashboard-fixture";
 export * from "./widget";
 export * from "./widget-http";
+export * from "./settlement-processing";
+export * from "./demo";
+export * from "./donation-notifications";

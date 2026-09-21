@@ -66,13 +66,13 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Phase 6: demo polish
 
-- [ ] Simulate-donation action → settlement, valuation (fixed rate), acknowledgement email, widget received state
-- [ ] Charity donation notifications: per-organisation opt-in, per donation or daily digest, to the owner or a chosen address; sent from the settlement path alongside the acknowledgement
-- [ ] Seed script; `pnpm demo` brings everything up
-- [ ] `docs/demo.md`: the five-minute walkthrough to show a charity
-- [ ] README, AGPL-3.0 (app) and MIT (widget) licence files
+- [x] Simulate-donation action → settlement, valuation (fixed rate), acknowledgement email, widget received state. Implemented 21 September 2026 at `/dev/donations`; see [simulation testing](docs/demo-testing.md).
+- [x] Charity donation notifications: per-organisation opt-in, per donation or daily digest, to the owner or a chosen address; sent from the settlement path alongside the acknowledgement
+- [x] Seed script; `pnpm demo` brings everything up
+- [x] `docs/demo.md`: the five-minute walkthrough to show a charity
+- [x] README, AGPL-3.0 (app) and MIT (widget) licence files
 
-**Done when:** the walkthrough runs clean from a fresh clone.
+**Done when:** the walkthrough runs clean from a fresh clone. Implemented 21 September 2026: empty isolated database startup, repeat startup, browser walkthrough, CSV exports, desktop/phone layouts and production guards verified. `pnpm demo` seeds and starts the local demo; see [the walkthrough](docs/demo.md).
 
 ## Decision gate
 

@@ -16,6 +16,7 @@ const widgetStyleHash: `sha256-${string}` = `sha256-${createHash("sha256")
   .digest("base64")}`;
 
 export default defineConfig({
+  devToolbar: { enabled: process.env.SATSRECORD_DEMO !== "true" },
   site: "https://satsrecord.org",
   // The app is on-demand; marketing pages opt in to prerendering.
   output: "server",
@@ -104,6 +105,11 @@ export default defineConfig({
         context: "server",
         access: "secret",
         default: false,
+      }),
+      NOTIFICATION_CRON_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
       }),
       SIMULATE_DONATIONS: envField.boolean({
         context: "server",

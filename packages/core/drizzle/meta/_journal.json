@@ -57,6 +57,13 @@
       "when": 1789937917297,
       "tag": "0007_overconfident_hammerhead",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789996263730,
+      "tag": "0008_donation_notifications",
+      "breakpoints": true
     }
   ]
 }

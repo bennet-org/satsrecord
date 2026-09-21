@@ -1,0 +1,165 @@
+---
+import App from "../../layouts/App.astro";
+import {
+  demoSubmissions,
+  simulateDonation,
+  deliverDonationNotifications,
+} from "@satsrecord/core";
+import {
+  db,
+  crypto,
+  mailer,
+  mail,
+  simulateDonations,
+} from "../../lib/services";
+if (!import.meta.env.DEV || !simulateDonations) return Astro.rewrite("/404");
+if (!Astro.locals.user) return Astro.redirect("/login?next=/dev/donations");
+const org = Astro.locals.org;
+if (!org || !["owner", "admin"].includes(org.role))
+  return Astro.rewrite("/404");
+Astro.response.headers.set("Cache-Control", "no-store");
+let error = "";
+let digestNotice = "";
+let selectedSubmission = "";
+let selectedAmount = "100000";
+let result: Awaited<ReturnType<typeof simulateDonation>> | undefined;
+if (Astro.request.method === "POST") {
+  if (Astro.request.headers.get("origin") !== Astro.url.origin)
+    return new Response("Invalid origin", { status: 403 });
+  const form = await Astro.request.formData();
+  if (form.get("intent") === "digest") {
+    try {
+      const count = await deliverDonationNotifications(
+        { db, crypto: crypto(), mailer, from: mail.from },
+        org.id,
+        { flushDaily: true },
+      );
+      digestNotice = `${count} queued donation notices delivered.`;
+    } catch {
+      error =
+        "Notification delivery failed. Queued notices are retained for retry.";
+    }
+  } else {
+    const submissionId = String(form.get("submissionId") ?? "");
+    selectedSubmission = submissionId;
+    selectedAmount = String(form.get("amountSats") ?? "");
+    const amountSats = Number(selectedAmount);
+    if (
+      !/^[a-f0-9-]{36}$/.test(submissionId) ||
+      !Number.isSafeInteger(amountSats) ||
+      amountSats <= 0
+    ) {
+      error = "Choose a submission and enter a positive whole number of sats.";
+    } else {
+      try {
+        result = await simulateDonation(
+          { db, crypto: crypto(), mailer, from: mail.from },
+          {
+            enabled: true,
+            role: org.role,
+            organisationId: org.id,
+            submissionId,
+            amountSats,
+          },
+        );
+      } catch {
+        error =
+          "Could not simulate this donation. Check the submission belongs to this organisation, setup is complete, and the amount matches any earlier simulation.";
+      }
+    }
+  }
+}
+const rows = await demoSubmissions(db, org.id);
+---
+
+<App
+  title="Simulate a donation"
+  heading="Simulate a donation."
+  intro={`Development only · ${org.name}`}
+>
+  <p>
+    No bitcoin moves. This creates a confirmed example payment and fixed-rate
+    valuation. If the donor supplied an email, an acknowledgement is sent
+    through the configured mailer.
+  </p>
+  <p>
+    Use a separate demo organisation. Never send funds to the fixture wallet.
+  </p>
+  {digestNotice && (
+    <p class="notice" role="status">
+      {digestNotice}
+    </p>
+  )}
+  {error && (
+    <p class="notice error" role="alert">
+      {error}
+    </p>
+  )}
+  {result && (
+    <p class="notice" role="status">
+      Donation recorded.{" "}
+      {result.email === "failed"
+        ? "Email failed; submit the same amount again to retry delivery."
+        : result.email === "sent"
+          ? "Acknowledgement sent."
+          : "No donor email to acknowledge."}{" "}
+      {result.notifications === "failed" &&
+        "Charity notification failed and remains queued for retry. "}
+      <a href={`/app/donations/${result.settlementId}`}>View donation →</a>
+    </p>
+  )}
+  {rows.length ? (
+    <form method="POST" class="form">
+      <label>
+        Issued address (newest first)
+        <select name="submissionId" required>
+          {rows.map((row) => (
+            <option value={row.id} selected={row.id === selectedSubmission}>
+              {row.address} · {row.createdAt.toISOString()}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Amount in sats
+        <input
+          name="amountSats"
+          type="number"
+          min="1"
+          max="2100000000000000"
+          step="1"
+          value={selectedAmount}
+          required
+        />
+      </label>
+      <p>
+        Each submission can be simulated once. Repeating the same amount retries
+        its acknowledgement without creating another donation. The open widget
+        will show received on its next status check.
+      </p>
+      <button class="btn ink">Simulate donation</button>
+    </form>
+  ) : (
+    <p>
+      Submit the embedded widget first, or{" "}
+      <a href="/dev/dashboard">create a demo dashboard</a>.
+    </p>
+  )}
+  <form method="POST" class="form">
+    <input type="hidden" name="intent" value="digest" />
+    <p>
+      Demo shortcut: deliver queued daily notices now, without waiting for
+      midnight.
+    </p>
+    <button class="btn ink">Send queued notifications now</button>
+  </form>
+</App>
+
+<style>
+  p + p {
+    margin-top: 12px;
+  }
+  .form {
+    margin-top: 24px;
+  }
+</style>

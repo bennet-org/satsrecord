@@ -2,13 +2,14 @@
 import App from "../../../layouts/App.astro";
 import {
   getSetup,
+  saveDonationNotifications,
   walletManifest,
   updateDashboardSettings,
   OnboardingError,
   countryCodes,
   reportingCurrencies,
 } from "@satsrecord/core";
-import { db } from "../../../lib/services";
+import { db, crypto } from "../../../lib/services";
 const org = Astro.locals.org!;
 let setup = await getSetup(db, org.id);
 if (!setup?.completedAt) return Astro.redirect("/app/setup");
@@ -22,7 +23,9 @@ if (Astro.request.method === "POST") {
     posted = Object.fromEntries(
       [...(await Astro.request.formData())].map(([k, v]) => [k, String(v)]),
     );
-    await updateDashboardSettings(db, org.id, org.role, posted);
+    if (posted.intent === "notifications")
+      await saveDonationNotifications(db, crypto(), org.id, org.role, posted);
+    else await updateDashboardSettings(db, org.id, org.role, posted);
     return Astro.redirect("/app/settings?saved=1", 303);
   } catch (e) {
     if (!(e instanceof OnboardingError)) throw e;
@@ -146,6 +149,53 @@ const countries = new Intl.DisplayNames(["en"], { type: "region" });
           />
         </label>
         <button class="btn ink">Save email sender</button>
+      </fieldset>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>Donation notifications</h2>
+    <form method="POST" class="form">
+      <input type="hidden" name="intent" value="notifications" />
+      <fieldset disabled={!editable}>
+        <label>
+          Frequency
+          <select name="notificationMode">
+            {[
+              ["off", "Off"],
+              ["per-donation", "Every donation"],
+              ["daily", "Daily digest"],
+            ].map(([value, label]) => (
+              <option
+                value={value}
+                selected={
+                  value === (posted.notificationMode ?? setup.notificationMode)
+                }
+              >
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Send to (optional)
+          <input
+            type="email"
+            name="notificationEmail"
+            maxlength="254"
+            value={
+              posted.notificationEmail ??
+              (setup.notificationEmailEnc
+                ? crypto().decrypt(setup.notificationEmailEnc)
+                : "")
+            }
+          />
+        </label>
+        <p class="mute">
+          Leave blank to notify organisation owners. Daily digests cover each
+          UTC day and arrive after midnight. Changes apply to new donations and
+          cancel queued notifications.
+        </p>
+        <button class="btn ink">Save notifications</button>
       </fieldset>
     </form>
   </section>

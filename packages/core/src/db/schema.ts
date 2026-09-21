@@ -368,6 +368,12 @@ export const organisationSettings = pgTable("organisation_settings", {
     .references(() => organization.id),
   widgetConfig:
     jsonb("widget_config").$type<import("../dashboard").WidgetConfig>(),
+  notificationMode: text("notification_mode", {
+    enum: ["off", "per-donation", "daily"],
+  })
+    .notNull()
+    .default("off"),
+  notificationEmailEnc: text("notification_email_enc"),
   registrationNumber: text("registration_number"),
   country: text("country"),
   reportingCurrency: text("reporting_currency"),
@@ -382,3 +388,31 @@ export const organisationSettings = pgTable("organisation_settings", {
     .default(false),
   completedAt: timestamp("completed_at", { withTimezone: true }),
 });
+
+/** Durable charity notification queue; records contain no donor PII. */
+export const donationNotifications = pgTable(
+  "donation_notifications",
+  {
+    settlementId: uuid("settlement_id")
+      .primaryKey()
+      .references(() => settlements.id),
+    organisationId: uuid("organisation_id")
+      .notNull()
+      .references(() => organization.id),
+    mode: text("mode", { enum: ["per-donation", "daily"] }).notNull(),
+    status: text("status", { enum: ["pending", "sent", "cancelled"] })
+      .notNull()
+      .default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("donation_notifications_pending").on(
+      t.organisationId,
+      t.status,
+      t.createdAt,
+    ),
+  ],
+);

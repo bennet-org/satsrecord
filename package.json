@@ -12,12 +12,16 @@
     "test": "pnpm -r test",
     "start": "node apps/web/server.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "demo": "node scripts/demo.mjs",
+    "demo:stop": "node scripts/demo.mjs --stop"
   },
   "devDependencies": {
     "playwright": "^1.63.0",
     "prettier": "^3.9.8",
     "prettier-plugin-astro": "^1.0.1",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3"
-  }
+  },
+  "license": "AGPL-3.0-only"
 }

@@ -15,3 +15,6 @@ dist/
 
 # Built by the widget package before web dev/build
 apps/web/public/widget/
+
+# Isolated local demo keys and state
+.demo/
