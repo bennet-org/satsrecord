@@ -2,41 +2,62 @@
 
 Non-custodial bitcoin donations for charities and non-profits. Product brief in [project-brief.md](project-brief.md), technical design in [docs/design.md](docs/design.md), stack in [docs/stack.md](docs/stack.md), plan in [ROADMAP.md](ROADMAP.md), brand in [brand/README.md](brand/README.md).
 
+## Try the demo
+
+With Node 22.12+, pnpm and Docker installed:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm demo
+```
+
+This starts an isolated database, seeds Harbour Aid, and serves the dashboard and an embedded donation page. No real funds or outgoing email are involved. Follow the [five-minute walkthrough](docs/demo.md).
+
+## What works
+
+- Invite-based organisations, passwordless login, passkeys and team management.
+- Onboarding at `/app/setup`: saved progress, mainnet wallet address verification, email sender, allowed website origins and an installation snippet.
+- An embeddable widget with three visual presets, real address derivation, QR codes, address emails, donor email verification and session restoration.
+- Donation and donor records, donor erasure, CSV exports, address manifests with gap-limit guidance, widget customisation and organisation settings.
+- Settlement recording, fixed-rate demo valuations, donor acknowledgements, and opt-in charity notifications per donation or as daily digests.
+
+**Still to build:** live chain detection, a real fresh-wallet history check, historical exchange-rate sourcing, and the continuously running worker. Production can issue real addresses but does not yet detect or value incoming bitcoin. Further launch and product work is tracked in [the roadmap](ROADMAP.md).
+
 ## Layout
 
 ```
-apps/web         Astro site and app (Node adapter)
+apps/web         Astro site and app (Node or Netlify adapter)
 packages/core    Domain logic, schema, adapters. No framework imports.
 packages/widget  Embeddable web component
 ```
 
 ## Develop
 
-```
+```sh
 corepack enable            # pnpm
 pnpm install
-cp .env.example .env       # then edit: BETTER_AUTH_SECRET at least
+cp .env.example .env       # configure auth and encryption keys
 docker compose up -d db    # Postgres on :5432
 pnpm --filter @satsrecord/core db:migrate
-pnpm dev                   # http://localhost:4321; sent mail at /dev/outbox with DEV_OUTBOX=true
+pnpm dev                   # http://localhost:4321
 pnpm test                  # core tests, in-process Postgres, no Docker needed
 pnpm build && pnpm start   # production server
 ```
 
 Hosted is invite-only. Put your address in `OPERATOR_EMAILS`, sign in at `/login`, and issue invites from `/admin`. `OPEN_SIGNUP=true` enables `/signup` instead.
 
-## Onboarding
+For a separate seeded demo organisation in an existing development environment, enable `SIMULATE_DONATIONS=true`, sign in, and visit `/dev/dashboard`. Owners and admins can use `/dev/donations` to simulate a payment against an issued address, record a fixed-rate valuation and send an acknowledgement. The widget then shows received. Simulation routes are unavailable in production builds.
 
-Phase 3 lives at `/app/setup`: saved progress, mainnet wallet verification, email sender, website origins and the widget snippet. See [the test checklist](docs/onboarding-testing.md). Set `SIMULATE_DONATIONS=true` in `apps/web/.env` to expose the development-only used-account warning fixture. The actual donation simulation flow arrives in Phase 6.
+With the console mailer, `DEV_OUTBOX=true` and a separate `DEV_OUTBOX_PASSWORD` of at least 32 characters enable the protected local outbox at `/dev/outbox`.
+
+Testing checklists: [onboarding](docs/onboarding-testing.md), [dashboard](docs/dashboard-testing.md), [widget](docs/widget-testing.md), [simulation](docs/demo-testing.md).
 
 ## Deploy
 
-Netlify builds `apps/web` with the Netlify adapter (`netlify.toml`; the adapter is chosen by `NETLIFY=true`). Site settings: base directory `/`, package directory `apps/web`. Environment: `DATABASE_URL` (Neon, pooled), `BETTER_AUTH_SECRET`, `APP_URL` (the site's origin), `OPERATOR_EMAILS`, `RESEND_API_KEY`, `MAIL_FROM` (a domain verified in Resend), and from Phase 3 `ENCRYPTION_KEY` and `INDEX_KEY`. The build command runs migrations first. The Dockerfile builds the same app with the node adapter for self-hosting.
+Netlify builds `apps/web` using the checked-in `netlify.toml`. Keep the base directory at the repository root and set the package directory to `apps/web`. The build applies database migrations before building the app. See [production configuration](docs/deployment.md) for environment variables and notification scheduling.
+
+The Dockerfile builds the same app with the Node adapter for self-hosting.
 
 ## Licence
 
-Application: AGPL-3.0. Widget (`packages/widget`): MIT. Licence files land with the first release.
-
-## Dashboard
-
-Phase 4 adds donations and donor records, confirmed donor erasure, CSV exports, address manifests with gap-limit guidance, widget customisation and settings. Apply migration 0005 before use. For a separate seeded demo organisation, sign in and visit `/dev/dashboard` with `SIMULATE_DONATIONS=true` in development. See the [dashboard testing checklist](docs/dashboard-testing.md). Phase 5 adds three widget presets, real address issuance, address emails and donor verification. See the [widget testing checklist](docs/widget-testing.md); apply migration 0006 and restart `pnpm dev` to build the script.
+Application: [AGPL-3.0-only](LICENSE). Widget (`packages/widget`): [MIT](packages/widget/LICENSE). Third-party components retain their own licences.
