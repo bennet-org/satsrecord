@@ -10,6 +10,7 @@ import {
   BETTER_AUTH_SECRET,
   OPERATOR_EMAILS,
   DEV_OUTBOX,
+  DEV_OUTBOX_PASSWORD,
   OPEN_SIGNUP,
   SIMULATE_DONATIONS,
 } from "astro:env/server";
@@ -51,14 +52,20 @@ export const auth = createAuth({
 });
 
 /**
- * Sent mail, when the console mailer is in use and the outbox page is switched on. Loopback only:
- * it shows sign-in links, and it cannot ask for a session, because it is how you get one.
+ * The loopback APP_URL is a configuration guard, not a network boundary.
+ * The page also requires separate Basic authentication before exposing sign-in links.
  */
 const loopback = ["localhost", "127.0.0.1", "[::1]", "::1"].includes(
   new URL(appUrl).hostname,
 );
 export const outbox =
-  DEV_OUTBOX && loopback && mailer instanceof ConsoleMailer ? mailer : null;
+  DEV_OUTBOX &&
+  loopback &&
+  (DEV_OUTBOX_PASSWORD?.length ?? 0) >= 32 &&
+  mailer instanceof ConsoleMailer
+    ? mailer
+    : null;
+export const outboxPassword = DEV_OUTBOX_PASSWORD;
 
 let cryptoInstance: Crypto | undefined;
 /** Lazy so the site runs without keys until a route actually stores PII or a descriptor. */

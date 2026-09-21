@@ -1,9 +1,20 @@
 ---
 // Every email the console mailer has sent this process, newest first. DEV_OUTBOX=true only.
 import App from "../../layouts/App.astro";
-import { escapeHtml } from "@satsrecord/core";
-import { outbox } from "../../lib/services";
+import { authoriseOutbox, escapeHtml } from "@satsrecord/core";
+import { outbox, outboxPassword } from "../../lib/services";
 if (!outbox) return Astro.rewrite("/404");
+Astro.response.headers.set("Cache-Control", "no-store");
+if (
+  !authoriseOutbox(Astro.request.headers.get("authorization"), outboxPassword)
+)
+  return new Response("Outbox authentication required.", {
+    status: 401,
+    headers: {
+      "WWW-Authenticate": 'Basic realm="Development outbox", charset="UTF-8"',
+      "Cache-Control": "no-store",
+    },
+  });
 const messages = [...outbox.sent].reverse();
 const linkify = (text: string) =>
   escapeHtml(text).replace(

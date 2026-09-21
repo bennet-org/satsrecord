@@ -10,6 +10,7 @@ import pg from "../packages/core/node_modules/pg/lib/index.js";
 import { chromium } from "playwright";
 const base = "http://127.0.0.1:4325",
   embedOrigin = "http://127.0.0.1:8088";
+const outboxPassword = randomBytes(32).toString("hex");
 const connection = new URL(
   process.env.WIDGET_TEST_DATABASE_URL ||
     "postgres://satsrecord:satsrecord@localhost:5432/satsrecord",
@@ -58,7 +59,7 @@ try {
     "INSERT INTO descriptors(organisation_id,descriptor_enc,script_type,network,label) VALUES($1,$2,$3,$4,$5)",
     [orgId, encrypted, "wpkh", "mainnet", "TEST"],
   );
-  app = spawn(process.execPath, ["apps/web/dist/server/entry.mjs"], {
+  app = spawn(process.execPath, ["apps/web/server.mjs"], {
     env: {
       ...process.env,
       HOST: "127.0.0.1",
@@ -70,6 +71,7 @@ try {
       BETTER_AUTH_SECRET: randomBytes(32).toString("hex"),
       RESEND_API_KEY: "",
       DEV_OUTBOX: "true",
+      DEV_OUTBOX_PASSWORD: outboxPassword,
       OPEN_SIGNUP: "true",
       SIMULATE_DONATIONS: "false",
     },
@@ -88,6 +90,43 @@ try {
     await new Promise((r) => setTimeout(r, 100));
   }
   assert((await fetch(base)).ok, "Production app starts");
+  const anonymousOutbox = await fetch(`${base}/dev/outbox`, {
+    headers: { "X-Forwarded-For": "127.0.0.1" },
+  });
+  assert.equal(
+    anonymousOutbox.status,
+    401,
+    "A loopback URL or forwarded IP cannot unlock the outbox",
+  );
+  assert.equal(anonymousOutbox.headers.get("cache-control"), "no-store");
+  const protectedOutbox = await fetch(`${base}/dev/outbox`, {
+    headers: {
+      Authorization: `Basic ${Buffer.from(`outbox:${outboxPassword}`).toString("base64")}`,
+    },
+  });
+  assert.equal(protectedOutbox.status, 200);
+  assert.equal(protectedOutbox.headers.get("cache-control"), "no-store");
+  for (const path of ["/", "/index.html", "/privacy/index.html", "/login"]) {
+    const response = await fetch(`${base}${path}`);
+    const policy = response.headers.get("content-security-policy");
+    const html = await response.text();
+    const scriptPolicy =
+      path === "/login"
+        ? policy
+        : html.match(
+            /<meta http-equiv="content-security-policy" content="([^"]+)"/,
+          )?.[1];
+    assert(
+      scriptPolicy?.includes("script-src") && scriptPolicy.includes("sha256-"),
+      `${path} keeps Astro's hashed CSP`,
+    );
+    assert(
+      policy?.includes("frame-ancestors 'none'"),
+      `${path} prevents framing`,
+    );
+    assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+    assert.equal(response.headers.get("x-frame-options"), "DENY");
+  }
   embed = createServer((req, res) => {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.end(
@@ -98,11 +137,25 @@ try {
   await once(embed, "listening");
   browser = await chromium.launch({ channel: "chrome" });
   const context = await browser.newContext({
+    httpCredentials: {
+      username: "outbox",
+      password: outboxPassword,
+      origin: base,
+    },
     viewport: { width: 1280, height: 1000 },
     permissions: ["clipboard-read", "clipboard-write"],
   });
-  const page = await context.newPage();
   const errors = [];
+  context.on("page", (p) =>
+    p.on("console", (msg) => {
+      if (
+        msg.type() === "error" &&
+        /Content Security Policy|violates.*directive/i.test(msg.text())
+      )
+        errors.push(msg.text());
+    }),
+  );
+  const page = await context.newPage();
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(embedOrigin);
   const widget = page.locator("satsrecord-donate").first();

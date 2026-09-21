@@ -13,6 +13,7 @@ import { magicLinkEmail, memberInvitationEmail } from "./emails";
 import { membershipsFor } from "../organisations";
 
 export * from "./emails";
+export * from "./outbox";
 
 export interface AuthOptions {
   db: Db;

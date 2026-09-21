@@ -1,5 +1,6 @@
 import { bitcoinQR } from "./qr";
-import styles from "./styles.css?inline";
+// Keep the bytes identical to the stylesheet hashed by the host app's CSP.
+import styles from "./styles.css?raw";
 const escape = (s: string) =>
   s.replace(
     /[&<>"']/g,

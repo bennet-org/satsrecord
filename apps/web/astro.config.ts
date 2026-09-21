@@ -2,6 +2,18 @@ import { defineConfig, envField, fontProviders } from "astro/config";
 import node from "@astrojs/node";
 import netlify from "@astrojs/netlify";
 import tailwindcss from "@tailwindcss/vite";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
+// The widget inserts this exact stylesheet into its shadow root at runtime.
+const widgetStyleHash: `sha256-${string}` = `sha256-${createHash("sha256")
+  .update(
+    readFileSync(
+      new URL("../../packages/widget/src/styles.css", import.meta.url),
+      "utf8",
+    ),
+  )
+  .digest("base64")}`;
 
 export default defineConfig({
   site: "https://satsrecord.org",
@@ -10,11 +22,13 @@ export default defineConfig({
   // Netlify sets NETLIFY=true in its build environment; everywhere else (Docker, self-host) is the node adapter.
   adapter: process.env.NETLIFY ? netlify() : node({ mode: "standalone" }),
   vite: { plugins: [tailwindcss()] },
-  // Prerendered pages only; on-demand pages and frame-ancestors are handled by headers in middleware.
+  // Astro emits headers for on-demand pages and meta policies for static pages.
+  // Framing/other headers: middleware, server.mjs (Node static files), netlify.toml.
   security: {
     csp: {
       // astro:assets puts style="display:block" on SVGs; <style> elements stay hash-restricted.
       styleDirective: {
+        hashes: [widgetStyleHash],
         resources: [{ resource: "'unsafe-inline'", kind: "attribute" }],
       },
       directives: [
@@ -80,6 +94,11 @@ export default defineConfig({
         context: "server",
         access: "secret",
         default: false,
+      }),
+      DEV_OUTBOX_PASSWORD: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
       }),
       OPEN_SIGNUP: envField.boolean({
         context: "server",

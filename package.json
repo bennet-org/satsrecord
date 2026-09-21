@@ -10,7 +10,7 @@
     "build": "pnpm --filter @satsrecord/web build",
     "check": "pnpm -r check",
     "test": "pnpm -r test",
-    "start": "node apps/web/dist/server/entry.mjs",
+    "start": "node apps/web/server.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

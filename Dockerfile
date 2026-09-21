@@ -18,6 +18,7 @@ WORKDIR /app
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=4321
 COPY --from=build /deploy/node_modules ./node_modules
 COPY --from=build /app/apps/web/dist ./apps/web/dist
+COPY --from=build /app/apps/web/server.mjs /app/apps/web/security-headers.mjs ./apps/web/
 EXPOSE 4321
 # Self-host is one container, so migrations run on start. Netlify runs drizzle-kit in its build instead.
-CMD ["sh", "-c", "node node_modules/@satsrecord/core/migrate.mjs && node apps/web/dist/server/entry.mjs"]
+CMD ["sh", "-c", "node node_modules/@satsrecord/core/migrate.mjs && node apps/web/server.mjs"]

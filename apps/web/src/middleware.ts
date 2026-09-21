@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 import { membershipIn, membershipsFor, normaliseEmail } from "@satsrecord/core";
 import { auth, db, operatorEmails } from "./lib/services";
+import { securityHeaders } from "../security-headers.mjs";
 
 const sessionPrefixes = [
   "/app",
@@ -14,19 +15,15 @@ const sessionPrefixes = [
 ];
 
 /** A <meta> CSP ignores frame-ancestors, so it has to be a header. Static pages: netlify.toml. */
-function secureHeaders<T extends Response>(response: T, url: URL) {
+function secureHeaders<T extends Response>(response: T) {
   const h = response.headers;
-  h.set("Content-Security-Policy", "frame-ancestors 'none'");
-  h.set("X-Frame-Options", "DENY");
-  h.set("X-Content-Type-Options", "nosniff");
-  h.set(
-    "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(), payment=()",
+  // Multiple policies are enforced together. Never replace Astro's generated hashes/directives.
+  h.append(
+    "Content-Security-Policy",
+    securityHeaders["Content-Security-Policy"],
   );
-  if (!h.has("Referrer-Policy"))
-    h.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  if (url.protocol === "https:")
-    h.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
+  for (const [name, value] of Object.entries(securityHeaders))
+    if (name !== "Content-Security-Policy" && !h.has(name)) h.set(name, value);
   return response;
 }
 
@@ -37,7 +34,7 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   ctx.locals.isOperator = false;
 
   const path = ctx.url.pathname;
-  const secure = <T extends Response>(r: T) => secureHeaders(r, ctx.url);
+  const secure = <T extends Response>(r: T) => secureHeaders(r);
   if (!sessionPrefixes.some((p) => path === p || path.startsWith(p + "/")))
     return secure(await next());
 

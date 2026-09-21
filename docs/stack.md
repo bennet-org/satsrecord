@@ -22,7 +22,7 @@ Conventions established in Phase 2:
 - Organisations are created by our own code (`createOrganisation`), never through Better Auth's public endpoint, which is disabled. Creator is `owner`, invited colleagues are `admin`.
 - Magic links go only to existing users, invited addresses and operators, unless `OPEN_SIGNUP=true`. The page copy is the same either way.
 - Integration tests in core drive `auth.handler` and `auth.api` against PGlite, including the magic-link redirect and cookies, so no browser is needed for the auth flows.
-- Deploy: `netlify.toml` at the root runs migrations then builds `apps/web`; Netlify's "Package directory" is `apps/web` so it finds the adapter's `.netlify/v1/` output. `APP_URL` must equal the site's real origin (magic-link callbacks and the passkey relying party), so deploy previews cannot sign in unless given their own.
+- Deploy: `netlify.toml` at the root runs migrations then builds `apps/web`; Netlify's "Package directory" is `apps/web` so it finds the adapter's `.netlify/v1/` output. `APP_URL` must equal the site's real origin (magic-link callbacks and the passkey relying party), so deploy previews cannot sign in unless given their own. Self-hosted Node uses `pnpm start` (`apps/web/server.mjs`), which adds security headers to static files as well as dynamic responses; Docker uses the same entrypoint.
 
 ## Layout
 

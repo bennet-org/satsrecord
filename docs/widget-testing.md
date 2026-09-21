@@ -6,7 +6,7 @@ Apply migration 0006 before using the new code. It adds verification expiry, add
 
 ## Local walkthrough
 
-1. Run migrations, then `pnpm dev` with the console mailer and `DEV_OUTBOX=true`.
+1. Run migrations, then `pnpm dev` with the console mailer, `DEV_OUTBOX=true`, and a separate `DEV_OUTBOX_PASSWORD` of at least 32 characters (generate with `openssl rand -base64 32`). The outbox prompts for username `outbox` and this password. Keep it on loopback, or use HTTPS if accessed over a network.
 2. Finish onboarding with a disposable test wallet. Add `http://localhost:8080` to allowed origins. Use test-vector wallets only for testing; never send money to public test vectors.
 3. On `/app/widget`, choose SatsRecord, Minimal or Custom. Custom reveals four colour controls; all styles have editable heading, intro, button and marketing text. Preview the form, anonymous confirmation, address and received states, save, and copy the snippet. Previewing never issues an address.
 4. Paste the snippet into a plain HTML page with `<meta charset="utf-8">` and a viewport meta tag. Serve that page on port 8080, for example with `python3 -m http.server 8080` from its directory. Open it at the exact allowed origin.
