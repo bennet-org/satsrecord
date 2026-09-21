@@ -26,25 +26,25 @@ export async function createOrganisation(
   db: Db,
   input: { name: string; userId: string },
 ) {
-  const base = slugify(input.name);
-  for (let n = 0; ; n++) {
-    const slug = n === 0 ? base : `${base}-${n + 1}`;
-    const taken = await db.query.organization.findFirst({
-      where: eq(organization.slug, slug),
-      columns: { id: true },
-    });
-    if (taken) continue;
-    const [org] = await db
-      .insert(organization)
-      .values({ name: input.name.trim(), slug })
-      .returning();
-    await db.insert(member).values({
-      organizationId: org!.id,
-      userId: input.userId,
-      role: CREATOR_ROLE,
-    });
-    return org!;
-  }
+  return db.transaction(async (tx) => {
+    const base = slugify(input.name);
+    for (let n = 0; ; n++) {
+      const slug = n === 0 ? base : `${base}-${n + 1}`;
+      const [org] = await tx
+        .insert(organization)
+        .values({ name: input.name.trim(), slug })
+        // Unlike a caught unique violation, DO NOTHING leaves PostgreSQL's transaction usable.
+        .onConflictDoNothing({ target: organization.slug })
+        .returning();
+      if (!org) continue;
+      await tx.insert(member).values({
+        organizationId: org.id,
+        userId: input.userId,
+        role: CREATOR_ROLE,
+      });
+      return org;
+    }
+  });
 }
 
 /** The user's memberships, oldest first. v1 shows the first as the active organisation. */
