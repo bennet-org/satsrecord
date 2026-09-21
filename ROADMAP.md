@@ -76,33 +76,51 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 ## Decision gate
 
-Show the demo to prospects. Proceed → Phase 7.
+Show the demo to prospects. Proceed → Phase 7; agree pilot partners, supported reporting currencies and whether any Phase 9 feature is a launch prerequisite.
 
-## Phase 7: chain backend
+## Phase 7: live donation loop
 
-- [ ] `apps/worker` entrypoint; `ChainSource` implementations: mempool.space REST, Bitcoin Core RPC
-- [ ] Polling scheduler with backoff; multiple settlements per address; reorg → amendment
-- [ ] `RateSource`: Kraken, method recording, late-detection fallback
-- [ ] Acknowledgement on first confirmation, for real
-- [ ] Hosted node
+Boundary: on-chain, single-sig, Bitcoin Core; generic acknowledgements. Prove recovery locally before hosting real donations.
 
-## Phase 8: hosted launch
+- [ ] `apps/worker` and Core `ChainSource`: choose watch-only imports/indexing, cover every issued index, persist scan checkpoints and recover missed history. Live first-20-address onboarding check, including spent history; unavailable checks must not report a fresh wallet.
+- [ ] Durable scheduling: choose Postgres jobs or a checkpointed loop; backoff, concurrency control and restart recovery. Watch funded and retired addresses too; deduplicate by `txid:vout`, keep separate payments separate, distinguish observed time from block time.
+- [ ] Reorg → append-only amendment, including reconfirmation; dashboard totals, widget status and exports reflect effective records while retaining history. Basic amendment visibility ships here; correction authoring follows in Phase 9.
+- [ ] Kraken `RateSource`: validate supported currency pairs and rounding, store provenance, use the completed minute candle at block time and a labelled daily fallback for late detection. Define historical coverage; missing rates leave a visible, retryable valuation pending without losing the payment. [API constraints](https://docs.kraken.com/api-reference/market-data/get-ohlc-data).
+- [ ] First confirmation queues acknowledgement, sent once valuation is ready; durable retries and provider idempotency/reconciliation, including a crash after sending. Worker owns charity notices and digests; define handling of already-sent acknowledgements after reorgs.
 
-- [ ] Hosting: web on Netlify from Phase 2; worker and node on a box (Fly or similar) with Cloudflare in front, web moves there if it simplifies things. Neon, backups, DNS.
-- [ ] ICO registration, DPA template, retention and deletion policy
-- [ ] Operator wallet rotation in `/admin`: retire the active descriptor, add a new one, keep watching retired addresses, decide what open submissions do
-- [ ] First design partners invited
+**Done when:** Core regtest proves receipt → valuation → email → widget/dashboard/export, including anonymous donations, repeated payments, restart catch-up, reorg/reconfirmation and rate/mail outages; replays produce no duplicate records or sends. Exercise the live rate adapter separately against supported currencies.
 
-## Phase 9: hardening
+## Phase 8: hosted pilot
 
-- [ ] Amendments UI; "this wasn't me" (erasure shipped in Phase 4)
-- [ ] Optional charity-branded email sending via DNS verification; verified From addresses, delivery events and safe fallback. [Scope](docs/branded-email.md).
-- [ ] Multisig issuance via Core `deriveaddresses`
-- [ ] Jurisdiction renderers, US acknowledgement letter first
-- [ ] CRM exports, two, chosen by design partners
+Boundary: invite-only, free pilot with operator support; generic acknowledgements unless the decision gate brings a jurisdiction renderer forward.
+
+- [ ] Deploy worker and synced Core node with private RPC; retain Netlify/Neon unless moving web simplifies private connectivity. Configure DNS, secrets, migrations and rollback; production must reject demo adapters.
+- [ ] Monitor node/scan lag, pending valuations and mail failures; agree alert thresholds and recovery targets. Restore database, encryption/index keys and watch state in a drill, then catch up without reissuing addresses or duplicating mail.
+- [ ] Verify organisation isolation, issuance abuse limits and operator permissions; exercise transactional delivery, bounce/complaint suppression and failure visibility with the standard SatsRecord sender.
+- [ ] Replace privacy/terms placeholders; ICO registration, DPA, subprocessor/transfer and EU-representative assessment, retention/deletion policy with working erasure and backup handling. Publish a support route for attribution disputes before self-service exists.
+- [ ] Operator wallet rotation in `/admin`: verify the replacement, switch issuance atomically, audit the change and keep retired addresses watched. Existing submissions retain their issued address; new submissions use the new descriptor; indices are never reassigned.
+- [ ] Invite first design partners after readiness checks; verify wallet recovery from the manifest, a small real donation, acknowledgement delivery and reconciled CSV export with them. Record onboarding friction and prioritise Phase 9 from actual needs.
+
+**Done when:** at least one partner completes the live loop on its own site; restore/catch-up and alert drills pass, a rotation preserves old-address receipts, and pilot support and data-protection arrangements are in place.
+
+## Phase 9: partner-led product depth
+
+Sequence by partner need; each addition ships independently on the Phase 8 reliability baseline.
+
+- [ ] Correction authoring and “this wasn't me”: authorised, reasoned amendments, corrected outputs and donor identity checks; preserve history without restoring erased PII (erasure shipped in Phase 4).
+- [ ] Multisig via Core `deriveaddresses`: activate supported `wsh(sortedmulti(...))` descriptors through onboarding, issuance, monitoring and manifest export; match a reference wallet across multiple indices. No signing or custody.
+- [ ] US acknowledgement renderer first: agree required organisation/donation fields and goods-or-services capture, review wording, version templates and verify original/corrected letters. Generic output remains available; tax filing and appraisals are outside scope.
+- [ ] Optional charity-branded email: verified From addresses, DNS setup, test send and safe fallback on lost verification; reuse Phase 8 delivery handling. [Scope](docs/branded-email.md).
+- [ ] Two partner-chosen CRM export formats: agree mappings and stable identifiers, then verify imports of anonymous, amended and erased records. File exports only; ongoing synchronisation is separate scope.
+
+**Done when:** each shipped addition passes its failure cases and a partner walkthrough; the two CRM formats import into their target systems and jurisdiction output has documented content review.
 
 ## Later
 
-Brand-matched widget styling: “Style it based on my brand” uses the organisation’s website to generate matching styling, with a preview before applying it.
+Uncommitted; promote an item only with a user need and a bounded acceptance target.
 
-Self-host packaging and docs. Billing. Lightning via NWC. EU prescribed forms.
+- **Self-host distribution:** versioned web/worker packaging, SMTP, Core or mempool.space (explicit address-privacy warning), setup/upgrade/backup docs; prove clean install and upgrade with data retained. Basic repo run instructions already exist.
+- **Billing:** after pilot pricing/waiver validation; subscriptions, entitlement and failed-payment policy that preserves records, exports and monitoring of issued addresses. Prove signup, cancellation and recovery before charging.
+- **Brand-matched widget:** website → suggested existing style controls → preview → explicit apply; manual controls remain available. Accept when the result is readable, editable and reversible.
+- **Lightning via NWC:** separate scope for invoice lifecycle, least-privilege credentials, valuation and recovery; prove the same record/export loop without custody before release.
+- **EU prescribed forms:** one named jurisdiction at a time, driven by a partner and reviewed local requirements; capture missing fields before promising compliant output.
