@@ -1,12 +1,16 @@
 ---
 // Operator invite landing. The link proves nothing on its own; the magic link to the invited address does.
 import App from "../../../layouts/App.astro";
-import { findOrganisationInvite } from "@satsrecord/core";
+import { findOrganisationInvite, normaliseEmail } from "@satsrecord/core";
 import { db } from "../../../lib/services";
 const token = Astro.params.token!;
 const found = await findOrganisationInvite(db, token);
 const user = Astro.locals.user;
-if (found.state === "valid" && user?.email === found.invite.email)
+if (
+  found.state === "valid" &&
+  user &&
+  normaliseEmail(user.email) === found.invite.email
+)
   return Astro.redirect(`/invite/${token}/accept`);
 const messages = {
   unknown: "This invitation link is not recognised.",

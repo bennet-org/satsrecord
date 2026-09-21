@@ -3,7 +3,7 @@ import App from "../../layouts/App.astro";
 import {
   getSetup,
   widgetSnippet,
-  widgetDefaults,
+  resolveWidgetConfig,
   nextSetupStep,
   saveOrganisationDetails,
   saveWalletDraft,
@@ -139,7 +139,7 @@ const countries = countryCodes
 const snippet = widgetSnippet(
   appUrl,
   org.id,
-  setup?.widgetConfig ?? widgetDefaults,
+  resolveWidgetConfig(setup?.widgetConfig),
 );
 ---
 
