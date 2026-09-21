@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /dev
+Disallow: /invite
+Disallow: /invitation
+Disallow: /donor
+Disallow: /api
 
 Sitemap: https://satsrecord.org/sitemap.xml
