@@ -2,17 +2,5 @@
 // Plausible, proxied first-party by the redirects in netlify.toml.
 ---
 
+<script is:inline src="/js/plausible-init.js"></script>
 <script is:inline async src="/js/script.js"></script>
-<script is:inline>
-  window.plausible =
-    window.plausible ||
-    function () {
-      (plausible.q = plausible.q || []).push(arguments);
-    };
-  window.plausible.init =
-    window.plausible.init ||
-    function (i) {
-      plausible.o = i || {};
-    };
-  plausible.init({ endpoint: "/api/event" });
-</script>

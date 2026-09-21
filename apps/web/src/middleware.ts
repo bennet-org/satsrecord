@@ -13,6 +13,23 @@ const sessionPrefixes = [
   "/_actions",
 ];
 
+/** A <meta> CSP ignores frame-ancestors, so it has to be a header. Static pages: netlify.toml. */
+function secureHeaders<T extends Response>(response: T, url: URL) {
+  const h = response.headers;
+  h.set("Content-Security-Policy", "frame-ancestors 'none'");
+  h.set("X-Frame-Options", "DENY");
+  h.set("X-Content-Type-Options", "nosniff");
+  h.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=()",
+  );
+  if (!h.has("Referrer-Policy"))
+    h.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  if (url.protocol === "https:")
+    h.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
+  return response;
+}
+
 export const onRequest = defineMiddleware(async (ctx, next) => {
   ctx.locals.user = null;
   ctx.locals.session = null;
@@ -20,15 +37,16 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   ctx.locals.isOperator = false;
 
   const path = ctx.url.pathname;
+  const secure = <T extends Response>(r: T) => secureHeaders(r, ctx.url);
   if (!sessionPrefixes.some((p) => path === p || path.startsWith(p + "/")))
-    return next();
+    return secure(await next());
 
   // Better Auth re-issues the cookie as it rolls the session forward; carry its Set-Cookie through
   // to whatever we return, or the browser's copy expires however active the user is.
   const authCookies: string[] = [];
   const withAuthCookies = <T extends Response>(response: T) => {
     for (const c of authCookies) response.headers.append("set-cookie", c);
-    return response;
+    return secure(response);
   };
 
   const { headers: sessionHeaders, response: s } = await auth.api.getSession({

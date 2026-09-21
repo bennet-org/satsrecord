@@ -10,6 +10,24 @@ export default defineConfig({
   // Netlify sets NETLIFY=true in its build environment; everywhere else (Docker, self-host) is the node adapter.
   adapter: process.env.NETLIFY ? netlify() : node({ mode: "standalone" }),
   vite: { plugins: [tailwindcss()] },
+  // Prerendered pages only; on-demand pages and frame-ancestors are handled by headers in middleware.
+  security: {
+    csp: {
+      // astro:assets puts style="display:block" on SVGs; <style> elements stay hash-restricted.
+      styleDirective: {
+        resources: [{ resource: "'unsafe-inline'", kind: "attribute" }],
+      },
+      directives: [
+        "default-src 'self'",
+        "img-src 'self' data:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "base-uri 'none'",
+        "form-action 'self'",
+        "object-src 'none'",
+      ],
+    },
+  },
   fonts: [
     {
       provider: fontProviders.fontsource(),
