@@ -1,13 +1,15 @@
 ---
 // Every email the console mailer has sent this process, newest first. DEV_OUTBOX=true only.
 import App from "../../layouts/App.astro";
+import { escapeHtml } from "@satsrecord/core";
 import { outbox } from "../../lib/services";
 if (!outbox) return Astro.rewrite("/404");
 const messages = [...outbox.sent].reverse();
 const linkify = (text: string) =>
-  text
-    .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!)
-    .replace(/https?:\/\/[^\s]+/g, (u) => `<a href="${u}">${u}</a>`);
+  escapeHtml(text).replace(
+    /https?:\/\/[^\s]+/g,
+    (u) => `<a href="${u}">${u}</a>`,
+  );
 ---
 
 <App

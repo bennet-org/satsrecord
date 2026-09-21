@@ -50,9 +50,15 @@ export const auth = createAuth({
   operatorEmails,
 });
 
-/** Sent mail, when the console mailer is in use and the outbox page is switched on. */
+/**
+ * Sent mail, when the console mailer is in use and the outbox page is switched on. Loopback only:
+ * it shows sign-in links, and it cannot ask for a session, because it is how you get one.
+ */
+const loopback = ["localhost", "127.0.0.1", "[::1]", "::1"].includes(
+  new URL(appUrl).hostname,
+);
 export const outbox =
-  DEV_OUTBOX && mailer instanceof ConsoleMailer ? mailer : null;
+  DEV_OUTBOX && loopback && mailer instanceof ConsoleMailer ? mailer : null;
 
 let cryptoInstance: Crypto | undefined;
 /** Lazy so the site runs without keys until a route actually stores PII or a descriptor. */
