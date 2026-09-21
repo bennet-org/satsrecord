@@ -1,7 +1,11 @@
 ---
 // Member invitation (Better Auth). Signed in with the invited address: accept and go. Otherwise: sign in first.
 import App from "../../layouts/App.astro";
-import { findMemberInvitation, normaliseEmail } from "@satsrecord/core";
+import {
+  findMemberInvitation,
+  invitationErrorMessage,
+  normaliseEmail,
+} from "@satsrecord/core";
 import { auth, db } from "../../lib/services";
 const id = Astro.params.id!;
 const user = Astro.locals.user;
@@ -17,7 +21,7 @@ if (inv && user && normaliseEmail(user.email) === inv.email) {
     });
     return Astro.redirect("/app");
   } catch (e) {
-    error = e instanceof Error ? e.message : "Could not accept the invitation.";
+    error = invitationErrorMessage(e);
   }
 }
 const messages: Record<string, string> = {

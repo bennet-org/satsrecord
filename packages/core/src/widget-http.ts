@@ -6,13 +6,14 @@ import {
   widgetSession,
   type WidgetServices,
 } from "./widget";
+import { reportFailure } from "./diagnostics";
 
 /** Public API deliberately uses bearer tokens, never dashboard cookies. */
 export async function handleWidgetRequest(
   request: Request,
   orgId: string,
   ip: string,
-  services: WidgetServices,
+  initialise: WidgetServices | (() => WidgetServices),
 ) {
   // Browsers omit Origin on same-origin GETs. Sec-Fetch-Site is browser-controlled;
   // the resulting origin must still be explicitly on the organisation allowlist.
@@ -28,13 +29,18 @@ export async function handleWidgetRequest(
   });
   const json = (value: unknown, status = 200) =>
     Response.json(value, { status, headers });
+  let stage = "initialization";
   try {
+    const services =
+      typeof initialise === "function" ? initialise() : initialise;
+    stage = "configuration";
     const { name, config } = await widgetConfig(services.db, orgId, origin);
     headers.set("Access-Control-Allow-Origin", origin!);
     headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
     if (request.method === "OPTIONS")
       return new Response(null, { status: 204, headers });
+    stage = "rate_limit";
     await consumeWidgetLimit(
       services.db,
       services.crypto.emailIndex(`widget:read:${ip}`),
@@ -46,6 +52,7 @@ export async function handleWidgetRequest(
       if (!authorization) return json({ organisation: name, config });
       if (!authorization.startsWith("Bearer "))
         throw new WidgetError("Invalid donation session.", 401);
+      stage = "session";
       const session = await widgetSession(
         services.db,
         orgId,
@@ -61,6 +68,7 @@ export async function handleWidgetRequest(
     if (!request.headers.get("content-type")?.startsWith("application/json"))
       throw new WidgetError("Send a JSON request.", 415);
     // Read incrementally: Content-Length is not trustworthy and may be absent.
+    stage = "request_body";
     const reader = request.body?.getReader();
     if (!reader) throw new WidgetError("Missing request body.");
     const chunks: Uint8Array[] = [];
@@ -83,6 +91,7 @@ export async function handleWidgetRequest(
     }
     if (!input || typeof input !== "object" || Array.isArray(input))
       throw new WidgetError("Invalid submission.");
+    stage = "issuance";
     return json(
       await issueWidgetAddress(
         services,
@@ -97,11 +106,12 @@ export async function handleWidgetRequest(
       if (error.status === 429) headers.set("Retry-After", "3600");
       return json({ error: error.message }, error.status);
     }
-    // Never expose SQL parameters, donor details or descriptors in errors/logs.
+    const requestId = reportFailure("widget", stage, error);
     return json(
       {
         error:
           "The donation service is temporarily unavailable. Please try again.",
+        requestId,
       },
       503,
     );

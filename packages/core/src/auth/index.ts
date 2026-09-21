@@ -14,6 +14,7 @@ import { membershipsFor } from "../organisations";
 
 export * from "./emails";
 export * from "./outbox";
+export * from "./invitation-errors";
 
 export interface AuthOptions {
   db: Db;
