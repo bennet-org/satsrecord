@@ -51,14 +51,14 @@ Only the external chain (`/0/*`) is used; donations never touch change. `tr(...)
 Three timestamps, recorded separately: `first_seen_at` (mempool), `block_time`, and `confirmations_at_valuation`.
 
 - **First seen** at mempool detection. Recorded, not acted on.
-- **Receipt** is one confirmation. This triggers acknowledgement.
+- **Receipt** is three confirmations. Settlement, valuation and acknowledgement follow; below that, the widget shows the payment as seen.
 - **Block time is canonical for valuation.** Detection time is our polling latency; block time is reproducible by an auditor.
 
 **Chain sources** implement one interface: mempool.space REST (self-host default, with a privacy warning) and Bitcoin Core RPC (hosted, always). A fake in-memory source is the test double and drives the demo.
 
 **Polling.** Issued, unfunded addresses are polled on a schedule with backoff by age. Funded addresses are still re-checked: two payments to one address are one donor, two settlements, two dates, two FMVs. US thresholds apply per contribution.
 
-**Reorgs.** A settlement that disappears is amended, never deleted.
+**Reorgs.** Shallow reorgs never reach the record. A settlement whose transaction later leaves the chain alerts the operator and is amended, never deleted.
 
 ## Valuation
 

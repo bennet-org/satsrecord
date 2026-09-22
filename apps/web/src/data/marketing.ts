@@ -95,7 +95,7 @@ export const steps = [
   ],
   [
     "Watch it arrive",
-    "Detection from our node or yours. Value pinned at block time in your currency. Acknowledgement sent on first confirmation, and the gift filed in your records.",
+    "Detection from our node or yours. Value pinned at block time in your currency. Acknowledgement sent after three confirmations, and the gift filed in your records.",
   ],
   [
     "Export anything",

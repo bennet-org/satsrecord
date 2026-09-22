@@ -84,11 +84,11 @@ Boundary: on-chain, single-sig, Bitcoin Core; generic acknowledgements. Prove re
 
 - [ ] `apps/worker` and Core `ChainSource`: choose watch-only imports/indexing, cover every issued index, persist scan checkpoints and recover missed history. Live first-20-address onboarding check, including spent history; unavailable checks must not report a fresh wallet.
 - [ ] Durable scheduling: choose Postgres jobs or a checkpointed loop; backoff, concurrency control and restart recovery. Watch funded and retired addresses too; deduplicate by `txid:vout`, keep separate payments separate, distinguish observed time from block time.
-- [ ] Reorg → append-only amendment, including reconfirmation; dashboard totals, widget status and exports reflect effective records while retaining history. Basic amendment visibility ships here; correction authoring follows in Phase 9.
+- [ ] Settle at three confirmations; below that, nothing is recorded and the widget shows the payment as seen. The scanner survives tip reorgs without missing or duplicating payments. A settled transaction that later leaves the chain alerts the operator and freezes the record; manual correction until Phase 9.
 - [ ] Kraken `RateSource`: validate supported currency pairs and rounding, store provenance, use the completed minute candle at block time and a labelled daily fallback for late detection. Define historical coverage; missing rates leave a visible, retryable valuation pending without losing the payment. [API constraints](https://docs.kraken.com/api-reference/market-data/get-ohlc-data).
-- [ ] First confirmation queues acknowledgement, sent once valuation is ready; durable retries and provider idempotency/reconciliation, including a crash after sending. Worker owns charity notices and digests; define handling of already-sent acknowledgements after reorgs.
+- [ ] Settlement queues acknowledgement, sent once valuation is ready; durable retries and provider idempotency/reconciliation, including a crash after sending. Worker owns charity notices and digests.
 
-**Done when:** Core regtest proves receipt → valuation → email → widget/dashboard/export, including anonymous donations, repeated payments, restart catch-up, reorg/reconfirmation and rate/mail outages; replays produce no duplicate records or sends. Exercise the live rate adapter separately against supported currencies.
+**Done when:** Core regtest proves receipt → valuation → email → widget/dashboard/export, including anonymous donations, repeated payments, restart catch-up, reorgs either side of settlement and rate/mail outages; replays produce no duplicate records or sends. Exercise the live rate adapter separately against supported currencies.
 
 ## Phase 8: hosted pilot
 
