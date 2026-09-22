@@ -195,7 +195,6 @@ export const pricing = {
       kind: "Hosted",
       badge: "Free during the pilot",
       amount: "Flat fee",
-      per: "per month",
       who: "Waived for charities that can't afford it.",
       body: "We run the node, carry the data-protection burden and keep the lights on. Nothing to install or maintain, and guided setup for your wallet key and donor emails.",
       bullets: [
