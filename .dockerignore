@@ -2,6 +2,12 @@
 .env
 .env.*
 !.env.example
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.production.example
+.demo
+**/.demo
 node_modules
 **/node_modules
 dist

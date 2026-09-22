@@ -2,6 +2,8 @@
 
 Non-custodial bitcoin donations for charities and non-profits. Product brief in [project-brief.md](project-brief.md), technical design in [docs/design.md](docs/design.md), stack in [docs/stack.md](docs/stack.md), plan in [ROADMAP.md](ROADMAP.md), brand in [brand/README.md](brand/README.md).
 
+**Under active development; not ready for live donation operations.** Hosted and self-hosted deployments use this same codebase. Publishing the source does not mark a production release.
+
 ## Try the demo
 
 With Node 22.12+, pnpm and Docker installed:
@@ -44,6 +46,8 @@ pnpm test                  # core tests, in-process Postgres, no Docker needed
 pnpm build && pnpm start   # production server
 ```
 
+`compose.yaml` is for local development only: its database and web ports bind to `127.0.0.1`, and its credentials are public development defaults. Do not use it as a production configuration.
+
 Hosted is invite-only. Put your address in `OPERATOR_EMAILS`, sign in at `/login`, and issue invites from `/admin`. `OPEN_SIGNUP=true` enables `/signup` instead.
 
 For a separate seeded demo organisation in an existing development environment, enable `SIMULATE_DONATIONS=true`, sign in, and visit `/dev/dashboard`. Owners and admins can use `/dev/donations` to simulate a payment against an issued address, record a fixed-rate valuation and send an acknowledgement. The widget then shows received. Simulation routes are unavailable in production builds.
@@ -56,7 +60,13 @@ Testing checklists: [onboarding](docs/onboarding-testing.md), [dashboard](docs/d
 
 Netlify builds `apps/web` using the checked-in `netlify.toml`. Keep the base directory at the repository root and set the package directory to `apps/web`. The build applies database migrations before building the app. See [production configuration](docs/deployment.md) for environment variables and notification scheduling.
 
-The Dockerfile builds the same app with the Node adapter for self-hosting.
+The Dockerfile builds the same app with the Node adapter for self-hosting. The standalone [production Compose configuration](compose.production.yaml) requires your own secrets, keeps Postgres private, and exposes the web server only to a reverse proxy on the host. Follow the [self-hosting guide](docs/self-hosting.md) for setup, current limitations, backups and upgrades.
+
+Netlify preview and branch builds are disabled by default. Production secrets must also be restricted in Netlify's settings; repository configuration alone cannot protect them from a modified pull request.
+
+## Security
+
+Report vulnerabilities privately using [SECURITY.md](SECURITY.md). Maintainers should complete the [publication checks](docs/open-source-release.md) before changing repository visibility.
 
 ## Licence
 

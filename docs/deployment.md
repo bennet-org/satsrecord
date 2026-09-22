@@ -2,7 +2,7 @@
 
 ## Netlify
 
-The repository's `netlify.toml` supplies the build command, publish directory and Node 24 build version. Set the base directory to the repository root and package directory to `apps/web`. Netlify supplies `NETLIFY=true`, selecting the Netlify adapter.
+The repository's `netlify.toml` supplies the build command, publish directory and Node 24 build version. Set the base directory to the repository root and package directory to `apps/web`. Netlify supplies `NETLIFY=true`, selecting the Netlify adapter. The build script requires `CONTEXT=production` before it runs migrations or builds the app. Preview, branch and unknown contexts are refused. For Docker deployment, follow [self-hosting](self-hosting.md).
 
 Set environment variables for the **Production** deploy context through Netlify's UI, CLI or API. Runtime values need the **Functions** scope. Giving application values both **Builds** and **Functions** scope is the simplest configuration; the direct database connection needs only **Builds**. Redeploy after changing variables. See [Netlify's environment-variable documentation](https://docs.netlify.com/build/functions/environment-variables/).
 

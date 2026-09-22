@@ -1,3 +1,4 @@
+# Local development only. Use compose.production.yaml for deployment.
 services:
   db:
     image: postgres:17-alpine
@@ -5,7 +6,7 @@ services:
       POSTGRES_USER: satsrecord
       POSTGRES_PASSWORD: satsrecord
       POSTGRES_DB: satsrecord
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U satsrecord"]
@@ -31,6 +32,6 @@ services:
       # INDEX_KEY: ""
       HOST: 0.0.0.0
       PORT: "4321"
-    ports: ["4321:4321"]
+    ports: ["127.0.0.1:4321:4321"]
 volumes:
   pgdata:

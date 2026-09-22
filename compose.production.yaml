@@ -1,0 +1,46 @@
+# Standalone file: do not merge with the development compose.yaml.
+# See docs/self-hosting.md. The application is still in development.
+name: satsrecord-production
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: satsrecord
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.production}
+      POSTGRES_DB: satsrecord
+    # Database access stays on the Compose network; no host port is published.
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U satsrecord -d satsrecord"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Use a hex password, as documented, so it is safe inside this URL.
+      DATABASE_URL: postgres://satsrecord:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.production}@db:5432/satsrecord
+      APP_URL: ${APP_URL:?Set APP_URL to your public HTTPS origin}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Generate a separate auth secret}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Generate a separate encryption key}
+      INDEX_KEY: ${INDEX_KEY:?Generate a separate index key}
+      RESEND_API_KEY: ${RESEND_API_KEY:?Configure Resend for sign-in and donation emails}
+      MAIL_FROM: ${MAIL_FROM:?Set MAIL_FROM using your verified sending domain}
+      OPERATOR_EMAILS: ${OPERATOR_EMAILS:?Set at least one operator email for initial access}
+      NOTIFY_EMAIL: ${NOTIFY_EMAIL:-}
+      NOTIFICATION_CRON_SECRET: ${NOTIFICATION_CRON_SECRET:-}
+      OPEN_SIGNUP: "false"
+      DEV_OUTBOX: "false"
+      SIMULATE_DONATIONS: "false"
+      HOST: 0.0.0.0
+      PORT: "4321"
+    # Terminate HTTPS at a reverse proxy on this host.
+    ports: ["127.0.0.1:4321:4321"]
+volumes:
+  pgdata:

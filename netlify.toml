@@ -3,7 +3,10 @@
 # picks up the functions the adapter writes to apps/web/.netlify/v1/. The worker (Phase 7) is not serverless
 # and will live next to the node; this file is the web app only.
 [build]
-  command = "pnpm --filter @satsrecord/core db:migrate && pnpm --filter @satsrecord/web build"
+  command = "node scripts/netlify-build.mjs"
+  # Exit 0 skips non-production builds. The build script also guards build-hook runs.
+  # This is a default, not a security boundary: restrict secrets in Netlify's settings.
+  ignore = "test \"$CONTEXT\" != production"
   publish = "apps/web/dist"
 
 [build.environment]
