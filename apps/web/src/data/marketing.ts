@@ -2,6 +2,7 @@ import BtcpayLogo from "../assets/logos/btcpay.svg";
 import GivingBlockLogo from "../assets/logos/the-giving-block.svg";
 import SatsRecordMark from "../assets/brand/mark.svg";
 import type { GlyphName } from "../components/Glyph.astro";
+import { walletGuides } from "./wallets";
 
 export const site = {
   name: "SatsRecord",
@@ -16,6 +17,7 @@ export const nav = [
   { label: "How it works", href: "/#how" },
   { label: "Compared", href: "/#compared" },
   { label: "Pricing", href: "/#pricing" },
+  { label: "FAQ", href: "/faq/" },
   { label: "Sign in", href: "/login" },
 ];
 
@@ -217,4 +219,108 @@ export const pricing = {
 export const closing = {
   body: "Invite-only while we run a pilot with charities in the UK and US. Tell us about your organisation and we'll be in touch.",
   legal: "Open source, AGPL-3.0 · Not a money transmitter",
+};
+
+export const faq = {
+  intro:
+    "Questions we get from trustees, finance teams, fundraisers and the person who has to export the xpub.",
+  groups: [
+    {
+      heading: "Custody and control",
+      items: [
+        {
+          q: "Do you ever hold our bitcoin, and who can move it?",
+          a: "No. You give us a public key, and we use it to derive addresses that belong to your wallet. We hold nothing that can sign, so we cannot move funds, and neither can anyone who breaches us. Only whoever holds your wallet's keys can do that. At launch we'll support single signature wallets, meaning the wallet would typically be managed by an individual within your organisation. Support for multi-signature wallets is on our roadmap.",
+        },
+        {
+          q: "Are you a money transmitter? Do we need a licence to use you?",
+          a: "We never take custody, convert or transmit, which keeps SatsRecord outside FinCEN money-services registration, MiCA and FCA crypto registration. Your own obligations as a charity accepting cryptoassets are unchanged and remain yours.",
+        },
+        {
+          q: "What happens to us if SatsRecord shuts down?",
+          a: "Nothing happens to the money: it was always in your wallet. The address manifest plus your seed recovers every address ever issued, your records are exportable as CSV at any time, and the code is open source under AGPL-3.0, so you or a contractor can keep running it.",
+        },
+      ],
+    },
+    {
+      heading: "Records and tax",
+      items: [
+        {
+          q: "How is each donation valued?",
+          a: "When the transaction is mined (i.e. when it is confirmed on the public blockchain), it is valued in your reporting currency using Kraken's public market data. These valuation details are stored alongside every donation for easy auditing.",
+        },
+        {
+          q: "What does the donor receive?",
+          a: "Assuming they left an email address, they'll receive an acknowledgement email on confirmation: the amount in bitcoin, its fiat value, the date, and transaction reference. A US-specific tax letter is planned.",
+        },
+        {
+          q: "Does this work with Gift Aid?",
+          a: "No. The UK's HMRC does not treat cryptoassets as money, so Gift Aid cannot be claimed on a bitcoin donation. Donating bitcoin directly to a charity is a no-gain-no-loss disposal for UK capital gains tax, which is a real donor incentive, but that is true of any crypto donation, not something we add.",
+        },
+        {
+          q: "Do you convert to fiat or do our bookkeeping?",
+          a: "Neither, by design. You decide whether to hold or sell, and do so through your own exchange. We are exploring potential partnerships with a number of exchanges, with a view to streamlining the process of selling donated bitcoin.",
+        },
+      ],
+    },
+    {
+      heading: "Donors and data",
+      items: [
+        {
+          q: "What does the donor see?",
+          a: 'A small widget on your donate page. They click "Give", optionally add a name and email, and get a fresh address as a QR code and by email, so they can pay later from a hardware wallet. On payment confirmation they get the acknowledgement email. Giving anonymously is fine too: the gift is still recorded and valued. They never leave your site or land on someone else\'s.',
+        },
+        {
+          q: "Where does this sit under data protection laws?",
+          a: "You are the data controller and we are your processor, with a data processing agreement on the hosted plan. Donor details are encrypted at rest, exportable, and deleted on request without breaking the financial record. We never sell or reuse them.",
+        },
+        {
+          q: "Do emails come from us or from you?",
+          a: 'Currently from the SatsRecord domain as "[Your Charity] via SatsRecord", with replies going to you. Sending from your own domain, once you add DNS records, is planned.',
+        },
+      ],
+    },
+    {
+      heading: "Wallets and bitcoin",
+      items: [
+        {
+          q: "Which wallets and key formats work?",
+          a: "Any wallet that exports an account-level extended public key: XPUB, YPUB, or ZPUB, plus output descriptors including taproot. There are guides for Sparrow, Ledger, Trezor and BlueWallet to help you find your key.",
+          links: walletGuides,
+        },
+        {
+          q: "Will my wallet see every donation?",
+          a: "Yes, provided its gap limit is high enough. Each donor is issued a fresh address whether or not they pay, so unfunded addresses accumulate. The dashboard and the manifest export tell you the minimum gap limit to set, and most wallets let you raise it.",
+        },
+        {
+          q: "How do you detect payments, and who sees our addresses?",
+          a: "On the hosted plan, our own Bitcoin node. Addresses are never sent to a third-party API. If you self-host you can point at your own node, or at mempool.space with the understanding that it then sees every address you check.",
+        },
+        {
+          q: "Do you support Lightning?",
+          a: "Not yet - we're on-chain only for now. But Lightning support is planned after our pilot.",
+        },
+        {
+          q: "Why not just run BTCPay Server?",
+          a: "If you have someone to run a server and a database, and you only need invoices, BTCPay Server is excellent. SatsRecord is for the charity that also needs donor records, acknowledgements, valuation at receipt and exports, and would rather paste a public key than host anything.",
+        },
+      ],
+    },
+    {
+      heading: "Pricing and availability",
+      items: [
+        {
+          q: "What will it cost after the pilot?",
+          a: "We haven't fixed the number yet. It will be a flat monthly fee and never a percentage of donations. We'll publish it before the pilot ends, pilot charities will hear first, and we'll permanently waive it for charities that can't afford it.",
+        },
+        {
+          q: "Can we use it today?",
+          a: "Hosted access is invite-only while we run a pilot with charities in the UK and US. Request access and tell us about your organisation. The source is public now if you want to read it or run it yourself.",
+        },
+      ],
+    },
+  ] as Array<{
+    heading: string;
+    items: Array<{ q: string; a: string; links?: typeof walletGuides }>;
+  }>,
 };

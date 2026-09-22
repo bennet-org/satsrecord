@@ -1,0 +1,135 @@
+---
+export const prerender = true;
+import Base from "../layouts/Base.astro";
+import Header from "../components/marketing/Header.astro";
+import Closing from "../components/marketing/Closing.astro";
+import { faq } from "../data/marketing";
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+const withLinks = ({
+  a,
+  links,
+}: (typeof faq.groups)[number]["items"][number]) =>
+  links
+    ? a
+        .split(new RegExp(`(${links.map((l) => l.name).join("|")})`))
+        .map((part) => links.find((l) => l.name === part) ?? part)
+    : [a];
+---
+
+<Base title="FAQ · SatsRecord" description={faq.intro} analytics>
+  <Header />
+  <main class="wrap">
+    <div class="head">
+      <h1 class="h2">Questions.</h1>
+      <div>
+        <p>{faq.intro}</p>
+        <nav aria-label="FAQ sections">
+          {faq.groups.map((g) => (
+            <a href={`#${slug(g.heading)}`}>{g.heading}</a>
+          ))}
+        </nav>
+      </div>
+    </div>
+    {faq.groups.map((g) => (
+      <section id={slug(g.heading)} class="group">
+        <h2>{g.heading}</h2>
+        <div>
+          {g.items.map((item) => (
+            <div class="item">
+              <h3>{item.q}</h3>
+              <p>
+                {withLinks(item).map((part) =>
+                  typeof part === "string" ? (
+                    part
+                  ) : (
+                    <a href={part.href} target="_blank" rel="noreferrer">
+                      {part.name}
+                    </a>
+                  ),
+                )}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    ))}
+  </main>
+  <Closing />
+</Base>
+<style>
+  main {
+    padding-block: clamp(48px, 5.5vw, 80px) clamp(52px, 5.8vw, 84px);
+  }
+  .head {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: clamp(32px, 3.9vw, 56px);
+  }
+  .head p {
+    font-size: clamp(17px, 1.4vw, 20px);
+    line-height: 1.4;
+    max-width: 30em;
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin-top: 18px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  nav a,
+  .item a {
+    text-decoration: underline;
+  }
+  .group {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 64px;
+    border-top: 2px solid var(--color-ink);
+    padding-top: 26px;
+    scroll-margin-top: 24px;
+  }
+  .group:last-child {
+    border-bottom: 2px solid var(--color-ink);
+  }
+  .group h2 {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    font-size: 26px;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .item {
+    padding-bottom: 26px;
+  }
+  .item + .item {
+    padding-top: 22px;
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+  h3 {
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .item p {
+    font-size: 16.5px;
+    line-height: 1.5;
+    max-width: 38em;
+  }
+  @media (max-width: 900px) {
+    .head,
+    .group {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .group h2 {
+      position: static;
+    }
+  }
+</style>

@@ -26,6 +26,7 @@ import {
   chain,
   simulateDonations,
 } from "../../lib/services";
+import { walletGuides } from "../../data/wallets";
 const org = Astro.locals.org!;
 Astro.response.headers.set("Cache-Control", "no-store");
 if (!["owner", "admin"].includes(org.role))
@@ -344,51 +345,13 @@ const snippet = widgetSnippet(
             fresh account. These wallet guides can help:
           </p>
           <ul class="guides">
-            <li>
-              <a
-                href="https://sparrowwallet.com/docs/quick-start.html"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Sparrow ↗
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://coldcard.com/docs/descriptor_export/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Coldcard ↗
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://support.ledger.com/article/360011069619-zd"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Ledger ↗
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://trezor.io/learn/supported-assets/bitcoin/what-is-a-public-key-xpub"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Trezor ↗
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://bluewallet.io/watch-only/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                BlueWallet ↗
-              </a>
-            </li>
+            {walletGuides.map((guide) => (
+              <li>
+                <a href={guide.href} target="_blank" rel="noreferrer">
+                  {guide.name} ↗
+                </a>
+              </li>
+            ))}
           </ul>
           <p class="hint">
             Single-signature wallets are supported. Multisig receiving will be

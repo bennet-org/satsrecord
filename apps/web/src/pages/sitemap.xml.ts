@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 
 export const prerender = true;
 
-const paths = ["/", "/request-access/", "/privacy/", "/terms/"];
+const paths = ["/", "/faq/", "/request-access/", "/privacy/", "/terms/"];
 
 export const GET: APIRoute = ({ site }) => {
   const urls = paths

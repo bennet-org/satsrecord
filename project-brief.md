@@ -38,7 +38,7 @@ The core loop: **address → attribution → detection → valuation → acknowl
 
 1. **Donor attribution.** The widget invites name and email, both optional, plus an unticked marketing opt-in whose label the charity can edit. Blank fields mean a fully anonymous donation, which is still recorded.
 2. **xpub or descriptor.** Charities paste an xpub, ypub or zpub and we handle the rest. Descriptors are accepted from day one. Multisig descriptors are recognised but gated until supported: a bare xpub means one person can move the charity's money, and multisig is the answer while staying watch-only.
-3. **Fresh-account check and wallet guides.** Getting a fresh xpub out of wallet software is the one hard step. Onboarding scans the first indices and warns if the account has history, confirms address 0 against the charity's wallet, and ships step-by-step guides for Sparrow, Coldcard, Ledger, Trezor and BlueWallet.
+3. **Fresh-account check and wallet guides.** Getting a fresh xpub out of wallet software is the one hard step. Onboarding scans the first indices and warns if the account has history, confirms address 0 against the charity's wallet, and ships step-by-step guides for Sparrow, Ledger, Trezor and BlueWallet.
 4. **FMV pinned at receipt** in the charity's reporting currency, sourced from Kraken, stored immutably with the settlement.
 5. **Acknowledgement email** on first confirmation. Attribution status (`claimed` or `email_confirmed`) is shown on every rendered document.
 6. **Address manifest export.** Every index ever issued, with "set your gap limit to at least N" guidance. This is the anti-lock-in guarantee: if we disappear, the charity recovers everything from the manifest and its own seed.

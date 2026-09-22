@@ -37,7 +37,7 @@ Phases 0–6 produce a locally runnable product: marketing site with access requ
 
 - [x] Organisation: name, registration number, country, reporting currency
 - [x] Wallet: paste xpub/ypub/zpub/descriptor → normalise → script-type prompt for bare xpub → confirm address 0 → fresh-account check (fake source in demo; live source deferred)
-- [x] Wallet guides: Sparrow, Coldcard, Ledger, Trezor, BlueWallet (links to begin with)
+- [x] Wallet guides: Sparrow, Ledger, Trezor, BlueWallet (links to begin with)
 - [x] Email sender: display name, reply-to
 - [x] Allowed origins
 - [x] Finish: install snippet
