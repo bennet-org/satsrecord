@@ -124,7 +124,7 @@ export const compared = {
   options: [
     {
       name: "A static address",
-      sub: "The status quo",
+      sub: "One address, reused",
       logo: "dots",
       cells: [
         c("You"),
