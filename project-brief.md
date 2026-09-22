@@ -47,7 +47,7 @@ The core loop: **address → attribution → detection → valuation → acknowl
 
 ## Deployment and business model
 
-**Hosted is the v1 product.** Invite-only: the site takes access requests and we issue invites. Billing is deferred, but this is the paid tier. What it buys is that we carry the data protection burden and run the node. Pricing: $149/month, waived below an organisational income threshold and free for everyone during the pilot, never a percentage of donations.
+**Hosted is the v1 product.** Invite-only: the site takes access requests and we issue invites. Billing is deferred, but this is the paid tier. What it buys is that we carry the data protection burden and run the node. Pricing: a flat monthly fee, figure not yet fixed and not published, possibly tiered by charity size later but never scaled by donations received. Waived for charities that can't afford it, and free for everyone during the pilot.
 
 **Self-hosted exists but is unsupported in v1.** Open core means a repo, a licence and basic run instructions from day one; docs, an upgrade path and issue triage do not. All onboarding effort goes to hosted. Shipping self-hosted only would serve exactly the audience BTCPay already serves, with fewer features, and would never test onboarding.
 
@@ -81,7 +81,7 @@ UK: Gift Aid is out, since HMRC does not treat cryptoassets as money. Donating c
 
 ## Funding
 
-Grants are the primary path. OpenSats has allocated about $21.6m to 252 grantees at roughly $1m/month; HRF's Bitcoin Development Fund $9.6m across 319 projects since 2020 (figures at time of writing). That is $30–100k/yr territory for a credible, maintained FOSS project, the equivalent of roughly 17–56 orgs paying $149/month, without the support, uptime and data protection duties attached.
+Grants are the primary path. OpenSats has allocated about $21.6m to 252 grantees at roughly $1m/month; HRF's Bitcoin Development Fund $9.6m across 319 projects since 2020 (figures at time of writing). That is $30–100k/yr territory for a credible, maintained FOSS project, which a hosted fee would need dozens of paying orgs to match, without the support, uptime and data protection duties attached.
 
 Open source is therefore a qualification criterion, not a nice-to-have.
 

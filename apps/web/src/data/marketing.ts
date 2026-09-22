@@ -191,9 +191,10 @@ export const pricing = {
     },
     {
       kind: "Hosted",
-      amount: "$149",
-      per: "/ month",
-      who: "Waived for smaller charities, and free for everyone during the pilot.",
+      badge: "Free during the pilot",
+      amount: "Flat fee",
+      per: "per month",
+      who: "Waived for charities that can't afford it.",
       body: "We run the node, carry the data-protection burden and keep the lights on. Nothing to install or maintain, and guided setup for your wallet key and donor emails.",
       bullets: [
         "Widget, records, acknowledgements, exports",
@@ -201,7 +202,15 @@ export const pricing = {
         "Data processing agreement, email support",
       ],
     },
-  ],
+  ] as Array<{
+    kind: string;
+    badge?: string;
+    amount: string;
+    per?: string;
+    who: string;
+    body: string;
+    bullets: string[];
+  }>,
   never: "Never a percentage of donations.",
 };
 

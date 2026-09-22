@@ -62,7 +62,7 @@ Stamps: solid ink, details cut out in the surface colour, one orange accent (pap
 2. Who it's for (paper): "Bitcoin donations for charities and non-profits", custody-at-receipt paragraph, Finance / Fundraising / Trustees.
 3. How it works: six numbered steps.
 4. Compared (paper): four options as rows, five criteria as columns, SatsRecord row filled orange.
-5. Pricing: two tiers, self-hosted free and hosted at $149/month, waived for smaller charities and free during the pilot. Prices in USD.
+5. Pricing: two tiers, self-hosted free and hosted free during the pilot with a flat monthly fee after that, waived for charities that can't afford it. No figure is stated yet.
 6. Close (black): spine line, invite-only note, request access, footer.
 
 ## Fictional record
