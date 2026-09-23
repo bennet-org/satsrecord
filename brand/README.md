@@ -56,15 +56,6 @@ Stamps: solid ink, details cut out in the surface colour, one orange accent (pap
 - Descriptor: Non-custodial bitcoin donations for charities and non-profits.
 - Four hero facts: We can't touch funds. Donor data stays yours. Your setup outlives us. Open source.
 
-## Page order
-
-1. Hero: headline, lead, two buttons, record card, four facts.
-2. Who it's for (paper): "Bitcoin donations for charities and non-profits", custody-at-receipt paragraph, Finance / Fundraising / Trustees.
-3. How it works: six numbered steps.
-4. Compared (paper): four options as rows, five criteria as columns, SatsRecord row filled orange.
-5. Pricing: two tiers, self-hosted free and hosted free during the pilot with a flat monthly fee after that, waived for charities that can't afford it. No figure is stated yet.
-6. Close (black): spine line, invite-only note, request access, footer.
-
 ## Fictional record
 
 Gift 0041, block 912,344, 14 September 2026 10:42 UTC, 0.0125 BTC, $815.20, Kraken XBT/USD, template v3. USD throughout the marketing site; the prospect list is American. Use the same numbers anywhere a sample record appears.

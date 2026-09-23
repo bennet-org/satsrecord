@@ -1,74 +1,316 @@
 ---
-import { steps } from "../../data/marketing";
+import { demoSteps } from "../../data/marketing";
+import DemoScene from "./DemoScene.astro";
 ---
 
-<section id="how" class="how wrap">
-  <h2 class="h2">How it works.</h2>
-  <ol class="steps">
-    {steps.map(([title, body], i) => (
-      <li>
-        <div class="n">{i + 1}</div>
-        <b>{title}</b>
-        <p>{body}</p>
-      </li>
+<section id="how" class="how wrap" data-how-demo>
+  <div class="how-heading">
+    <h2 class="h2">How it works.</h2>
+    <p>
+      From your website <br />
+      to your donation records.
+    </p>
+  </div>
+  <div class="demo-grid">
+    {demoSteps.map(([title, body], i) => (
+      <article class="demo-chapter" aria-labelledby={`demo-heading-${i}`}>
+        <DemoScene scene={i} />
+        <div class="story" data-story={i}>
+          <span class="step-number">0{i + 1}</span>
+          <h3 id={`demo-heading-${i}`}>{title}</h3>
+          <p>{body}</p>
+        </div>
+      </article>
     ))}
-  </ol>
-  <p class="more">
-    Questions? <a href="/faq/">Read the FAQ.</a>
-  </p>
+  </div>
+  <div class="notes">
+    <div>
+      <b>Start with your wallet.</b>
+      <p>
+        Setup starts with your wallet’s extended public key (XPUB). It lets
+        SatsRecord generate receiving addresses; it cannot spend your bitcoin.{" "}
+        <a href="/faq/#wallets-and-bitcoin">Read the wallet FAQ.</a>
+      </p>
+    </div>
+    <div>
+      <b>Your records stay yours.</b>
+      <p>
+        Download donations and donors as CSV. Corrections are amendments, so the
+        original stays on record. If you leave, your records leave with you.{" "}
+        <a href="/faq/">More in the FAQ.</a>
+      </p>
+    </div>
+  </div>
 </section>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-how-demo]");
+  if (root) {
+    const panels = [...root.querySelectorAll<HTMLElement>("[data-scene]")];
+    const stories = [...root.querySelectorAll<HTMLElement>("[data-story]")];
+    const desktop = window.matchMedia("(min-width: 901px)");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const timelines = panels.map((panel) =>
+      panel.dataset.timeline!.split(",").map(Number),
+    );
+    const stills = panels.map((panel) => panel.dataset.frame!);
+    const elapsed = panels.map(() => 0);
+    let active = -1;
+    let visible = false;
+    let animation = 0;
+    let previousTime = 0;
+    let scrollFrame = 0;
+    root.dataset.enhanced = "";
+
+    function paint(index: number) {
+      panels[index]!.dataset.frame = reduced.matches
+        ? stills[index]!
+        : String(
+            timelines[index]!.slice(0, -1).filter(
+              (time) => elapsed[index]! >= time,
+            ).length,
+          );
+    }
+    function tick(time: number) {
+      animation = 0;
+      if (previousTime) elapsed[active]! += Math.min(time - previousTime, 100);
+      elapsed[active] = elapsed[active]! % timelines[active]!.at(-1)!;
+      previousTime = time;
+      paint(active);
+      run();
+    }
+    function run() {
+      // Also settle offscreen scenes when motion is disabled during playback.
+      if (reduced.matches) panels.forEach((_, index) => paint(index));
+      const running =
+        active >= 0 && visible && !reduced.matches && !document.hidden;
+      if (running && !animation) animation = requestAnimationFrame(tick);
+      if (!running) {
+        cancelAnimationFrame(animation);
+        animation = 0;
+        previousTime = 0;
+      }
+    }
+    function selectScene() {
+      scrollFrame = 0;
+      const targets = desktop.matches ? stories : panels;
+      const centre = window.innerHeight / 2;
+      const distances = targets.map((target) => {
+        const bounds = target.getBoundingClientRect();
+        return Math.abs((bounds.top + bounds.bottom) / 2 - centre);
+      });
+      const next = distances.indexOf(Math.min(...distances));
+      const gridBounds = root!
+        .querySelector(".demo-grid")!
+        .getBoundingClientRect();
+      const panelBounds = panels[next]!.getBoundingClientRect();
+      visible = desktop.matches
+        ? gridBounds.top < window.innerHeight * 0.7 &&
+          gridBounds.bottom > centre
+        : panelBounds.top < window.innerHeight * 0.8 &&
+          panelBounds.bottom > window.innerHeight * 0.2;
+      if (next !== active) {
+        cancelAnimationFrame(animation);
+        animation = 0;
+        previousTime = 0;
+        active = next;
+      }
+      panels.forEach((panel, index) => {
+        const hidden = desktop.matches && index !== active;
+        panel.toggleAttribute("data-active", index === active);
+        panel.inert = hidden;
+        panel.setAttribute("aria-hidden", String(hidden));
+        stories[index]!.toggleAttribute("data-active", index === active);
+      });
+      run();
+    }
+    function scheduleScene() {
+      if (!scrollFrame) scrollFrame = requestAnimationFrame(selectScene);
+    }
+    window.addEventListener("scroll", scheduleScene, { passive: true });
+    window.addEventListener("resize", scheduleScene);
+    desktop.addEventListener("change", scheduleScene);
+    reduced.addEventListener("change", () => {
+      panels.forEach((_, index) => paint(index));
+      selectScene();
+    });
+    document.addEventListener("visibilitychange", () => {
+      previousTime = 0;
+      run();
+    });
+    panels.forEach((_, index) => paint(index));
+    selectScene();
+  }
+</script>
+
 <style>
   .how {
     padding-block: clamp(48px, 5.5vw, 80px) clamp(52px, 5.8vw, 84px);
+    --column-gap: clamp(40px, 4.5vw, 72px);
   }
-  .h2 {
-    margin-bottom: clamp(32px, 3.9vw, 56px);
-  }
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0 40px;
-    border-top: 2px solid var(--color-ink);
-    margin: 0;
-    padding: 0;
-  }
-  li {
-    padding: 26px 0 30px;
+  .how-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 24px;
+    padding-bottom: 40px;
     border-bottom: 2px solid var(--color-ink);
+    margin-bottom: 48px;
   }
-  .n {
-    font-size: 56px;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1;
-    margin-bottom: 14px;
+  .how-heading > p {
+    font-size: clamp(18px, 1.7vw, 24px);
+    line-height: 1.3;
   }
-  b {
+  .demo-grid {
+    display: grid;
+    gap: 64px;
+  }
+  .demo-chapter {
+    min-width: 0;
+  }
+  .story {
+    padding-top: 36px;
+  }
+  .step-number {
     display: block;
-    font-size: 22px;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 18px;
+  }
+  .story h3 {
+    font-size: clamp(32px, 3.5vw, 50px);
+    line-height: 1.02;
+    max-width: 10em;
+    text-wrap: balance;
+  }
+  .story > p {
+    font-size: clamp(17px, 1.5vw, 21px);
+    line-height: 1.5;
+    max-width: 29em;
+    margin-top: 24px;
+  }
+  .notes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 40px;
+    border-top: 2px solid var(--color-ink);
+    padding-top: 28px;
+    margin-top: 64px;
+  }
+  .notes b {
+    display: block;
+    font-size: 20px;
     font-weight: 800;
     letter-spacing: -0.02em;
     margin-bottom: 8px;
   }
-  p {
-    font-size: 15.5px;
+  .notes p {
+    font-size: 16px;
+    max-width: 30em;
   }
-  .more {
-    margin-top: 28px;
-    font-size: 17px;
-    font-weight: 700;
-  }
-  .more a {
+  .notes a {
     text-decoration: underline;
+    text-underline-offset: 3px;
   }
-  @media (max-width: 900px) {
-    .steps {
-      grid-template-columns: 1fr 1fr;
+  @media (min-width: 901px) {
+    .notes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--column-gap);
+    }
+    [data-enhanced] .demo-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 var(--column-gap);
+      align-items: start;
+    }
+    [data-enhanced] .demo-chapter {
+      display: contents;
+    }
+    [data-enhanced] :global(.demo-visual) {
+      grid-column: 1;
+      grid-row: 1 / 4;
+      position: sticky;
+      top: max(16px, calc((100vh - 560px) / 2));
+      width: 100%;
+      justify-self: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        opacity 0.3s,
+        visibility 0s 0.3s;
+    }
+    [data-enhanced] :global(.demo-visual[data-active]) {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity 0.3s;
+    }
+    [data-enhanced] .story {
+      grid-column: 2;
+      min-height: max(560px, 78vh);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-block: 36px;
+    }
+    [data-enhanced] .demo-chapter:nth-child(1) .story {
+      grid-row: 1;
+    }
+    [data-enhanced] .demo-chapter:nth-child(2) .story {
+      grid-row: 2;
+    }
+    [data-enhanced] .demo-chapter:nth-child(3) .story {
+      grid-row: 3;
+    }
+    [data-enhanced] .step-number {
+      width: fit-content;
+      border-bottom: 3px solid transparent;
+    }
+    [data-enhanced] .story[data-active] .step-number {
+      border-color: var(--color-ink);
     }
   }
-  @media (max-width: 560px) {
-    .steps {
+
+  /* Short laptop windows keep their columns; scale the illustration to fit. */
+  @media (min-width: 901px) and (max-height: 600px) {
+    [data-enhanced] :global(.demo-visual) {
+      zoom: 0.85;
+      top: 16px;
+    }
+  }
+  @media (min-width: 901px) and (max-height: 480px) {
+    [data-enhanced] :global(.demo-visual) {
+      zoom: 0.7;
+    }
+  }
+  @media (max-width: 900px) {
+    .demo-chapter {
+      max-width: 640px;
+      width: 100%;
+      margin-inline: auto;
+    }
+    .notes {
+      padding-top: 36px;
+      margin-top: 36px;
+    }
+  }
+  @media (max-width: 600px) {
+    .how-heading {
+      display: block;
+      padding-bottom: 28px;
+      margin-bottom: 32px;
+    }
+    .how-heading > p {
+      margin-top: 20px;
+    }
+    .how-heading br {
+      display: none;
+    }
+    .notes {
       grid-template-columns: 1fr;
+    }
+    .story > p {
+      margin-top: 16px;
     }
   }
 </style>

@@ -84,30 +84,18 @@ export const whoFor = {
   ] as Array<[GlyphName, string, string]>,
 };
 
-export const steps = [
+export const demoSteps = [
   [
-    "Paste a public key",
-    "From a fresh account in your wallet. We check it's unused, show you the first address to confirm, and never ask for anything that can sign.",
+    "Add it to your website.",
+    "Connect your wallet, then paste a small snippet into your website. Customise it to suit your charity.",
   ],
   [
-    "Add one script tag",
-    'The widget sits on your donate page. A donor clicks "Give", adds a name and email if they want, and gets a fresh address on screen and by email.',
+    "Receive bitcoin directly.",
+    "Donors get a fresh address belonging to your wallet. They send bitcoin from their own wallet, straight to yours.",
   ],
   [
-    "Watch it arrive",
-    "Detection from our node or yours. Value pinned at block time in your currency. Acknowledgement sent after three confirmations, and the gift filed in your records.",
-  ],
-  [
-    "Export anything",
-    "Donations and donors as CSV. Every address ever issued as a manifest for your wallet. CRM feeds when you want them.",
-  ],
-  [
-    "Correct without erasing",
-    "Wrong name, reorg, a donor asking to be anonymised. Corrections are amendments that point back at what they replace.",
-  ],
-  [
-    "Leave whenever",
-    "The manifest and your seed recover everything. Or run the open-source version yourself and stop paying us.",
+    "The paperwork follows.",
+    "Each gift gets a record, a value at block time and an acknowledgement for donors who leave an email. Export your records whenever you need them.",
   ],
 ];
 
