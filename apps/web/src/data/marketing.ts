@@ -167,7 +167,7 @@ export const compared = {
       us: true,
       cells: [
         c("You"),
-        c("Yes, in yours. Fully exportable."),
+        c("Yes, in your system. Exportable."),
         c("Automatic, sent as you"),
         c("A public key and a script tag"),
         c("No, by design"),
