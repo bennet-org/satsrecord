@@ -99,9 +99,6 @@ export const demoSteps = [
   ],
 ];
 
-export type Cell = { text: string; muted?: boolean };
-const c = (text: string, muted = false): Cell => ({ text, muted });
-
 export const compared = {
   intro: "Ways a charity can accept bitcoin today, and the trade-offs of each.",
   columns: [
@@ -117,11 +114,11 @@ export const compared = {
       sub: "One address, reused",
       logo: "dots",
       cells: [
-        c("You"),
-        c("None, just a transaction list", true),
-        c("By hand", true),
-        c("None"),
-        c("No", true),
+        "You",
+        "None, just a transaction list",
+        "By hand",
+        "None",
+        "No",
       ],
     },
     {
@@ -129,11 +126,11 @@ export const compared = {
       sub: "Self-hosted payment infrastructure",
       logo: BtcpayLogo,
       cells: [
-        c("You"),
-        c("Invoices, not donors", true),
-        c("No", true),
-        c("Server, database, someone to run them", true),
-        c("No", true),
+        "You",
+        "Invoices, not donors",
+        "No",
+        "Server, database, someone to run them",
+        "No",
       ],
     },
     {
@@ -141,11 +138,11 @@ export const compared = {
       sub: "Custodial processor",
       logo: GivingBlockLogo,
       cells: [
-        c("They do", true),
-        c("Yes, in their system"),
-        c("Automatic, sent as them"),
-        c("A contract and their fee"),
-        c("Yes, automatic"),
+        "They do",
+        "Yes, in their system",
+        "Automatic, sent as them",
+        "A contract and their fee",
+        "Yes, automatic",
       ],
     },
     {
@@ -154,11 +151,11 @@ export const compared = {
       logo: SatsRecordMark,
       us: true,
       cells: [
-        c("You"),
-        c("Yes, in your system. Exportable."),
-        c("Automatic, sent as you"),
-        c("A public key and a script tag"),
-        c("No, by design"),
+        "You",
+        "Yes, in your system. Exportable.",
+        "Automatic, sent as you",
+        "A public key and a script tag",
+        "No, by design",
       ],
     },
   ],

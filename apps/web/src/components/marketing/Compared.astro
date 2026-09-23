@@ -36,7 +36,7 @@ import { compared } from "../../data/marketing";
               </div>
             </td>
             {o.cells.map((cell) => (
-              <td class:list={{ no: cell.muted }}>{cell.text}</td>
+              <td>{cell}</td>
             ))}
           </tr>
         ))}
@@ -121,9 +121,6 @@ import { compared } from "../../data/marketing";
     font-size: 13.5px;
     color: var(--color-paper-mute);
     margin-top: 2px;
-  }
-  .no {
-    color: var(--color-paper-mute);
   }
   tbody tr:nth-last-child(2) td {
     border-bottom: 2px solid var(--color-paper-ink);
