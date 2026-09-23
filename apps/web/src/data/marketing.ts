@@ -205,7 +205,7 @@ export const pricing = {
 
 export const closing = {
   body: "Invite-only while we run a pilot with charities in the UK and US. Tell us about your organisation and we'll be in touch.",
-  legal: "Open source, AGPL-3.0 · Not a money transmitter",
+  legal: "Open source, AGPL-3.0",
 };
 
 export const faq = {

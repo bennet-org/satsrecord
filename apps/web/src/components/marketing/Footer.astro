@@ -9,7 +9,8 @@ import { site, closing } from "../../data/marketing";
   </span>
   <span>
     <a href="/faq/">FAQ</a> · <a href="/privacy/">Privacy</a> ·{" "}
-    <a href="/terms/">Terms</a> · {closing.legal} · {site.domain}
+    <a href="/terms/">Terms</a> · {closing.legal} ·{" "}
+    <a href={`mailto:hello@${site.domain}`}>hello@{site.domain}</a>
   </span>
 </footer>
 <style>
