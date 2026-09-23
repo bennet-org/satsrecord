@@ -1,6 +1,7 @@
 # throwaway design mocks; brand/README.md and the logos are the record
 brand/*.html
 brand/archive/
+docs/wip/
 .DS_Store
 
 node_modules/
