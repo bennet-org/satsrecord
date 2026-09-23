@@ -22,7 +22,11 @@ export default defineConfig({
   output: "server",
   // Netlify sets NETLIFY=true in its build environment; everywhere else (Docker, self-host) is the node adapter.
   adapter: process.env.NETLIFY ? netlify() : node({ mode: "standalone" }),
-  vite: { plugins: [tailwindcss()] },
+  vite: {
+    plugins: [tailwindcss()],
+    // Lightning CSS rejects ::search-text:current in global.css.
+    build: { cssMinify: "esbuild" },
+  },
   // Astro emits headers for on-demand pages and meta policies for static pages.
   // Framing/other headers: middleware, server.mjs (Node static files), netlify.toml.
   security: {

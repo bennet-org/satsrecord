@@ -101,6 +101,17 @@ ul {
   color: var(--color-ink);
 }
 
+/* current find-in-page match */
+::search-text:current {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+.band ::search-text:current,
+[data-surface="paper"] ::search-text:current {
+  background: var(--color-ground);
+  color: var(--color-ink);
+}
+
 /* app forms and tables: shared by auth, admin and settings pages */
 .form {
   display: grid;
