@@ -7,8 +7,9 @@ interface Props {
   title: string;
   heading: string;
   intro?: string;
+  divider?: boolean;
 }
-const { title, heading, intro } = Astro.props;
+const { title, heading, intro, divider = true } = Astro.props;
 ---
 
 <Base title={title} analytics>
@@ -16,7 +17,7 @@ const { title, heading, intro } = Astro.props;
   <main class="wrap">
     <h1>{heading}</h1>
     {intro && <p class="intro">{intro}</p>}
-    <article class="prose">
+    <article class="prose" class:list={{ "no-divider": !divider }}>
       <slot />
     </article>
   </main>
@@ -44,6 +45,10 @@ const { title, heading, intro } = Astro.props;
     border-top: 2px solid var(--color-ink);
     font-size: 17px;
     line-height: 1.5;
+  }
+  .prose.no-divider {
+    border-top: none;
+    padding-top: 0;
   }
   .prose :global(h2) {
     font-size: 26px;
